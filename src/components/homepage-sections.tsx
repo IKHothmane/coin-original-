@@ -440,7 +440,7 @@ function CategoryCard({ category }: { category: CategoryItem }) {
         </h3>
         <a
           href="#shop"
-          className="mt-2 inline-flex border border-white bg-white px-3 py-1.5 text-xs font-[var(--font-display)] uppercase text-black transition-colors hover:bg-[var(--primary-strong)] hover:text-[var(--background)] sm:mt-3 sm:px-4 sm:py-2 sm:text-sm"
+          className="category-cta mt-2 px-3 py-1.5 text-xs font-[var(--font-display)] uppercase sm:mt-3 sm:px-4 sm:py-2 sm:text-sm"
         >
           Explorer
         </a>
