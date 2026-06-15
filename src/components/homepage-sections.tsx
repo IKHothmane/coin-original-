@@ -31,7 +31,7 @@ function BrandLogo({
   return (
     <Link href="/" className="flex items-center gap-3" aria-label="Coin Original">
       <Image
-        src="/logo.jpg"
+        src="/logo.png"
         alt="Logo Coin Original"
         width={imageSize}
         height={imageSize}
@@ -495,7 +495,7 @@ export function SiteFooter() {
         <div>
           <a href="#top" className="inline-flex items-center gap-4" aria-label="Retour en haut">
             <Image
-              src="/logo.jpg"
+              src="/logo.png"
               alt="Logo Coin Original"
               width={72}
               height={72}

@@ -6,18 +6,20 @@ import Link from "next/link";
 import {
   BottomDock,
   DesktopTopBar,
-  MobileDrawer,
   MobileTopBar,
+  MobileDrawer,
   SiteFooter,
 } from "@/components/homepage-sections";
-
-const productImages = [
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuAcFk5YwZQFLy5NpkSSAhIxIEMhh-ojCzJ2LCUwnWoDvaeRwqFZn5x_OoAaBbpdlZ38UjKr2IfKtbjuRfC_ZYUmXzpF91_5Dw8_sNiUoMCl0MDiDxjg2LhSfMYA-hrh8_m3ynpMfWwh6mQEbF62QAd_ZF5Xh5YG_qPKJdavjZ32wTildYnCzZWv29FQl_3EFamupW5EBOakZAgYrR4Ce0oHXMQLHqiUUtHJhV2I5AByavtx9gorrftW4LcXDLDTTz6uv6Tx9-zQbg",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuC7_om9JluK_wVuiNzE0zvnNM_vn8sWrs6hhWljXnsBmN1hycfhmtoAhE67-8Ce2QGGsW8aCLNIY0Dff66n1fpeg13gf_DMHECNYI7sa_OE_ccLVyw9rveIDy-JaociaTFg6w6ZCylFplZp4t3tm1rZ8nF1ej-_-3lK4FljDDNdZtXjsKX1CpsBjeptvEpr6M2tnvsUoI4xfJXpWYiPHqSDg51PWjezNTym6lrbSXZATTQv3S20gd0tjP5PqsBxohrcWiBjup9Jgw",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuC2N9LdLoBFCM0pYhLrw5afno0Yrw5kPD3AOWhgjl-uqCkn06105BONkbeFvoJo0TjiuIkdM2cLaEv4Yk22wvT9Rpkd2fRN69bp8OdmcfK4DAGYSMEVizGstGIiM_TxXf5A2k2uB5ZjoiET_HhVSf0ES2BqO-8B3AnVbeLSTDmjV4Xss8sKr8P199-INm-PW1lkRXXhcfFXA5jAoW8MKoA80BnpGoQ8OzK3_XEgkCozm7InCMX4k3cLGli11IPiPXigrjayO0yeSQ",
-];
+import { featuredProducts } from "@/components/homepage-data";
 
 const availableSizes = ["40", "41", "42", "43", "44", "45"];
+const mainProduct = featuredProducts[2];
+const productImages = [
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuDScsdk0dK2EmEEl06JHtgQ9NNce_Kidj6G_RDdz82v-GkaxD4itk5Vw350GCuluidbTuaVKI7GWT80sByRRumZFIAJ2WQijMBUutAj3CuQPj-vH_6C3e6sRVaCLThyIejcr19kq0Y5m9Wnj_qfUIhzUhwlw-DxbdutTAU9tr9ZuSXLLqKuOyHby-em-wGS_2-AEk1MKk8FpA_PU_VHCcPPczh6Nyb0otYdkVoflioU7bmk3R0J1TbQc4Fq3jyNuRkxxSAEawfodA",
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuBWf8WJc5tG9d46BJwTMO9eZJ8cljK2-laGgZzjnK6yZkQCJX9fZkn3Ivy8hLNllBarVE6jl3tKbnvwJgCDvUAI2a4x3aYSzLxLZbgUFJQtCImCQwGwCmyMbEQ6eLZ1R-PG2GH5QpN0OcV4kT9rg92e4toltq7BTEZYSGDW1C0g9K3lig1daWjbL1dCTfDSld35Y_2gzhGuoPQrePWAAbFMD1XH_TKZIS5EXmSSY_q_CzYPc-JuiR5Ue5ywHdsQt652pwhO2pRzVw",
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuD0Did9d1T-Tb6I9b1J4URE6QVnrRyDrqzsJvLLUgxN8xDGknxenb1nfUcBc91AelBXpDa_U4EBT0NoIDYywK5mGUpnPsSS2IeiJ57LSXeWdxosYqEeV0w88O4kXXl6vBcFwL3TWd3zuUTPXuGLnAYsTt5NHv7APKwvjtcUMibRw2ZGJUl_pxCjz6tAwBADzeqJTmHy8e_dPqhZFkhyAyMbGXQ_3HbSza-WxypHMKs73VzYduezFtKTzfKX8AwsUrAXSoqD7LL9Mg",
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuAT6eGoEatUsMRZJksTa6H50avOZdWz8SdGtbHnvaE9xRYNzJP9Bdt_kZBKDr1zrmcSk4m2W7aQ3dJ-uFw9Gs-ZFfvy7LxYqAE0qAEt7qDqygpwCupEk43zw_K49tRXJM_U5-i9Fvx-XmJAydQe6lc5t8AGFHxYdQr9XJGs6EmkoOnssctqQ5P4T51PWbYUAwfScdcUbZCzfV6mLBxp09qQ5Yt7mlVu5ERm1NeLzyD033F5_1V5bPjLNP6V5qWRBsWnqQpomeuj0Q",
+];
 
 export function ProductPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -56,7 +58,7 @@ export function ProductPage() {
             <span>/</span>
             <span>Sneakers</span>
             <span>/</span>
-            <span className="text-[var(--foreground)]">Vitesse Urban Runner X1</span>
+            <span className="text-[var(--foreground)]">{mainProduct.name}</span>
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-12">
@@ -65,7 +67,7 @@ export function ProductPage() {
                 <div className="group relative aspect-[4/5] overflow-hidden border-2 border-[var(--border-soft)] bg-[var(--surface)]">
                   <Image
                     src={productImages[0]}
-                    alt="Vitesse Urban Runner X1 vue principale"
+                    alt={`${mainProduct.name} vue principale`}
                     fill
                     priority
                     sizes="(max-width: 1023px) 100vw, 58vw"
@@ -86,7 +88,7 @@ export function ProductPage() {
                     >
                       <Image
                         src={image}
-                        alt={`Vitesse Urban Runner X1 vue detail ${index + 1}`}
+                        alt={`${mainProduct.name} vue detail ${index + 1}`}
                         fill
                         sizes="(max-width: 1023px) 50vw, 29vw"
                         className="object-cover"
@@ -104,14 +106,14 @@ export function ProductPage() {
                   <span>Original Authentique</span>
                 </div>
                 <h1 className="font-[var(--font-display)] text-xl uppercase leading-none tracking-tight text-[var(--foreground)] sm:text-2xl">
-                  Vitesse Urban Runner X1
+                  {mainProduct.name}
                 </h1>
                 <div className="mt-3 flex items-baseline gap-3">
                   <span className="font-[var(--font-display)] text-xl text-[var(--primary-strong)] sm:text-2xl">
-                    899 DH
+                    {mainProduct.price}
                   </span>
                   <span className="text-sm text-[var(--muted)] line-through">
-                    1299 DH
+                    1,799 DH
                   </span>
                 </div>
               </div>
