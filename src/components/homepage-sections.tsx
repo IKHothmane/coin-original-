@@ -47,7 +47,7 @@ export function DesktopTopBar({
 }: Pick<MenuActionProps, "mobileMenuOpen" | "onOpenMobileMenu">) {
   return (
     <nav className="fixed inset-x-0 top-0 z-50 hidden border-b border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface)_92%,transparent)] backdrop-blur md:block">
-      <div className="mx-auto flex h-20 w-full max-w-[1200px] items-center justify-between gap-4 px-5 md:px-8">
+      <div className="flex h-20 w-full items-center justify-between gap-4 px-3 md:px-5">
         <div className="flex items-center gap-6">
           <BrandLogo
             imageSize={56}
@@ -58,7 +58,7 @@ export function DesktopTopBar({
         <div className="flex items-center gap-3">
           <input
             type="text"
-            placeholder="Rechercher des sneakers..."
+            placeholder="Rechercher des chaussures..."
             className="hidden border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-2 text-sm text-[var(--foreground)] outline-none md:block"
           />
           <Link
@@ -195,29 +195,43 @@ export function BottomDock({
 }: Pick<MenuActionProps, "mobileMenuOpen" | "onOpenMobileMenu">) {
   return (
     <div className="mobile-dock">
-      <Link href="/" className="mobile-dock__item" aria-label="Accueil">
-        <House size={18} strokeWidth={2.2} />
-        <span>Accueil</span>
-      </Link>
-      <Link href="/boutique" className="mobile-dock__item" aria-label="Boutique">
-        <Store size={18} strokeWidth={2.2} />
-        <span>Boutique</span>
-      </Link>
-      <Link href="/panier" className="mobile-dock__item" aria-label="Panier">
-        <ShoppingBag size={18} strokeWidth={2.2} />
-        <span>Panier</span>
-      </Link>
-      <button
-        type="button"
-        className="mobile-dock__item"
-        aria-label="Ouvrir le menu"
-        aria-expanded={mobileMenuOpen}
-        aria-controls="mobile-menu"
-        onClick={onOpenMobileMenu}
-      >
-        <Menu size={18} strokeWidth={2.2} />
-        <span>Menu</span>
-      </button>
+      <div className="mobile-dock__shell">
+        <Image
+          src="/sole-navbar.png"
+          alt=""
+          width={797}
+          height={271}
+          priority
+          sizes="(max-width: 768px) 82vw, (max-width: 1200px) 60vw, 620px"
+          className="mobile-dock__image"
+        />
+
+        <nav className="mobile-dock__nav" aria-label="Navigation principale">
+          <Link href="/" className="mobile-dock__item" aria-label="Accueil">
+            <House size={14} strokeWidth={2.15} />
+            <span>Accueil</span>
+          </Link>
+          <Link href="/boutique" className="mobile-dock__item" aria-label="Boutique">
+            <Store size={14} strokeWidth={2.15} />
+            <span>Boutique</span>
+          </Link>
+          <Link href="/panier" className="mobile-dock__item" aria-label="Panier">
+            <ShoppingBag size={14} strokeWidth={2.15} />
+            <span>Panier</span>
+          </Link>
+          <button
+            type="button"
+            className="mobile-dock__item"
+            aria-label="Ouvrir le menu"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu"
+            onClick={onOpenMobileMenu}
+          >
+            <Menu size={14} strokeWidth={2.15} />
+            <span>Menu</span>
+          </button>
+        </nav>
+      </div>
     </div>
   );
 }
@@ -225,20 +239,20 @@ export function BottomDock({
 export function HeroSection() {
   return (
     <section className="relative flex min-h-[500px] items-end overflow-hidden sm:min-h-[600px]">
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 z-0">
         <Image
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGEMxc8LpjDqzJL3U5oYFu4tY6e0Cpkqj-9jWDfcS4UWdHsrEoWce_t2yHK8jqCpJ60ko_5DFwK5hH8ktamiU4AMm_7nBGIRAaXKL3oq9rpB21X2RMfg5Ed8W_Ke-mBvJc5hY2UjIaAbnTRr9UBmnnffl7v7tVvXNTeDRjjQxJigFxwgZ1TqYJYasTRRfshISBeWA8FpTFCqe9kqMI7aMpCqcgn7TWyzqs4zwMh2fq4hscvFJtE5vdgOPVkxsG16uuHzshxTiahQ"
+          src="/hero-home.jpg"
           alt="Warehouse streetwear premium"
           fill
           priority
           sizes="100vw"
-          className="object-cover"
+          className="hero-image-light object-cover object-center"
         />
-        <div className="absolute inset-0 bg-black/45" />
+        <div className="hero-overlay-light absolute inset-0" />
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/70 to-transparent" />
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-5 pb-8 sm:gap-6 sm:pb-12 md:px-8 md:pb-20">
+      <div className="relative z-10 flex w-full flex-col gap-4 px-3 pb-8 sm:gap-6 sm:pb-12 md:px-5 md:pb-20">
         <div className="max-w-2xl">
           <span className="mb-3 inline-flex bg-[var(--primary-strong)] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--background)] sm:mb-4 sm:px-4 sm:text-xs">
             Nouveau drop : Ete 24
@@ -249,7 +263,7 @@ export function HeroSection() {
             est Ouvert.
           </h1>
           <p className="mb-6 max-w-lg text-sm leading-6 text-[var(--muted)] sm:mb-8 sm:text-base md:text-lg">
-            Arrivages exclusifs de sneakers et hoodies heavy-weight. Le style
+            Arrivages exclusifs de chaussures et hoodies heavy-weight. Le style
             urbain premium livre partout au Maroc.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
@@ -275,7 +289,7 @@ export function HeroSection() {
 export function PartnersSection() {
   return (
     <section className="border-b border-[var(--border-soft)] bg-[var(--surface)]/80 py-12">
-      <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-5 md:px-8">
+      <div className="flex w-full flex-col gap-8 px-3 md:px-5">
         <p className="meta-label text-center text-xs text-[var(--muted)]">
           Partenaires Urbains Globaux
         </p>
@@ -309,7 +323,7 @@ export function PartnersSection() {
 function ProductCard({ product }: { product: FeaturedProduct }) {
   return (
     <article className="surface-panel flex h-full flex-col overflow-hidden">
-      <Link href="/produit" className="group flex h-full flex-col">
+      <Link href={`/produit/${product.slug}`} className="group flex h-full flex-col">
         <div className="relative aspect-square overflow-hidden">
           <Image
             src={product.image}
@@ -335,9 +349,6 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
           <p className="mt-1 text-[11px] leading-4 text-[var(--muted)] sm:text-sm">
             {product.description}
           </p>
-          <div className="mt-2 size-chip cod-badge w-fit text-[9px] sm:mt-4 sm:text-xs">
-            Paiement a la livraison
-          </div>
           <span className="impact-button impact-button--secondary mt-3 !h-9 w-full !px-2 !py-2 !text-center !text-xs sm:mt-6 sm:!h-11 sm:!px-4 sm:!py-3 sm:!text-base">
             Ajouter Au Panier
           </span>
@@ -349,7 +360,7 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
 
 export function ShopSection() {
   return (
-    <section id="shop" className="mx-auto w-full max-w-[1200px] px-5 py-10 md:px-8 md:py-16">
+    <section id="shop" className="w-full px-3 py-10 md:px-5 md:py-16">
       <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:mb-8 sm:flex-row sm:items-end sm:gap-4">
         <div>
           <h2 className="font-[var(--font-display)] text-2xl leading-none uppercase text-[var(--foreground)] sm:text-3xl">
@@ -398,7 +409,7 @@ export function TrustSection() {
       id="trust"
       className="border-y border-[color:color-mix(in_srgb,var(--primary-strong)_35%,transparent)] bg-[var(--surface)] py-12 md:py-16"
     >
-      <div className="mx-auto w-full max-w-[1200px] px-5 text-center md:px-8">
+      <div className="w-full px-3 text-center md:px-5">
         <div className="mb-6 inline-flex items-center border border-[var(--primary-strong)] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--primary-strong)] sm:mb-8 sm:px-6 sm:text-xs">
           Aucune Carte Bancaire Requise
         </div>
@@ -431,9 +442,9 @@ function CategoryCard({ category }: { category: CategoryItem }) {
         alt={category.title}
         fill
         sizes="(max-width: 768px) 50vw, 25vw"
-        className="object-cover transition-transform duration-700 hover:scale-105"
+        className="category-image-light object-cover transition-transform duration-700 hover:scale-105"
       />
-      <div className="absolute inset-0 bg-black/35" />
+      <div className="category-overlay-light absolute inset-0" />
       <div className="absolute bottom-3 left-3 sm:bottom-5 sm:left-5 md:bottom-6 md:left-6">
         <h3 className="font-[var(--font-display)] text-xl uppercase text-white sm:text-2xl md:text-4xl">
           {category.title}
@@ -453,7 +464,7 @@ export function CategoriesSection() {
   return (
     <section
       id="categories"
-      className="mx-auto w-full max-w-[1200px] px-5 py-12 md:px-8 md:py-16"
+      className="w-full px-3 py-12 md:px-5 md:py-16"
     >
       <h2 className="mb-6 font-[var(--font-display)] text-2xl uppercase leading-none text-[var(--foreground)] sm:mb-8 sm:text-3xl">
         Explorer Les Categories
@@ -491,7 +502,7 @@ export function SiteFooter() {
       id="footer"
       className="border-t border-[var(--border-soft)] bg-[var(--surface-container-lowest,var(--surface))] pt-12"
     >
-      <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-8 px-5 pb-8 md:grid-cols-3 md:px-8">
+      <div className="grid w-full grid-cols-1 gap-8 px-3 pb-8 md:grid-cols-3 md:px-5">
         <div>
           <a href="#top" className="inline-flex items-center gap-4" aria-label="Retour en haut">
             <Image
@@ -506,7 +517,7 @@ export function SiteFooter() {
             </span>
           </a>
           <p className="mt-4 max-w-xs text-sm leading-6 text-[var(--muted)]">
-            Le premier shop de sneakers et streetwear premium au Maroc avec
+            La premiere boutique de chaussures et streetwear premium au Maroc avec
             paiement a la livraison garanti.
           </p>
         </div>
@@ -515,7 +526,7 @@ export function SiteFooter() {
           <div>
             <h4 className="font-[var(--font-display)] text-xl uppercase">Boutique</h4>
             <ul className="mt-4 space-y-2 text-sm text-[var(--muted)]">
-              <li>Sneakers</li>
+              <li>Chaussures</li>
               <li>Hoodies</li>
               <li>T-Shirts</li>
               <li>Nouveaux Drops</li>
@@ -555,7 +566,7 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="border-t border-[var(--border-soft)] px-5 py-4 text-center md:px-8">
+      <div className="border-t border-[var(--border-soft)] px-3 py-4 text-center md:px-5">
         <p className="meta-label text-xs text-[var(--muted)]">
           2024 Coin Original. Paiement a la livraison au Maroc.
         </p>

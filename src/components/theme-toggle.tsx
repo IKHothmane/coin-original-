@@ -13,15 +13,11 @@ function applyTheme(theme: Theme) {
 export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === "undefined") {
-      return "dark";
+      return "light";
     }
 
     const savedTheme = window.localStorage.getItem(STORAGE_KEY) as Theme | null;
-    const systemPrefersLight = window.matchMedia(
-      "(prefers-color-scheme: light)",
-    ).matches;
-
-    return savedTheme ?? (systemPrefersLight ? "light" : "dark");
+    return savedTheme ?? "light";
   });
 
   useEffect(() => {

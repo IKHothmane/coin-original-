@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  BanknoteArrowDown,
   ChevronLeft,
   ChevronRight,
   Heart,
@@ -18,74 +17,13 @@ import {
   MobileTopBar,
   SiteFooter,
 } from "@/components/homepage-sections";
-
-type BoutiqueProduct = {
-  brand: string;
-  name: string;
-  price: string;
-  badge?: {
-    label: string;
-    tone: "primary" | "tertiary" | "error";
-  };
-  image: string;
-  sizes: string[];
-  soldOut?: boolean;
-};
-
-const boutiqueProducts: BoutiqueProduct[] = [
-  {
-    brand: "Original Drop",
-    name: "Neo-Retro Hoodie",
-    price: "450 MAD",
-    badge: { label: "New Drop", tone: "primary" },
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuB5-T2Ny4uOj3LeNaZvP29y_llOiDQwW1V3cojXtweZ5DdrEfphZlgx2n576EV-fKCipD7gSscQuRJYU2Wq9V22FuBK01P9fpoacV0KlyFsD9hYTHBqMSI92edRHmkGqFW8QnqWpxH00zWXBwVSPMXhYWRcq1c-a15BSkRFt8Q__zEhkHyvIkJmodhI_K_Es95T1KFdm6c0SnXUFIMPLnjO2TMp7BlKZDeOhHwzayDiZGdojzYRjOsRvi2Atwnjvk2ug1LZQ6-RPw",
-    sizes: ["S", "M", "L"],
-  },
-  {
-    brand: "Atlas Street",
-    name: "Nomad Tee",
-    price: "250 MAD",
-    badge: { label: "Limited", tone: "tertiary" },
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBjzZg34_S4gLJUHWLDRhArJWhjznEJb57-t_MjLdC_76AbtGYm8aYwdSOZzCvqBC7bPk6HFE33NttZM3YD7pqg0CQ10QhbdC3EVy5Wm26G0MSdTMRf9SwS8dQfpEHYronRzhfGSv2Oei6hl0k4UPd7thq_6ZQEy7eaVtHfQfLtg7ogotUmVsHamsXmyrlHW0JIA7tNSLaQ4uY33wxs7_0PMWHuxo4HClxPvf_K5DBnCuVWSI5rwa_mON8b2pRXFNKsbuFvwAhRlw",
-    sizes: ["M", "L", "XL"],
-  },
-  {
-    brand: "Neo-Medina",
-    name: "Tactical Jacket",
-    price: "890 MAD",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCz7nWWSUSuOqGPVCuVuwlKBKqVI9MzzlYqDmk7fEUFxgZW3DQnQQLiDYCkGHKNAYn7lZfI50v_pgst3VYBw4n6vE8RV8xpsTMwiBMxw-q5yF7Mxtu1BnExoXQO9I2cre7Md8P9O8tHwuwYSQu0mcw9B7f3AC91GFplQ7MXl0ygnutiuCwxD0lYAkuov6t5bDQCyKNPfjlwpN-MzNzBY2eUT6TdROMEwwYVFscNV00De4HFxIYieesvFu1Ajs1f4FLBF0MkDeKItg",
-    sizes: ["S", "L"],
-  },
-  {
-    brand: "Original Drop",
-    name: "Volta Sneakers",
-    price: "1200 MAD",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAuT8hkhoeT1EZkhRkMWQK_NSyzfMydpxVg6zfmQj3XYXZTu9i10jPPSNqFlJM_lY3rS8ppWyXld0CJ82Aq5TyH6_eF06dAzNbs617HDrzpeb3DqyLpY_SlsBaKqbS4ECS7TWv8gLeGZpqKSKKK5t7iZm0U897J0nPJ2o1dHnGT9maP6XbZiibHSCXzINl4UJxoned2a5jc7ogjysOMGxvZVTp160H6MJpKu2xWIW0-rTqxnB29JQ1kmzt0MqQ6ueIDgZ3NKKJRmQ",
-    sizes: ["40", "42", "44"],
-  },
-  {
-    brand: "Casablanca City",
-    name: "Essential Pack",
-    price: "650 MAD",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuD4_rJthmolHaMi-cYnWY3RGWjSwmb709tFxb1PNSH9uguSUlK-xbQ5zB-goIrER19AR6VBybizdQ6x4h6ZA8UK2HWVeW8Ep3BCMmAK6p7Eh-uLChipFH-Gn9B6GG1Jyjnql3KlkMIOPsyH1yOdn25QyjsqoWN06Lv3UNJOaX1nE82SpVVpRb4eTfNPdyxqJXZvuW0hONH1hXd65s9ZFHOFLSZP4kTpsxHFC9it_r-k02bFspi9VokBggvFJDQcuJY6mW0AbwLOVQ",
-    sizes: ["S", "M", "XL"],
-  },
-  {
-    brand: "Original Drop",
-    name: "Iconic Leather",
-    price: "1500 MAD",
-    badge: { label: "Sold Out", tone: "error" },
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuD-6pNLxJ63BYDu-LRWOAPwS5VklXBz_BlPkcC2XK7ZGwrU9yAI16QgxcHfMXhr8uWPpE5_3SMbUwJsrW1PZ88jQP7ETa42C7cr_TT_KarA2tX6ePKoeYLOpwxCwiEJ0nEOJ2zBUJfVZ0YyyHpvMoKqArMWww1hwFiN1UFQ7MtvdjpEkpXhfYPlYRJ7Kasf5g3BV53E9BE6qU7V10ORpfPxnwhS-VYWQWKNhBa21rCi5gzkULp8Nua2MUlg02IIFx4s4arsoAfUMw",
-    sizes: ["M", "L"],
-    soldOut: true,
-  },
-];
+import {
+  boutiqueProducts,
+  PRODUCTS_PER_PAGE,
+  sortOptions,
+  type BoutiqueProduct,
+  type BoutiqueSortValue,
+} from "@/components/boutique-page-data";
 
 function badgeToneClasses(tone: NonNullable<BoutiqueProduct["badge"]>["tone"]) {
   if (tone === "tertiary") {
@@ -97,6 +35,24 @@ function badgeToneClasses(tone: NonNullable<BoutiqueProduct["badge"]>["tone"]) {
   }
 
   return "bg-[var(--primary-strong)] text-[var(--background)]";
+}
+
+function parsePrice(price: string) {
+  return Number(price.replace(/[^\d]/g, ""));
+}
+
+function sortProducts(products: BoutiqueProduct[], sortBy: BoutiqueSortValue) {
+  const sortedProducts = [...products];
+
+  if (sortBy === "price-asc") {
+    sortedProducts.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+  }
+
+  if (sortBy === "price-desc") {
+    sortedProducts.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
+  }
+
+  return sortedProducts;
 }
 
 function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
@@ -119,7 +75,7 @@ function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
         ) : null}
         <div className="absolute bottom-2 right-2 translate-y-12 transition-transform duration-300 group-hover:translate-y-0 sm:bottom-4 sm:right-4">
           <Link
-            href="/produit"
+            href={`/produit/${product.slug}`}
             className="inline-flex border-2 border-[var(--primary)] bg-[var(--surface)] p-2 text-[var(--primary)] transition-all hover:bg-[var(--primary-strong)] hover:text-[var(--background)] sm:p-3"
             aria-label={`Voir ${product.name}`}
           >
@@ -156,10 +112,6 @@ function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
             {product.price}
           </span>
         </div>
-        <div className="flex items-center gap-1.5 font-mono text-[8px] uppercase text-[var(--accent)] sm:gap-2 sm:text-[10px]">
-          <BanknoteArrowDown size={12} className="sm:h-[14px] sm:w-[14px]" />
-          <span>{product.soldOut ? "Bientot disponible" : "Paiement a la livraison"}</span>
-        </div>
         <div className="flex gap-1.5 pt-1.5 sm:gap-2 sm:pt-2">
           {product.sizes.map((size) => (
             <span
@@ -175,8 +127,155 @@ function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
   );
 }
 
+function BoutiqueHeader({
+  searchQuery,
+  onSearchChange,
+}: {
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+}) {
+  return (
+    <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 className="font-[var(--font-display)] text-3xl uppercase text-[var(--primary)] sm:text-4xl md:text-5xl">
+          Boutique
+        </h1>
+        <p className="mt-1.5 max-w-2xl text-xs text-[var(--muted)] sm:mt-2 sm:text-sm md:text-base">
+          La selection streetwear premium de Coin Original, inspiree de ton
+          design boutique.
+        </p>
+      </div>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="relative">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(event) => onSearchChange(event.target.value)}
+            placeholder="Rechercher..."
+            className="w-full border border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 pr-10 text-xs outline-none transition-all focus:border-[var(--primary-strong)] sm:w-56 sm:px-4 sm:py-3 sm:pr-11 sm:text-sm"
+          />
+          <Search
+            size={16}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] sm:h-[18px] sm:w-[18px]"
+          />
+        </div>
+        <Link
+          href={`/produit/${boutiqueProducts[0]?.slug ?? "speed-volt-runner"}`}
+          className="inline-flex items-center justify-center border border-[var(--border-soft)] px-3 py-2.5 font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--foreground)] transition-colors hover:border-[var(--primary-strong)] hover:text-[var(--primary)] sm:px-4 sm:py-3 sm:text-[10px]"
+        >
+          Voir un produit
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function BoutiqueToolbar({
+  shownCount,
+  totalCount,
+  sortBy,
+  onSortChange,
+}: {
+  shownCount: number;
+  totalCount: number;
+  sortBy: BoutiqueSortValue;
+  onSortChange: (value: BoutiqueSortValue) => void;
+}) {
+  return (
+    <div className="mb-5 flex flex-col gap-2 border-b border-[var(--border-soft)] pb-5 sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:pb-6">
+      <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--muted)] sm:text-[10px]">
+        Affichage de {shownCount} sur {totalCount} produits
+      </p>
+      <div className="flex items-center gap-2">
+        <span className="font-mono text-[9px] uppercase tracking-[0.16em] sm:text-[10px]">
+          Trier par:
+        </span>
+        <select
+          value={sortBy}
+          onChange={(event) => onSortChange(event.target.value as BoutiqueSortValue)}
+          className="cursor-pointer bg-transparent text-xs text-[var(--primary)] outline-none sm:text-sm"
+        >
+          {sortOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+}
+
+function EmptyResults({ searchQuery }: { searchQuery: string }) {
+  return (
+    <div className="border border-[var(--border-soft)] bg-[var(--surface)] px-5 py-10 text-center">
+      <p className="font-[var(--font-display)] text-2xl uppercase text-[var(--primary)]">
+        Aucun produit trouve
+      </p>
+      <p className="mt-3 text-sm text-[var(--muted)]">
+        Aucun resultat pour &quot;{searchQuery}&quot;. Essaie un autre mot-cle ou
+        change le tri.
+      </p>
+    </div>
+  );
+}
+
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) {
+    return null;
+  }
+
+  const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  return (
+    <nav className="mt-10 flex items-center justify-center gap-3 border-t border-[var(--border-soft)] pt-5 sm:mt-12 sm:gap-4 sm:pt-6">
+      <button
+        type="button"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="inline-flex h-9 w-9 items-center justify-center border border-[var(--border-soft)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-40 sm:h-10 sm:w-10"
+      >
+        <ChevronLeft size={16} className="sm:h-[18px] sm:w-[18px]" />
+      </button>
+      {pages.map((page) => (
+        <button
+          key={page}
+          type="button"
+          onClick={() => onPageChange(page)}
+          className={`h-9 w-9 border font-mono text-[9px] transition-colors sm:h-10 sm:w-10 sm:text-[10px] ${
+            currentPage === page
+              ? "border-[var(--primary)] bg-[var(--primary-strong)] text-[var(--background)]"
+              : "border-[var(--border-soft)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
+          }`}
+        >
+          {page}
+        </button>
+      ))}
+      <button
+        type="button"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="inline-flex h-9 w-9 items-center justify-center border border-[var(--border-soft)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-40 sm:h-10 sm:w-10"
+      >
+        <ChevronRight size={16} className="sm:h-[18px] sm:w-[18px]" />
+      </button>
+    </nav>
+  );
+}
+
 export function BoutiquePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<BoutiqueSortValue>("latest");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "auto";
@@ -185,6 +284,46 @@ export function BoutiquePage() {
       document.body.style.overflow = "auto";
     };
   }, [mobileMenuOpen]);
+
+  const filteredProducts = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return boutiqueProducts;
+    }
+
+    return boutiqueProducts.filter((product) =>
+      [product.brand, product.name, product.price, product.sizes.join(" ")]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedQuery),
+    );
+  }, [searchQuery]);
+
+  const sortedProducts = useMemo(
+    () => sortProducts(filteredProducts, sortBy),
+    [filteredProducts, sortBy],
+  );
+
+  const totalPages = Math.max(1, Math.ceil(sortedProducts.length / PRODUCTS_PER_PAGE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * PRODUCTS_PER_PAGE;
+  const visibleProducts = sortedProducts.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (value: BoutiqueSortValue) => {
+    setSortBy(value);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    const nextPage = Math.max(1, Math.min(page, totalPages));
+    setCurrentPage(nextPage);
+  };
 
   return (
     <div className="brand-shell brand-grid min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -202,78 +341,32 @@ export function BoutiquePage() {
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main className="min-h-screen max-w-[1200px] px-4 pb-24 pt-20 md:mx-auto md:px-8">
+      <main className="min-h-screen w-full px-3 pb-24 pt-20 md:px-5">
         <div className="py-6 sm:py-10">
-          <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="font-[var(--font-display)] text-3xl uppercase text-[var(--primary)] sm:text-4xl md:text-5xl">
-                Boutique
-              </h1>
-              <p className="mt-1.5 max-w-2xl text-xs text-[var(--muted)] sm:mt-2 sm:text-sm md:text-base">
-                La selection streetwear premium de Coin Original, inspiree de ton
-                design boutique.
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Rechercher..."
-                  className="w-full border border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 pr-10 text-xs outline-none transition-all focus:border-[var(--primary-strong)] sm:w-56 sm:px-4 sm:py-3 sm:pr-11 sm:text-sm"
-                />
-                <Search
-                  size={16}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] sm:h-[18px] sm:w-[18px]"
-                />
-              </div>
-              <Link
-                href="/produit"
-                className="inline-flex items-center justify-center border border-[var(--border-soft)] px-3 py-2.5 font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--foreground)] transition-colors hover:border-[var(--primary-strong)] hover:text-[var(--primary)] sm:px-4 sm:py-3 sm:text-[10px]"
-              >
-                Voir un produit
-              </Link>
-            </div>
-          </div>
+          <BoutiqueHeader searchQuery={searchQuery} onSearchChange={handleSearchChange} />
 
-          <div className="mb-5 flex flex-col gap-2 border-b border-[var(--border-soft)] pb-5 sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:pb-6">
-            <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--muted)] sm:text-[10px]">
-              Affichage de 6 sur 48 produits
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[9px] uppercase tracking-[0.16em] sm:text-[10px]">
-                Trier par:
-              </span>
-              <select className="cursor-pointer bg-transparent text-xs text-[var(--primary)] outline-none sm:text-sm">
-                <option>Nouveautes</option>
-                <option>Prix croissant</option>
-                <option>Prix decroissant</option>
-              </select>
+          <BoutiqueToolbar
+            shownCount={visibleProducts.length}
+            totalCount={sortedProducts.length}
+            sortBy={sortBy}
+            onSortChange={handleSortChange}
+          />
+
+          {visibleProducts.length > 0 ? (
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
+              {visibleProducts.map((product) => (
+                <BoutiqueCard key={product.name} product={product} />
+              ))}
             </div>
-          </div>
+          ) : (
+            <EmptyResults searchQuery={searchQuery} />
+          )}
 
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
-            {boutiqueProducts.map((product) => (
-              <BoutiqueCard key={product.name} product={product} />
-            ))}
-          </div>
-
-          <nav className="mt-10 flex items-center justify-center gap-3 border-t border-[var(--border-soft)] pt-5 sm:mt-12 sm:gap-4 sm:pt-6">
-            <button className="inline-flex h-9 w-9 items-center justify-center border border-[var(--border-soft)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] sm:h-10 sm:w-10">
-              <ChevronLeft size={16} className="sm:h-[18px] sm:w-[18px]" />
-            </button>
-            <button className="h-9 w-9 border border-[var(--primary)] bg-[var(--primary-strong)] font-mono text-[9px] text-[var(--background)] sm:h-10 sm:w-10 sm:text-[10px]">
-              1
-            </button>
-            <button className="h-9 w-9 border border-[var(--border-soft)] font-mono text-[9px] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] sm:h-10 sm:w-10 sm:text-[10px]">
-              2
-            </button>
-            <button className="h-9 w-9 border border-[var(--border-soft)] font-mono text-[9px] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] sm:h-10 sm:w-10 sm:text-[10px]">
-              3
-            </button>
-            <button className="inline-flex h-9 w-9 items-center justify-center border border-[var(--border-soft)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] sm:h-10 sm:w-10">
-              <ChevronRight size={16} className="sm:h-[18px] sm:w-[18px]" />
-            </button>
-          </nav>
+          <Pagination
+            currentPage={safeCurrentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       </main>
 

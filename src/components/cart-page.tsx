@@ -184,7 +184,7 @@ export function CartPage() {
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main className="mx-auto min-h-screen w-full max-w-[1200px] px-4 pb-24 pt-20 md:px-8 md:pt-28">
+      <main className="min-h-screen w-full px-3 pb-24 pt-20 md:px-5 md:pt-28">
         <div className="mb-6">
           <h1 className="font-[var(--font-display)] text-3xl uppercase tracking-tight text-[var(--primary)] md:text-[clamp(3rem,6vw,4.5rem)]">
             Votre Panier

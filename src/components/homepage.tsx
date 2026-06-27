@@ -35,7 +35,9 @@ export function Homepage() {
         mobileMenuOpen={mobileMenuOpen}
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
-      <MobileTopBar />
+      <div className="md:hidden">
+        <MobileTopBar />
+      </div>
       <MobileDrawer
         mobileMenuOpen={mobileMenuOpen}
         onCloseMobileMenu={closeMobileMenu}
@@ -45,7 +47,7 @@ export function Homepage() {
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main id="top" className="pt-18 pb-24 md:pt-20 md:pb-0">
+      <main id="top" className="pt-18 pb-24 md:pt-20 md:pb-40">
         <HeroSection />
         <PartnersSection />
         <ShopSection />

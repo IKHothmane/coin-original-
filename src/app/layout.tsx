@@ -36,6 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
+      data-theme="light"
       suppressHydrationWarning
       className={`${anton.variable} ${archivoNarrow.variable} ${hankenGrotesk.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
