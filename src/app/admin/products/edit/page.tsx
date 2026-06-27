@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AdminEditProductPage } from "@/components/admin-edit-product-page";
@@ -9,7 +9,17 @@ import {
   type AdminProductRecord,
 } from "@/lib/supabase/products";
 
-export default function AdminEditProductStaticPage() {
+function AdminEditProductLoading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#131313] px-6 text-center text-[#e5e2e1]">
+      <p className="font-mono text-xs uppercase tracking-widest text-[#e6beb2]">
+        Chargement du produit...
+      </p>
+    </div>
+  );
+}
+
+function AdminEditProductStaticContent() {
   const searchParams = useSearchParams();
   const slug = searchParams.get("slug");
   const [product, setProduct] = useState<AdminProductRecord | null>(null);
@@ -42,13 +52,7 @@ export default function AdminEditProductStaticPage() {
   }, [slug]);
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#131313] px-6 text-center text-[#e5e2e1]">
-        <p className="font-mono text-xs uppercase tracking-widest text-[#e6beb2]">
-          Chargement du produit...
-        </p>
-      </div>
-    );
+    return <AdminEditProductLoading />;
   }
 
   if (!product) {
@@ -66,4 +70,12 @@ export default function AdminEditProductStaticPage() {
   }
 
   return <AdminEditProductPage key={product.slug} product={product} />;
+}
+
+export default function AdminEditProductStaticPage() {
+  return (
+    <Suspense fallback={<AdminEditProductLoading />}>
+      <AdminEditProductStaticContent />
+    </Suspense>
+  );
 }
