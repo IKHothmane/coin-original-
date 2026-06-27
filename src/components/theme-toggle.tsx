@@ -11,18 +11,15 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") {
-      return "light";
-    }
-
-    const savedTheme = window.localStorage.getItem(STORAGE_KEY) as Theme | null;
-    return savedTheme ?? "light";
-  });
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+    const savedTheme = window.localStorage.getItem(STORAGE_KEY) as Theme | null;
+    const nextTheme = savedTheme ?? "light";
+
+    setTheme(nextTheme);
+    applyTheme(nextTheme);
+  }, []);
 
   const toggleTheme = () => {
     const nextTheme = theme === "dark" ? "light" : "dark";

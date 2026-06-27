@@ -566,7 +566,7 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="border-t border-[var(--border-soft)] px-3 py-4 text-center md:px-5">
+      <div className="site-footer__legal border-t border-[var(--border-soft)] px-3 pt-4 text-center md:px-5">
         <p className="meta-label text-xs text-[var(--muted)]">
           2024 Coin Original. Paiement a la livraison au Maroc.
         </p>
