@@ -26,6 +26,11 @@ const jetBrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Urban Maghreb",
   description: "Boutique streetwear premium avec themes dark et light.",
+  icons: {
+    icon: "/logo%20ligh.jpg",
+    shortcut: "/logo%20ligh.jpg",
+    apple: "/logo%20ligh.jpg",
+  },
 };
 
 export default function RootLayout({

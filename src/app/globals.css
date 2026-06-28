@@ -67,6 +67,18 @@ body {
   font-family: var(--font-body), sans-serif;
 }
 
+.theme-logo--light {
+  display: none;
+}
+
+html[data-theme="light"] .theme-logo--dark {
+  display: none;
+}
+
+html[data-theme="light"] .theme-logo--light {
+  display: block;
+}
+
 a {
   color: inherit;
   text-decoration: none;

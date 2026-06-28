@@ -47,7 +47,7 @@ export function Homepage() {
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main id="top" className="pt-18 pb-24 md:pt-20 md:pb-40">
+      <main id="top" className="pt-18 pb-28 md:pt-20 md:pb-0">
         <HeroSection />
         <PartnersSection />
         <ShopSection />

@@ -30,9 +30,7 @@ function BrandLogo({
 }) {
   return (
     <Link href="/" className="flex items-center gap-3" aria-label="Coin Original">
-      <Image
-        src="/logo.png"
-        alt="Logo Coin Original"
+      <ThemeLogo
         width={imageSize}
         height={imageSize}
         className="border border-[var(--border-soft)] object-cover"
@@ -40,6 +38,41 @@ function BrandLogo({
       />
       <span className={textClassName}>Coin Original</span>
     </Link>
+  );
+}
+
+function ThemeLogo({
+  width,
+  height,
+  className,
+  priority = false,
+}: {
+  width: number;
+  height: number;
+  className: string;
+  priority?: boolean;
+}) {
+  return (
+    <>
+      <Image
+        src="/logo.jpg"
+        alt=""
+        aria-hidden="true"
+        width={width}
+        height={height}
+        className={`theme-logo theme-logo--dark ${className}`}
+        priority={priority}
+      />
+      <Image
+        src="/logo%20ligh.jpg"
+        alt=""
+        aria-hidden="true"
+        width={width}
+        height={height}
+        className={`theme-logo theme-logo--light ${className}`}
+        priority={priority}
+      />
+    </>
   );
 }
 
@@ -343,12 +376,14 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
         </div>
 
         <div className="flex flex-1 flex-col p-2 sm:p-4">
-          <h3 className="font-[var(--font-display)] text-base uppercase leading-tight sm:text-2xl">
-            {product.name}
-          </h3>
-          <p className="mt-1 text-[11px] leading-4 text-[var(--muted)] sm:text-sm">
-            {product.description}
-          </p>
+          <div className="flex-1">
+            <h3 className="font-[var(--font-display)] text-base uppercase leading-tight sm:text-2xl">
+              {product.name}
+            </h3>
+            <p className="mt-1 text-[11px] leading-4 text-[var(--muted)] sm:text-sm">
+              {product.description}
+            </p>
+          </div>
           <span className="impact-button impact-button--secondary mt-3 !h-9 w-full !px-2 !py-2 !text-center !text-xs sm:mt-6 sm:!h-11 sm:!px-4 sm:!py-3 sm:!text-base">
             Ajouter Au Panier
           </span>
@@ -464,7 +499,7 @@ export function CategoriesSection() {
   return (
     <section
       id="categories"
-      className="w-full px-3 py-12 md:px-5 md:py-16"
+      className="w-full px-3 pt-12 pb-0 md:px-5 md:pt-16 md:pb-0"
     >
       <h2 className="mb-6 font-[var(--font-display)] text-2xl uppercase leading-none text-[var(--foreground)] sm:mb-8 sm:text-3xl">
         Explorer Les Categories
@@ -515,9 +550,7 @@ export function SiteFooter() {
           <div className="site-footer__content grid gap-6 md:grid-cols-[1.1fr_0.9fr_1fr] md:gap-8">
             <div className="site-footer__block">
               <a href="#top" className="inline-flex items-center gap-4" aria-label="Retour en haut">
-                <Image
-                  src="/logo.png"
-                  alt="Logo Coin Original"
+                <ThemeLogo
                   width={68}
                   height={68}
                   className="h-16 w-16 rounded-full border border-[#d5cec3] bg-white/80 object-cover"
@@ -575,7 +608,7 @@ export function SiteFooter() {
                     className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-[#3e3429] outline-none placeholder:text-[#8c8378]"
                   />
                   <button className="bg-[var(--primary-strong)] px-5 py-3 font-[var(--font-display)] uppercase text-[var(--background)]">
-                    S'inscrire
+                    S&apos;inscrire
                   </button>
                 </div>
               </div>
