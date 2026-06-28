@@ -498,78 +498,91 @@ export function CategoriesSection() {
 
 export function SiteFooter() {
   return (
-    <footer
-      id="footer"
-      className="border-t border-[var(--border-soft)] bg-[var(--surface-container-lowest,var(--surface))] pt-12"
-    >
-      <div className="grid w-full grid-cols-1 gap-8 px-3 pb-8 md:grid-cols-3 md:px-5">
-        <div>
-          <a href="#top" className="inline-flex items-center gap-4" aria-label="Retour en haut">
-            <Image
-              src="/logo.png"
-              alt="Logo Coin Original"
-              width={72}
-              height={72}
-              className="h-18 w-18 border border-[var(--border-soft)] object-cover"
-            />
-            <span className="font-[var(--font-display)] text-3xl uppercase text-[var(--primary)]">
-              Coin Original
-            </span>
-          </a>
-          <p className="mt-4 max-w-xs text-sm leading-6 text-[var(--muted)]">
-            La premiere boutique de chaussures et streetwear premium au Maroc avec
-            paiement a la livraison garanti.
-          </p>
+    <footer id="footer" className="site-footer">
+      <div className="site-footer__canvas">
+        <div className="site-footer__art" aria-hidden="true">
+          <Image
+            src="/footer.png"
+            alt=""
+            width={752}
+            height={324}
+            sizes="100vw"
+            className="h-auto w-full"
+          />
         </div>
 
-        <div className="grid grid-cols-2 gap-8">
-          <div>
-            <h4 className="font-[var(--font-display)] text-xl uppercase">Boutique</h4>
-            <ul className="mt-4 space-y-2 text-sm text-[var(--muted)]">
-              <li>Chaussures</li>
-              <li>Hoodies</li>
-              <li>T-Shirts</li>
-              <li>Nouveaux Drops</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-[var(--font-display)] text-xl uppercase">Mentions</h4>
-            <ul className="mt-4 space-y-2 text-sm text-[var(--muted)]">
-              <li>Mentions legales</li>
-              <li>Politique De Confidentialite</li>
-              <li>Infos Livraison</li>
-            </ul>
-          </div>
-        </div>
-
-        <div>
-          <h4 className="font-[var(--font-display)] text-xl uppercase">Contact</h4>
-          <div className="mt-4 space-y-3 text-sm text-[var(--muted)]">
-            <p>Support WhatsApp</p>
-            <p>Instagram</p>
-          </div>
-          <div className="mt-6 border border-[var(--border-soft)]">
-            <div className="meta-label border-b border-[var(--border-soft)] px-4 py-3 text-xs text-[var(--muted)]">
-              Abonne-toi Aux Mises A Jour
+        <div className="site-footer__overlay px-3 md:px-5">
+          <div className="site-footer__content grid gap-6 md:grid-cols-[1.1fr_0.9fr_1fr] md:gap-8">
+            <div className="site-footer__block">
+              <a href="#top" className="inline-flex items-center gap-4" aria-label="Retour en haut">
+                <Image
+                  src="/logo.png"
+                  alt="Logo Coin Original"
+                  width={68}
+                  height={68}
+                  className="h-16 w-16 rounded-full border border-[#d5cec3] bg-white/80 object-cover"
+                />
+                <span className="font-[var(--font-display)] text-3xl uppercase text-[#9b4c1f]">
+                  Coin Original
+                </span>
+              </a>
+              <p className="mt-4 max-w-sm text-sm leading-6 text-[#5f5549]">
+                La premiere boutique de chaussures et de streetwear premium au Maroc,
+                avec paiement a la livraison garanti.
+              </p>
             </div>
-            <div className="flex">
-              <input
-                type="email"
-                placeholder="Ton email"
-                className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm outline-none"
-              />
-              <button className="bg-[var(--primary-strong)] px-5 py-3 font-[var(--font-display)] uppercase text-[var(--background)]">
-                Ok
-              </button>
+
+            <div className="site-footer__block grid grid-cols-2 gap-5 text-[#564d42]">
+              <div className="min-w-0">
+                <h4 className="font-[var(--font-display)] text-xl uppercase text-[#3e3429]">
+                  Boutique
+                </h4>
+                <ul className="mt-4 space-y-2 text-sm">
+                  <li>Chaussures</li>
+                  <li>Sweats a capuche</li>
+                  <li>T-shirts</li>
+                  <li>Nouveautes</li>
+                </ul>
+              </div>
+              <div className="min-w-0">
+                <h4 className="font-[var(--font-display)] text-xl uppercase text-[#3e3429]">
+                  Mentions
+                </h4>
+                <ul className="mt-4 space-y-2 text-sm">
+                  <li>Mentions legales</li>
+                  <li>Politique de confidentialite</li>
+                  <li>Infos livraison</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="site-footer__block">
+              <h4 className="font-[var(--font-display)] text-xl uppercase text-[#3e3429]">
+                Contact
+              </h4>
+              <div className="mt-4 space-y-3 text-sm text-[#564d42]">
+                <p>Support sur WhatsApp</p>
+                <p>Instagram</p>
+              </div>
+              <div className="mt-6 overflow-hidden rounded-[1.1rem] border border-[#d8d0c6] bg-white/55 shadow-[0_12px_30px_rgba(60,45,30,0.08)] backdrop-blur-sm">
+                <div className="meta-label border-b border-[#d8d0c6] px-4 py-3 text-xs text-[#73695d]">
+                  Abonne-toi aux mises a jour
+                </div>
+                <div className="flex">
+                  <input
+                    type="email"
+                    placeholder="Adresse e-mail"
+                    className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-[#3e3429] outline-none placeholder:text-[#8c8378]"
+                  />
+                  <button className="bg-[var(--primary-strong)] px-5 py-3 font-[var(--font-display)] uppercase text-[var(--background)]">
+                    S'inscrire
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="site-footer__legal border-t border-[var(--border-soft)] px-3 pt-4 text-center md:px-5">
-        <p className="meta-label text-xs text-[var(--muted)]">
-          2024 Coin Original. Paiement a la livraison au Maroc.
-        </p>
+        </div>
       </div>
     </footer>
   );
