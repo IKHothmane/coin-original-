@@ -102,25 +102,25 @@ export function MobileDrawer({
   return (
     <div
       id="mobile-menu"
-      className="fixed inset-0 z-[60] bg-black/45 backdrop-blur-[2px]"
+      className="fixed inset-0 z-[160] bg-black/45 backdrop-blur-[2px]"
       onClick={onCloseMobileMenu}
     >
       <aside
-        className="ml-auto flex h-full w-[72%] max-w-[290px] flex-col border-l border-[var(--border-soft)] bg-[var(--surface)] shadow-[0_0_40px_rgba(0,0,0,0.35)] md:w-[360px] md:max-w-[360px]"
+        className="ml-auto flex h-full w-[58%] max-w-[232px] flex-col border-l border-[var(--border-soft)] bg-[var(--surface)] shadow-[0_0_40px_rgba(0,0,0,0.35)] md:w-[288px] md:max-w-[288px]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex h-20 items-center justify-between border-b border-[var(--border-soft)] px-5">
+        <div className="flex h-16 items-center justify-between border-b border-[var(--border-soft)] px-4">
           <div className="flex flex-col">
-            <span className="font-[var(--font-display)] text-3xl uppercase text-[var(--primary-strong)]">
+            <span className="font-[var(--font-display)] text-2xl uppercase text-[var(--primary-strong)]">
               Menu
             </span>
-            <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
+            <span className="text-[8px] uppercase tracking-[0.16em] text-[var(--muted)]">
               Navigation rapide
             </span>
           </div>
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border-soft)] text-3xl text-[var(--foreground)]"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-soft)] text-2xl text-[var(--foreground)]"
             aria-label="Fermer le menu"
             onClick={onCloseMobileMenu}
           >
@@ -128,17 +128,17 @@ export function MobileDrawer({
           </button>
         </div>
 
-        <div className="flex flex-1 flex-col gap-5 px-5 py-6">
-          <div className="flex items-center gap-3 border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3">
+        <div className="flex flex-1 flex-col gap-4 px-4 py-5">
+          <div className="flex items-center gap-2.5 border border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5">
             <span className="text-[var(--muted)]">⌕</span>
             <input
-              className="w-full bg-transparent text-sm outline-none"
+              className="w-full bg-transparent text-xs outline-none"
               placeholder="Chercher..."
               type="text"
             />
           </div>
 
-          <nav className="flex flex-col gap-3">
+          <nav className="flex flex-col gap-2.5">
             <DrawerLink href="/boutique" active onClick={onCloseMobileMenu}>
               Boutique
             </DrawerLink>
@@ -153,8 +153,8 @@ export function MobileDrawer({
             </DrawerLink>
           </nav>
 
-          <div className="mt-auto rounded-[1.2rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4">
-            <p className="mb-3 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
+          <div className="mt-auto rounded-[1rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-3">
+            <p className="mb-2.5 text-[8px] uppercase tracking-[0.14em] text-[var(--muted)]">
               Theme
             </p>
             <ThemeToggle />
@@ -178,7 +178,7 @@ function DrawerLink({
 }) {
   return (
     <Link
-      className={`rounded-[1.1rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-4 font-[var(--font-display)] text-2xl uppercase transition-colors hover:text-[var(--primary)] ${
+      className={`rounded-[0.9rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-3 font-[var(--font-display)] text-xl uppercase transition-colors hover:text-[var(--primary)] ${
         active ? "text-[var(--primary)]" : "text-[var(--foreground)]"
       }`}
       href={href}
