@@ -1,13 +1,15 @@
+import { catalogProducts, featuredProductSlugs, type ProductBadgeTone } from "@/components/catalog-data";
+
 export type FeaturedProduct = {
   slug: string;
   name: string;
   description: string;
   price: string;
-  badge: string;
+  compareAtPrice?: string;
+  badge?: string;
+  badgeTone?: ProductBadgeTone;
   image: string;
 };
-
-import { catalogProducts, featuredProductSlugs } from "@/components/catalog-data";
 
 export type TrustItem = {
   title: string;
@@ -32,7 +34,9 @@ export const featuredProducts: FeaturedProduct[] = featuredProductSlugs
     name: product.name,
     description: product.description,
     price: product.price,
-    badge: product.badge?.label ?? "",
+    compareAtPrice: product.compareAtPrice,
+    badge: product.badge?.label,
+    badgeTone: product.badge?.tone,
     image: product.image,
   }));
 

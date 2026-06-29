@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { catalogProducts, getProductBySlug } from "@/components/catalog-data";
 import { ProductPage } from "@/components/product-page";
 
@@ -16,11 +15,7 @@ export function generateStaticParams() {
 
 export default async function ProduitSlugPage({ params }: ProductRouteProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = getProductBySlug(slug) ?? undefined;
 
-  if (!product) {
-    notFound();
-  }
-
-  return <ProductPage key={product.slug} product={product} />;
+  return <ProductPage key={slug} slug={slug} product={product} />;
 }

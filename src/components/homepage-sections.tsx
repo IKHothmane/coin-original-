@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { House, Menu, ShoppingBag, Store } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,6 +15,7 @@ import {
   type FeaturedProduct,
   type TrustItem,
 } from "@/components/homepage-data";
+import { fetchFeaturedProductsWithFallback } from "@/lib/firebase/storefront";
 
 type MenuActionProps = {
   mobileMenuOpen: boolean;
@@ -354,6 +356,13 @@ export function PartnersSection() {
 }
 
 function ProductCard({ product }: { product: FeaturedProduct }) {
+  const badgeClassName =
+    product.badgeTone === "tertiary"
+      ? "bg-red-600 text-white"
+      : product.badgeTone === "error"
+        ? "bg-[#7b7b7b] text-white"
+        : "bg-[#1f8f4d] text-white";
+
   return (
     <article className="surface-panel flex h-full flex-col overflow-hidden">
       <Link href={`/produit/${product.slug}`} className="group flex h-full flex-col">
@@ -365,11 +374,20 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
             sizes="(max-width: 640px) 50vw, 25vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute bottom-0 left-0 bg-[var(--primary-strong)] px-2 py-1 font-[var(--font-display)] text-sm uppercase text-[var(--background)] sm:px-3 sm:text-lg">
-            {product.price}
+          <div className="absolute bottom-0 left-0 flex flex-col bg-[var(--primary-strong)] px-2 py-1 text-[var(--background)] sm:px-3">
+            {product.compareAtPrice ? (
+              <span className="font-mono text-[10px] uppercase leading-none text-white/70 line-through sm:text-xs">
+                {product.compareAtPrice}
+              </span>
+            ) : null}
+            <span className="font-[var(--font-display)] text-sm uppercase leading-none sm:text-lg">
+              {product.price}
+            </span>
           </div>
           {product.badge ? (
-            <div className="absolute right-2 top-2 bg-[var(--accent)] px-2 py-1 font-mono text-[10px] uppercase text-[var(--background)] sm:right-4 sm:top-4 sm:text-xs">
+            <div
+              className={`absolute right-2 top-2 px-2 py-1 font-mono text-[10px] uppercase sm:right-4 sm:top-4 sm:text-xs ${badgeClassName}`}
+            >
               {product.badge}
             </div>
           ) : null}
@@ -394,6 +412,26 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
 }
 
 export function ShopSection() {
+  const [products, setProducts] = useState<FeaturedProduct[]>(featuredProducts);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      const nextProducts = await fetchFeaturedProductsWithFallback();
+
+      if (isMounted) {
+        setProducts(nextProducts);
+      }
+    };
+
+    void loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section id="shop" className="w-full px-3 py-10 md:px-5 md:py-16">
       <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:mb-8 sm:flex-row sm:items-end sm:gap-4">
@@ -414,7 +452,7 @@ export function ShopSection() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {featuredProducts.map((product) => (
+        {products.map((product) => (
           <ProductCard key={product.name} product={product} />
         ))}
       </div>

@@ -51,6 +51,7 @@ export type ProductMutationInput = {
     label: string;
     tone: ProductBadgeTone;
   };
+  soldOut?: boolean;
   authenticityLabel?: string;
   deliveryLabel?: string;
   deliveryRegion?: string;
@@ -208,7 +209,7 @@ function mapInputToSupabasePayload(input: ProductMutationInput) {
     gallery: input.gallery,
     sizes,
     stock_by_size: input.stockBySize,
-    sold_out: totalStock <= 0,
+    sold_out: input.soldOut ?? totalStock <= 0,
     badge_label: input.badge?.label ?? null,
     badge_tone: input.badge?.tone ?? null,
     authenticity_label: input.authenticityLabel ?? null,

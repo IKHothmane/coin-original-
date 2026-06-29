@@ -23,9 +23,9 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   fetchAdminProducts,
-  isSupabaseConfigured,
+  isFirebaseConfigured,
   type AdminProductRecord,
-} from "@/lib/supabase/products";
+} from "@/lib/firebase/products";
 
 type NavItem = {
   href: string;
@@ -258,12 +258,12 @@ export default function AdminProductsPage() {
               </h2>
               <p className="max-w-xl text-base text-[#e6beb2] lg:text-lg">
                 Interface d&apos;administration pour la mise a jour de l&apos;inventaire streetwear
-                avec Supabase.
+                avec Firebase.
               </p>
               <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-[#ffb59e]">
-                {isSupabaseConfigured()
-                  ? "Source: Supabase products"
-                  : "Source: Supabase non configure"}
+                {isFirebaseConfigured()
+                  ? "Source: Firebase products"
+                  : "Source: Firebase non configure"}
               </p>
             </div>
             <Link
@@ -339,9 +339,9 @@ export default function AdminProductsPage() {
                   {!isLoading && filteredProducts.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="p-10 text-center font-mono text-xs uppercase text-[#e6beb2]">
-                        {isSupabaseConfigured()
-                          ? "Aucun produit dans Supabase"
-                          : "Configure Supabase pour afficher les produits"}
+                        {isFirebaseConfigured()
+                          ? "Aucun produit dans Firebase"
+                          : "Configure Firebase pour afficher les produits"}
                       </td>
                     </tr>
                   ) : null}

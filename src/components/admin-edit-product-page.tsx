@@ -23,8 +23,9 @@ import Link from "next/link";
 import {
   type AdminProductRecord,
   updateAdminProduct,
-  uploadProductImages,
-} from "@/lib/supabase/products";
+} from "@/lib/firebase/products";
+import type { ProductBadgeTone } from "@/components/catalog-data";
+import { isCloudinaryConfigured, uploadImagesToCloudinary } from "@/lib/cloudinary";
 
 type NavItem = {
   href: string;
@@ -57,13 +58,75 @@ const mobileDockItems: NavItem[] = [
   { href: "/admin/settings", label: "Reglages", icon: Settings, active: false },
 ];
 
-const clothingCategories = ["Chaussures", "Hoodies", "Hauts", "Accessoires"];
+const editableCategories = ["Chaussures", "Vetements", "Accessoires"];
+const productStatuses = ["Aucun", "Nouveaute", "Solde", "Rupture"] as const;
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+    reader.onerror = () => reject(new Error(`Impossible de lire le fichier ${file.name}.`));
+    reader.readAsDataURL(file);
+  });
+}
+const shoeSizeLabels = ["38", "39", "40", "41", "42", "43", "44", "45"];
+const clothingSizeLabels = ["XS", "S", "M", "L", "XL", "XXL"];
+const accessorySizeLabels = ["Unique"];
+
+function normalizeCategory(category: string) {
+  if (category === "Chaussures" || category === "Accessoires") {
+    return category;
+  }
+
+  return "Vetements";
+}
+
+function getSizeLabelsByCategory(category: string) {
+  if (category === "Chaussures") {
+    return shoeSizeLabels;
+  }
+
+  if (category === "Accessoires") {
+    return accessorySizeLabels;
+  }
+
+  return clothingSizeLabels;
+}
+
+function getBadgeConfig(status: string): { label: string; tone: ProductBadgeTone; soldOut?: boolean } | undefined {
+  if (status === "Nouveaute") {
+    return { label: "Nouveaute", tone: "primary" };
+  }
+
+  if (status === "Solde") {
+    return { label: "Solde", tone: "tertiary" };
+  }
+
+  if (status === "Rupture") {
+    return { label: "Rupture", tone: "error", soldOut: true };
+  }
+
+  return undefined;
+}
+
+function getInitialStatus(product: AdminProductRecord) {
+  if (product.soldOut || product.badge?.tone === "error") {
+    return "Rupture";
+  }
+
+  if (product.badge?.tone === "tertiary") {
+    return "Solde";
+  }
+
+  if (product.badge?.tone === "primary") {
+    return "Nouveaute";
+  }
+
+  return "Aucun";
+}
 
 function createInitialSizes(product: AdminProductRecord): SizeInventory[] {
-  const sizePool =
-    product.category === "Chaussures"
-      ? ["40", "41", "42", "43", "44", "45"]
-      : ["S", "M", "L", "XL"];
+  const sizePool = getSizeLabelsByCategory(normalizeCategory(product.category));
 
   return sizePool.map((label, index) => ({
     label,
@@ -97,10 +160,10 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [productName, setProductName] = useState(product.name);
   const [price, setPrice] = useState(String(product.priceValue));
+  const [compareAtPrice, setCompareAtPrice] = useState(String(product.compareAtPriceValue ?? ""));
+  const [status, setStatus] = useState<string>(getInitialStatus(product));
   const [description, setDescription] = useState(product.description);
-  const [selectedCategory, setSelectedCategory] = useState(
-    product.category === "Vetements" ? "Hoodies" : product.category,
-  );
+  const [selectedCategory, setSelectedCategory] = useState(normalizeCategory(product.category));
   const [sizeInventory, setSizeInventory] = useState<SizeInventory[]>(() => createInitialSizes(product));
   const [saveMessage, setSaveMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -132,14 +195,9 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
       return;
     }
 
-    const nextPreview = URL.createObjectURL(file);
     setSelectedImageFile(file);
-    setPreviewImage((current) => {
-      if (current.startsWith("blob:")) {
-        URL.revokeObjectURL(current);
-      }
-
-      return nextPreview;
+    void readFileAsDataUrl(file).then((nextPreview) => {
+      setPreviewImage(nextPreview);
     });
   };
 
@@ -152,14 +210,9 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
       return;
     }
 
-    const nextPreview = URL.createObjectURL(file);
     setSelectedImageFile(file);
-    setPreviewImage((current) => {
-      if (current.startsWith("blob:")) {
-        URL.revokeObjectURL(current);
-      }
-
-      return nextPreview;
+    void readFileAsDataUrl(file).then((nextPreview) => {
+      setPreviewImage(nextPreview);
     });
   };
 
@@ -181,6 +234,23 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
     );
   };
 
+  const handleCategoryChange = (nextCategory: string) => {
+    setSelectedCategory(nextCategory);
+    setSizeInventory((current) => {
+      const nextLabels = getSizeLabelsByCategory(nextCategory);
+
+      return nextLabels.map((label) => {
+        const existingSize = current.find((size) => size.label === label);
+
+        return {
+          label,
+          active: existingSize?.active ?? false,
+          quantity: existingSize?.quantity ?? 0,
+        };
+      });
+    });
+  };
+
   const handleSave = async () => {
     if (!productName.trim() || !price) {
       setSaveMessage("Ajoute au minimum un nom et un prix avant d'enregistrer.");
@@ -189,28 +259,31 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
 
     setIsSaving(true);
     let nextImage = previewImage;
-    let nextGallery = [...product.gallery];
+    const shouldUploadToCloudinary = Boolean(selectedImageFile) && isCloudinaryConfigured();
 
-    if (selectedImageFile) {
-      const uploadResult = await uploadProductImages([selectedImageFile], product.slug);
+    if (selectedImageFile && shouldUploadToCloudinary) {
+      const uploadResult = await uploadImagesToCloudinary([selectedImageFile], product.slug);
 
-      if (uploadResult.error || !uploadResult.data) {
-        setSaveMessage(uploadResult.error ?? "Impossible d'envoyer la nouvelle image.");
+      if (uploadResult.error || !uploadResult.data?.[0]) {
+        setSaveMessage(uploadResult.error ?? "Impossible d'envoyer l'image vers Cloudinary.");
         setIsSaving(false);
         return;
       }
 
       nextImage = uploadResult.data[0];
-      nextGallery = [
-        { src: nextImage, alt: `${productName.trim()} vue principale` },
-        ...product.gallery.slice(1),
-      ];
     }
+
+    const nextGallery = [
+      { src: nextImage, alt: `${productName.trim()} vue principale` },
+      ...product.gallery.slice(1),
+    ];
 
     const stockBySize = sizeInventory.reduce<Record<string, number>>((accumulator, size) => {
       accumulator[size.label] = size.active ? size.quantity : 0;
       return accumulator;
     }, {});
+
+    const badgeConfig = getBadgeConfig(status);
 
     const result = await updateAdminProduct(product.slug, {
       slug: product.slug,
@@ -218,12 +291,14 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
       category: selectedCategory,
       name: productName.trim(),
       priceValue: Number(price),
-      compareAtPriceValue: product.compareAtPriceValue,
+      compareAtPriceValue:
+        status === "Solde" && compareAtPrice ? Number(compareAtPrice) : undefined,
       description: description.trim(),
       image: nextImage,
       gallery: nextGallery,
       stockBySize,
-      badge: product.badge,
+      badge: badgeConfig ? { label: badgeConfig.label, tone: badgeConfig.tone } : undefined,
+      soldOut: badgeConfig?.soldOut,
       authenticityLabel: product.authenticityLabel,
       deliveryLabel: product.deliveryLabel,
       deliveryRegion: product.deliveryRegion,
@@ -235,7 +310,11 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
       return;
     }
 
-    setSaveMessage(`Le produit ${productName.trim()} a ete mis a jour dans Supabase.`);
+    setSaveMessage(
+      shouldUploadToCloudinary
+        ? `Le produit ${productName.trim()} a ete mis a jour dans Firebase avec image Cloudinary.`
+        : `Le produit ${productName.trim()} a ete mis a jour dans Firebase.`,
+    );
     setIsSaving(false);
   };
 
@@ -386,6 +465,33 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
                 </div>
               </button>
 
+              <div className="grid grid-cols-4 gap-4">
+                {Array.from({ length: 4 }).map((_, index) => {
+                  const galleryItem = product.gallery[index + 1];
+
+                  return (
+                    <div
+                      key={index}
+                      className="relative aspect-square overflow-hidden border-2 border-dashed border-[#353534] bg-[#1A1A1A]"
+                    >
+                      {galleryItem ? (
+                        <Image
+                          src={galleryItem.src}
+                          alt={galleryItem.alt}
+                          fill
+                          sizes="120px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-[#e6beb2]">
+                          <ImagePlus size={22} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
               <div className="border-2 border-[#ffb59e] bg-[#1A1A1A] p-6">
                 <div className="mb-2 flex items-center gap-3 text-[#ffb59e]">
                   <Verified size={18} />
@@ -394,6 +500,9 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
                 <p className="text-sm uppercase leading-tight text-[#e6beb2]">
                   Ce produit sera automatiquement marque comme disponible en paiement a la
                   livraison pour tout le Maroc.
+                </p>
+                <p className="mt-2 font-mono text-[10px] uppercase text-[#ffba20]">
+                  Images sur Cloudinary si configure, sinon sauvegarde directe temporaire.
                 </p>
               </div>
             </div>
@@ -412,7 +521,7 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                   <div>
                     <label className="font-mono text-[10px] uppercase tracking-tight text-[#e6beb2]">
                       Prix (MAD)
@@ -428,6 +537,38 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
                         DH
                       </span>
                     </div>
+                  </div>
+                  <div>
+                    <label className="font-mono text-[10px] uppercase tracking-tight text-[#e6beb2]">
+                      Prix Avant Solde (MAD)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={compareAtPrice}
+                        onChange={(event) => setCompareAtPrice(event.target.value)}
+                        className="w-full border-b-2 border-[#353534] bg-transparent py-3 pr-10 font-[var(--font-display)] text-2xl text-[#e5e2e1] outline-none transition-all focus:border-[#ff571a] sm:text-3xl"
+                      />
+                      <span className="absolute bottom-3 right-0 font-[var(--font-display)] text-2xl text-[#ffb59e]">
+                        DH
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="font-mono text-[10px] uppercase tracking-tight text-[#e6beb2]">
+                      Statut Produit
+                    </label>
+                    <select
+                      value={status}
+                      onChange={(event) => setStatus(event.target.value)}
+                      className="w-full border-b-2 border-[#353534] bg-transparent py-3 font-[var(--font-display)] text-xl text-[#e5e2e1] outline-none transition-all focus:border-[#ff571a] sm:text-2xl"
+                    >
+                      {productStatuses.map((productStatus) => (
+                        <option key={productStatus} value={productStatus} className="bg-[#201f1f]">
+                          {productStatus}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
@@ -450,11 +591,11 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
                     Categorie
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {clothingCategories.map((category) => (
+                    {editableCategories.map((category) => (
                       <button
                         key={category}
                         type="button"
-                        onClick={() => setSelectedCategory(category)}
+                        onClick={() => handleCategoryChange(category)}
                         className={`border px-4 py-1 font-mono text-xs uppercase transition-colors ${
                           selectedCategory === category
                             ? "border-[#ffb59e] bg-[#ffb59e] font-bold text-[#5e1700]"
@@ -488,7 +629,7 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
 
               <div>
                 <label className="mb-4 block font-mono text-[10px] uppercase tracking-tight text-[#e6beb2]">
-                  Tailles Disponibles
+                  Gestion des Tailles
                 </label>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {sizeInventory.map((size) => (

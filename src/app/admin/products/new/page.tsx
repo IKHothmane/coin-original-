@@ -24,8 +24,12 @@ import { useRouter } from "next/navigation";
 import {
   createAdminProduct,
   slugifyProductName,
-  uploadProductImages,
-} from "@/lib/supabase/products";
+} from "@/lib/firebase/products";
+import type { ProductBadgeTone } from "@/components/catalog-data";
+import { isCloudinaryConfigured, uploadImagesToCloudinary } from "@/lib/cloudinary";
+
+const DEBUG_SERVER_URL = "http://127.0.0.1:7777/event";
+const DEBUG_SESSION_ID = "firebase-storage-cors";
 
 type NavItem = {
   href: string;
@@ -34,7 +38,7 @@ type NavItem = {
   active: boolean;
 };
 
-type SizeStock = Record<"XS" | "S" | "M" | "L" | "XL" | "XXL", number>;
+type SizeStock = Record<string, number>;
 
 const desktopNavItems: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, active: false },
@@ -50,16 +54,56 @@ const mobileDockItems: NavItem[] = [
   { href: "/admin/settings", label: "Reglages", icon: Settings, active: false },
 ];
 
-const sizeLabels: Array<keyof SizeStock> = ["XS", "S", "M", "L", "XL", "XXL"];
+const productCategories = ["Chaussures", "Vetements", "Accessoires"] as const;
+const defaultCategory = productCategories[1];
+const productStatuses = ["Aucun", "Nouveaute", "Solde", "Rupture"] as const;
+const shoeSizeLabels = ["38", "39", "40", "41", "42", "43", "44", "45"];
+const clothingSizeLabels = ["XS", "S", "M", "L", "XL", "XXL"];
+const accessorySizeLabels = ["Unique"];
 
-const initialSizeStock: SizeStock = {
-  XS: 0,
-  S: 0,
-  M: 0,
-  L: 0,
-  XL: 0,
-  XXL: 0,
-};
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+    reader.onerror = () => reject(new Error(`Impossible de lire le fichier ${file.name}.`));
+    reader.readAsDataURL(file);
+  });
+}
+
+function getBadgeConfig(status: string): { label: string; tone: ProductBadgeTone; soldOut?: boolean } | undefined {
+  if (status === "Nouveaute") {
+    return { label: "Nouveaute", tone: "primary" };
+  }
+
+  if (status === "Solde") {
+    return { label: "Solde", tone: "tertiary" };
+  }
+
+  if (status === "Rupture") {
+    return { label: "Rupture", tone: "error", soldOut: true };
+  }
+
+  return undefined;
+}
+
+function getSizeLabelsByCategory(category: string) {
+  if (category === "Chaussures") {
+    return shoeSizeLabels;
+  }
+
+  if (category === "Accessoires") {
+    return accessorySizeLabels;
+  }
+
+  return clothingSizeLabels;
+}
+
+function createInitialSizeStock(category: string): SizeStock {
+  return getSizeLabelsByCategory(category).reduce<SizeStock>((accumulator, size) => {
+    accumulator[size] = 0;
+    return accumulator;
+  }, {});
+}
 
 function NavLink({
   href,
@@ -86,10 +130,12 @@ export default function AdminNewProductPage() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [productName, setProductName] = useState("");
-  const [category, setCategory] = useState("Hauts / T-shirts");
+  const [category, setCategory] = useState<string>(defaultCategory);
+  const [status, setStatus] = useState<string>(productStatuses[0]);
   const [price, setPrice] = useState("");
+  const [compareAtPrice, setCompareAtPrice] = useState("");
   const [description, setDescription] = useState("");
-  const [sizeStock, setSizeStock] = useState<SizeStock>(initialSizeStock);
+  const [sizeStock, setSizeStock] = useState<SizeStock>(() => createInitialSizeStock(defaultCategory));
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -105,31 +151,20 @@ export default function AdminNewProductPage() {
     };
   }, [mobileMenuOpen]);
 
-  useEffect(() => {
-    return () => {
-      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [imagePreviews]);
-
-  const totalStock = useMemo(
-    () => Object.values(sizeStock).reduce((sum, quantity) => sum + quantity, 0),
-    [sizeStock],
-  );
+  const sizeLabels = useMemo(() => getSizeLabelsByCategory(category), [category]);
 
   const primaryPreview = imagePreviews[0];
 
-  const applyFiles = (files: FileList | File[]) => {
-    const selectedFiles = Array.from(files).slice(0, 5);
+  const applyFiles = async (files: FileList | File[]) => {
+    const nextFiles = Array.from(files).slice(0, 5);
 
-    if (selectedFiles.length === 0) {
+    if (nextFiles.length === 0) {
       return;
     }
 
-    setImagePreviews((current) => {
-      current.forEach((url) => URL.revokeObjectURL(url));
-      return selectedFiles.map((file) => URL.createObjectURL(file));
-    });
-    setSelectedFiles(selectedFiles);
+    setSelectedFiles(nextFiles);
+    const previews = await Promise.all(nextFiles.map((file) => readFileAsDataUrl(file)));
+    setImagePreviews(previews.filter(Boolean));
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -137,7 +172,7 @@ export default function AdminNewProductPage() {
       return;
     }
 
-    applyFiles(event.target.files);
+    void applyFiles(event.target.files);
   };
 
   const handleDrop = (event: DragEvent<HTMLButtonElement>) => {
@@ -145,17 +180,27 @@ export default function AdminNewProductPage() {
     setIsDragActive(false);
 
     if (event.dataTransfer.files.length > 0) {
-      applyFiles(event.dataTransfer.files);
+      void applyFiles(event.dataTransfer.files);
     }
   };
 
-  const handleSizeChange = (size: keyof SizeStock, value: string) => {
-    const parsed = Number(value);
-
+  const toggleSize = (size: string) => {
     setSizeStock((current) => ({
       ...current,
-      [size]: Number.isFinite(parsed) && parsed >= 0 ? parsed : 0,
+      [size]: current[size] > 0 ? 0 : 1,
     }));
+  };
+
+  const handleCategoryChange = (nextCategory: string) => {
+    setCategory(nextCategory);
+    setSizeStock((current) => {
+      const nextLabels = getSizeLabelsByCategory(nextCategory);
+
+      return nextLabels.reduce<SizeStock>((accumulator, size) => {
+        accumulator[size] = current[size] ?? 0;
+        return accumulator;
+      }, {});
+    });
   };
 
   const handleSave = async () => {
@@ -164,15 +209,36 @@ export default function AdminNewProductPage() {
       return;
     }
 
+    // #region debug-point D:handle-save-start
+    fetch(DEBUG_SERVER_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        sessionId: DEBUG_SESSION_ID,
+        runId: "pre-fix",
+        hypothesisId: "D",
+        location: "src/app/admin/products/new/page.tsx:handleSave:start",
+        msg: "[DEBUG] handleSave started",
+        data: {
+          productName: productName.trim(),
+          category,
+          status,
+          fileCount: imagePreviews.length,
+          hasPrimaryPreview: Boolean(primaryPreview),
+        },
+        ts: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
     setIsSaving(true);
     const productSlug = slugifyProductName(productName.trim());
     let galleryUrls = imagePreviews.length ? [...imagePreviews] : [primaryPreview];
+    const shouldUploadToCloudinary = selectedFiles.length > 0 && isCloudinaryConfigured();
 
-    if (selectedFiles.length > 0) {
-      const uploadResult = await uploadProductImages(selectedFiles, productSlug);
+    if (shouldUploadToCloudinary) {
+      const uploadResult = await uploadImagesToCloudinary(selectedFiles, productSlug);
 
-      if (uploadResult.error || !uploadResult.data) {
-        setSaveMessage(uploadResult.error ?? "Impossible d'envoyer les images vers Supabase Storage.");
+      if (uploadResult.error || !uploadResult.data?.length) {
+        setSaveMessage(uploadResult.error ?? "Impossible d'envoyer les images vers Cloudinary.");
         setIsSaving(false);
         return;
       }
@@ -180,12 +246,35 @@ export default function AdminNewProductPage() {
       galleryUrls = uploadResult.data;
     }
 
+    const badgeConfig = getBadgeConfig(status);
+
+    // #region debug-point D:create-start
+    fetch(DEBUG_SERVER_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        sessionId: DEBUG_SESSION_ID,
+        runId: "pre-fix",
+        hypothesisId: "D",
+        location: "src/app/admin/products/new/page.tsx:handleSave:create-start",
+        msg: "[DEBUG] createAdminProduct about to start",
+        data: {
+          productSlug,
+          galleryCount: galleryUrls.length,
+          hasBadge: Boolean(badgeConfig),
+        },
+        ts: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+
     const result = await createAdminProduct({
       slug: productSlug,
       brand: "Coin Original",
       category,
       name: productName.trim(),
       priceValue: Number(price),
+      compareAtPriceValue:
+        status === "Solde" && compareAtPrice ? Number(compareAtPrice) : undefined,
       description: description.trim(),
       image: galleryUrls[0],
       gallery: galleryUrls.map((image, index) => ({
@@ -193,18 +282,59 @@ export default function AdminNewProductPage() {
         alt: `${productName.trim()} image ${index + 1}`,
       })),
       stockBySize: sizeStock,
+      badge: badgeConfig ? { label: badgeConfig.label, tone: badgeConfig.tone } : undefined,
+      soldOut: badgeConfig?.soldOut,
       authenticityLabel: "Original Authentique",
       deliveryLabel: "PAIEMENT A LA LIVRAISON",
       deliveryRegion: "MAROC",
     });
 
     if (result.error || !result.data) {
+      // #region debug-point D:create-result-error
+      fetch(DEBUG_SERVER_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          sessionId: DEBUG_SESSION_ID,
+          runId: "pre-fix",
+          hypothesisId: "D",
+          location: "src/app/admin/products/new/page.tsx:handleSave:create-error",
+          msg: "[DEBUG] createAdminProduct returned error",
+          data: {
+            productSlug,
+            error: result.error ?? null,
+            hasData: Boolean(result.data),
+          },
+          ts: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       setSaveMessage(result.error ?? "Impossible d'enregistrer le produit.");
       setIsSaving(false);
       return;
     }
 
-    setSaveMessage("Produit enregistre dans Supabase.");
+    // #region debug-point D:create-result-success
+    fetch(DEBUG_SERVER_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        sessionId: DEBUG_SESSION_ID,
+        runId: "pre-fix",
+        hypothesisId: "D",
+        location: "src/app/admin/products/new/page.tsx:handleSave:create-success",
+        msg: "[DEBUG] createAdminProduct returned success",
+        data: {
+          productSlug,
+          resultSlug: result.data.slug,
+        },
+        ts: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    setSaveMessage(
+      shouldUploadToCloudinary
+        ? "Produit enregistre dans Firebase avec images Cloudinary."
+        : "Produit enregistre dans Firebase.",
+    );
     setIsSaving(false);
     router.push(`/admin/products/edit?slug=${result.data.slug}`);
   };
@@ -380,6 +510,9 @@ export default function AdminNewProductPage() {
                     Utilise un fond urbain neutre ou un studio propre pour garder l&apos;identite
                     Coin Original.
                   </p>
+                  <p className="mt-2 text-xs uppercase text-[#ffba20]">
+                    Images sur Cloudinary si configure, sinon sauvegarde directe temporaire.
+                  </p>
                 </div>
               </div>
             </div>
@@ -407,18 +540,19 @@ export default function AdminNewProductPage() {
                   <label className="font-mono text-xs uppercase text-[#e6beb2]">Categorie</label>
                   <select
                     value={category}
-                    onChange={(event) => setCategory(event.target.value)}
+                    onChange={(event) => handleCategoryChange(event.target.value)}
                     className="border-2 border-[#2A2A2A] bg-[#201f1f] px-3 py-3 text-base text-[#e5e2e1] outline-none transition-all focus:border-[#ffb59e]"
                   >
-                    <option>Hauts / T-shirts</option>
-                    <option>Hoodies & Sweats</option>
-                    <option>Pantalons</option>
-                    <option>Accessoires</option>
+                    {productCategories.map((productCategory) => (
+                      <option key={productCategory} value={productCategory}>
+                        {productCategory}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div className="flex flex-col gap-2">
                   <label className="font-mono text-xs uppercase text-[#e6beb2]">Prix de Vente (MAD)</label>
                   <div className="relative">
@@ -435,13 +569,35 @@ export default function AdminNewProductPage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="font-mono text-xs uppercase text-[#e6beb2]">Stock Total</label>
-                  <input
-                    type="number"
-                    value={totalStock}
-                    disabled
-                    className="cursor-not-allowed border-2 border-[#2A2A2A] bg-[#131313] px-3 py-3 text-base text-[#e5e2e1] opacity-60"
-                  />
+                  <label className="font-mono text-xs uppercase text-[#e6beb2]">
+                    Prix Avant Solde (MAD)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={compareAtPrice}
+                      onChange={(event) => setCompareAtPrice(event.target.value)}
+                      placeholder="0.00"
+                      className="w-full border-2 border-[#2A2A2A] bg-transparent px-3 py-3 pr-16 text-base text-[#e5e2e1] outline-none transition-all focus:border-[#ffb59e]"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 font-mono text-xs text-[#ffb59e]">
+                      MAD
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="font-mono text-xs uppercase text-[#e6beb2]">Statut Produit</label>
+                  <select
+                    value={status}
+                    onChange={(event) => setStatus(event.target.value)}
+                    className="border-2 border-[#2A2A2A] bg-[#201f1f] px-3 py-3 text-base text-[#e5e2e1] outline-none transition-all focus:border-[#ffb59e]"
+                  >
+                    {productStatuses.map((productStatus) => (
+                      <option key={productStatus} value={productStatus}>
+                        {productStatus}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -461,24 +617,26 @@ export default function AdminNewProductPage() {
               <div className="flex items-center gap-2">
                 <span className="h-[2px] w-8 bg-[#ffb59e]" />
                 <h3 className="font-mono text-xs uppercase text-[#ffb59e]">
-                  Gestion des Tailles & Stock
+                  Gestion des Tailles
                 </h3>
               </div>
 
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
                 {sizeLabels.map((size) => (
-                  <div key={size} className="flex flex-col">
-                    <div className="border border-[#353534] bg-[#353534] py-1 text-center font-mono text-xs uppercase">
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => toggleSize(size)}
+                    className={`border-2 p-4 text-center transition-all ${
+                      sizeStock[size] > 0
+                        ? "border-[#ffb59e] bg-[#ffb59e] text-[#5e1700]"
+                        : "border-[#2A2A2A] bg-transparent text-[#e5e2e1]"
+                    }`}
+                  >
+                    <div className="font-mono text-xs uppercase">
                       {size}
                     </div>
-                    <input
-                      type="number"
-                      min={0}
-                      value={sizeStock[size]}
-                      onChange={(event) => handleSizeChange(size, event.target.value)}
-                      className="border-2 border-t-0 border-[#2A2A2A] bg-transparent p-2 text-center font-mono text-sm outline-none transition-all focus:border-[#ffb59e]"
-                    />
-                  </div>
+                  </button>
                 ))}
               </div>
             </section>

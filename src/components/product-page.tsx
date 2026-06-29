@@ -11,15 +11,58 @@ import {
   SiteFooter,
 } from "@/components/homepage-sections";
 import { type CatalogProduct } from "@/components/catalog-data";
+import { fetchCatalogProductBySlugWithFallback } from "@/lib/firebase/storefront";
 
 type ProductPageProps = {
-  product: CatalogProduct;
+  product?: CatalogProduct;
+  slug?: string;
 };
 
-export function ProductPage({ product }: ProductPageProps) {
+function badgeToneClasses(tone: NonNullable<CatalogProduct["badge"]>["tone"]) {
+  if (tone === "tertiary") {
+    return "bg-red-600 text-white";
+  }
+
+  if (tone === "error") {
+    return "bg-[#7b7b7b] text-white";
+  }
+
+  return "bg-[#1f8f4d] text-white";
+}
+
+export function ProductPage({ product, slug }: ProductPageProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState(product.sizes[0] ?? "");
+  const [fetchedProduct, setFetchedProduct] = useState<CatalogProduct | null>(null);
+  const [isLoadingProduct, setIsLoadingProduct] = useState(!product && Boolean(slug));
+  const [selectedSize, setSelectedSize] = useState(product?.sizes[0] ?? "");
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!slug) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const loadProduct = async () => {
+      setIsLoadingProduct(true);
+      const nextProduct = await fetchCatalogProductBySlugWithFallback(slug);
+
+      if (isMounted) {
+        setFetchedProduct(nextProduct);
+        setSelectedImageIndex(0);
+        setIsLoadingProduct(false);
+      }
+    };
+
+    void loadProduct();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [product, slug]);
 
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "auto";
@@ -28,6 +71,51 @@ export function ProductPage({ product }: ProductPageProps) {
       document.body.style.overflow = "auto";
     };
   }, [mobileMenuOpen]);
+
+  if (isLoadingProduct) {
+    return (
+      <div className="brand-shell brand-grid min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+        <DesktopTopBar mobileMenuOpen={mobileMenuOpen} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+        <MobileTopBar />
+        <MobileDrawer mobileMenuOpen={mobileMenuOpen} onCloseMobileMenu={() => setMobileMenuOpen(false)} />
+        <BottomDock mobileMenuOpen={mobileMenuOpen} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+        <main className="flex min-h-screen items-center justify-center pb-24 pt-18 md:pt-20">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
+            Chargement du produit...
+          </p>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  const activeProduct = fetchedProduct ?? product ?? null;
+
+  if (!activeProduct) {
+    return (
+      <div className="brand-shell brand-grid min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+        <DesktopTopBar mobileMenuOpen={mobileMenuOpen} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+        <MobileTopBar />
+        <MobileDrawer mobileMenuOpen={mobileMenuOpen} onCloseMobileMenu={() => setMobileMenuOpen(false)} />
+        <BottomDock mobileMenuOpen={mobileMenuOpen} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+        <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-3 pb-24 pt-18 text-center md:px-5 md:pt-20">
+          <h1 className="font-[var(--font-display)] text-3xl uppercase text-[var(--foreground)]">
+            Produit introuvable
+          </h1>
+          <Link
+            href="/boutique"
+            className="border border-[var(--border-soft)] px-4 py-3 font-mono text-xs uppercase text-[var(--primary)]"
+          >
+            Retour Boutique
+          </Link>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+  const effectiveSelectedSize = activeProduct.sizes.includes(selectedSize)
+    ? selectedSize
+    : (activeProduct.sizes[0] ?? "");
 
   return (
     <div className="brand-shell brand-grid min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -52,34 +140,34 @@ export function ProductPage({ product }: ProductPageProps) {
               Accueil
             </Link>
             <span>/</span>
-            <span>{product.category}</span>
+            <span>{activeProduct.category}</span>
             <span>/</span>
-            <span className="text-[var(--foreground)]">{product.name}</span>
+            <span className="text-[var(--foreground)]">{activeProduct.name}</span>
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-12">
-            <div className="flex flex-col gap-3 lg:col-span-7">
-              <div className="grid grid-cols-1 gap-3">
+            <div className="flex flex-col gap-3 lg:col-span-6">
+              <div className="grid max-w-[680px] grid-cols-1 gap-3">
                 <div className="group relative aspect-[4/5] overflow-hidden border-2 border-[var(--border-soft)] bg-[var(--surface)]">
                   <Image
-                    src={product.gallery[selectedImageIndex].src}
-                    alt={product.gallery[selectedImageIndex].alt}
+                    src={activeProduct.gallery[selectedImageIndex].src}
+                    alt={activeProduct.gallery[selectedImageIndex].alt}
                     fill
                     priority
-                    sizes="(max-width: 1023px) 100vw, 58vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                    sizes="(max-width: 1023px) 100vw, 42vw"
+                    className="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.02] md:p-4"
                   />
-                  {product.badge ? (
-                    <div className="absolute bottom-3 left-0 bg-[var(--primary-strong)] px-4 py-1">
-                      <span className="font-[var(--font-display)] text-lg uppercase tracking-tight text-[var(--background)]">
-                        {product.badge.label}
+                  {activeProduct.badge ? (
+                    <div className={`absolute bottom-3 left-0 px-4 py-1 ${badgeToneClasses(activeProduct.badge.tone)}`}>
+                      <span className="font-[var(--font-display)] text-lg uppercase tracking-tight">
+                        {activeProduct.badge.label}
                       </span>
                     </div>
                   ) : null}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  {product.gallery.map((image, index) => {
+                  {activeProduct.gallery.map((image, index) => {
                     const isSelected = selectedImageIndex === index;
 
                     return (
@@ -99,7 +187,7 @@ export function ProductPage({ product }: ProductPageProps) {
                         src={image.src}
                         alt={image.alt}
                         fill
-                        sizes="(max-width: 1023px) 50vw, 29vw"
+                        sizes="(max-width: 1023px) 50vw, 21vw"
                         className="object-cover"
                       />
                         <span className="absolute inset-x-0 bottom-0 bg-black/50 px-3 py-2 text-[10px] uppercase tracking-[0.16em] text-white">
@@ -112,27 +200,27 @@ export function ProductPage({ product }: ProductPageProps) {
               </div>
             </div>
 
-            <div className="flex h-fit flex-col gap-4 self-start lg:col-span-5 lg:sticky lg:top-28">
+            <div className="flex h-fit flex-col gap-4 self-start lg:col-span-6 lg:sticky lg:top-28">
               <div className="space-y-1">
                 <div className="flex items-center gap-2 font-mono text-[10px] uppercase text-[var(--primary)]">
                   <span aria-hidden="true">✦</span>
-                  <span>{product.authenticityLabel ?? "Original Authentique"}</span>
+                  <span>{activeProduct.authenticityLabel ?? "Original Authentique"}</span>
                 </div>
                 <h1 className="font-[var(--font-display)] text-xl uppercase leading-none tracking-tight text-[var(--foreground)] sm:text-2xl">
-                  {product.name}
+                  {activeProduct.name}
                 </h1>
                 <div className="mt-3 flex items-baseline gap-3">
-                  <span className="font-[var(--font-display)] text-xl text-[var(--primary-strong)] sm:text-2xl">
-                    {product.price}
-                  </span>
-                  {product.compareAtPrice ? (
+                  {activeProduct.compareAtPrice ? (
                     <span className="text-sm text-[var(--muted)] line-through">
-                      {product.compareAtPrice}
+                      {activeProduct.compareAtPrice}
                     </span>
                   ) : null}
+                  <span className="font-[var(--font-display)] text-xl text-[var(--primary-strong)] sm:text-2xl">
+                    {activeProduct.price}
+                  </span>
                 </div>
                 <p className="max-w-xl pt-2 text-sm leading-6 text-[var(--muted)]">
-                  {product.description}
+                  {activeProduct.description}
                 </p>
               </div>
 
@@ -142,8 +230,8 @@ export function ProductPage({ product }: ProductPageProps) {
                     🚚
                   </span>
                   <div className="text-xs text-[var(--foreground)]">
-                    <span className="font-bold">{product.deliveryLabel ?? "LIVRAISON GRATUITE"}</span>{" "}
-                    {product.deliveryRegion ?? "AU MAROC"}
+                    <span className="font-bold">{activeProduct.deliveryLabel ?? "LIVRAISON GRATUITE"}</span>{" "}
+                    {activeProduct.deliveryRegion ?? "AU MAROC"}
                   </div>
                 </div>
               </div>
@@ -161,9 +249,9 @@ export function ProductPage({ product }: ProductPageProps) {
                   </a>
                 </div>
                 <div className="grid grid-cols-4 gap-1.5">
-                  {product.sizes.map((size) => {
-                    const isDisabled = product.soldOut;
-                    const isSelected = selectedSize === size;
+                  {activeProduct.sizes.map((size) => {
+                    const isDisabled = activeProduct.soldOut;
+                    const isSelected = effectiveSelectedSize === size;
 
                     return (
                       <button

@@ -24,17 +24,18 @@ import {
   type BoutiqueProduct,
   type BoutiqueSortValue,
 } from "@/components/boutique-page-data";
+import { fetchCatalogProductsWithFallback } from "@/lib/firebase/storefront";
 
 function badgeToneClasses(tone: NonNullable<BoutiqueProduct["badge"]>["tone"]) {
   if (tone === "tertiary") {
-    return "bg-[var(--accent)] text-[var(--background)]";
-  }
-
-  if (tone === "error") {
     return "bg-red-600 text-white";
   }
 
-  return "bg-[var(--primary-strong)] text-[var(--background)]";
+  if (tone === "error") {
+    return "bg-[#7b7b7b] text-white";
+  }
+
+  return "bg-[#1f8f4d] text-white";
 }
 
 function parsePrice(price: string) {
@@ -101,7 +102,12 @@ function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
             <Heart size={14} className="sm:h-[18px] sm:w-[18px]" />
           </button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-end gap-2">
+          {product.compareAtPrice ? (
+            <span className="font-mono text-[10px] uppercase text-[var(--muted)] line-through sm:text-xs">
+              {product.compareAtPrice}
+            </span>
+          ) : null}
           <span
             className={`px-2 py-1 font-[var(--font-display)] text-sm tracking-tight sm:px-3 sm:text-xl ${
               product.soldOut
@@ -273,6 +279,7 @@ function Pagination({
 
 export function BoutiquePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [products, setProducts] = useState<BoutiqueProduct[]>(boutiqueProducts);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<BoutiqueSortValue>("latest");
   const [currentPage, setCurrentPage] = useState(1);
@@ -285,20 +292,38 @@ export function BoutiquePage() {
     };
   }, [mobileMenuOpen]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      const nextProducts = await fetchCatalogProductsWithFallback();
+
+      if (isMounted) {
+        setProducts(nextProducts);
+      }
+    };
+
+    void loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const filteredProducts = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
     if (!normalizedQuery) {
-      return boutiqueProducts;
+      return products;
     }
 
-    return boutiqueProducts.filter((product) =>
+    return products.filter((product) =>
       [product.brand, product.name, product.price, product.sizes.join(" ")]
         .join(" ")
         .toLowerCase()
         .includes(normalizedQuery),
     );
-  }, [searchQuery]);
+  }, [products, searchQuery]);
 
   const sortedProducts = useMemo(
     () => sortProducts(filteredProducts, sortBy),

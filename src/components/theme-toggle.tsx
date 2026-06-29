@@ -11,20 +11,22 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") {
+      return "light";
+    }
+
+    const savedTheme = window.localStorage.getItem(STORAGE_KEY);
+    return savedTheme === "dark" ? "dark" : "light";
+  });
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem(STORAGE_KEY) as Theme | null;
-    const nextTheme = savedTheme ?? "light";
-
-    setTheme(nextTheme);
-    applyTheme(nextTheme);
-  }, []);
+    applyTheme(theme);
+    window.localStorage.setItem(STORAGE_KEY, theme);
+  }, [theme]);
 
   const toggleTheme = () => {
     const nextTheme = theme === "dark" ? "light" : "dark";
-    applyTheme(nextTheme);
-    window.localStorage.setItem(STORAGE_KEY, nextTheme);
     setTheme(nextTheme);
   };
 

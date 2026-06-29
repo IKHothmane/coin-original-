@@ -7,7 +7,7 @@ import { AdminEditProductPage } from "@/components/admin-edit-product-page";
 import {
   fetchAdminProductBySlug,
   type AdminProductRecord,
-} from "@/lib/supabase/products";
+} from "@/lib/firebase/products";
 
 function AdminEditProductLoading() {
   return (

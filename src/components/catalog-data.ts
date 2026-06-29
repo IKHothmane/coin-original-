@@ -33,7 +33,7 @@ export const catalogProducts: CatalogProduct[] = [
     price: "1,200 DH",
     compareAtPrice: "1,550 DH",
     description: 'Edition limitee "Cloud"',
-    badge: { label: "New", tone: "primary" },
+    badge: { label: "Nouveaute", tone: "primary" },
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuC7_om9JluK_wVuiNzE0zvnNM_vn8sWrs6hhWljXnsBmN1hycfhmtoAhE67-8Ce2QGGsW8aCLNIY0Dff66n1fpeg13gf_DMHECNYI7sa_OE_ccLVyw9rveIDy-JaociaTFg6w6ZCylFplZp4t3tm1rZ8nF1ej-_-3lK4FljDDNdZtXjsKX1CpsBjeptvEpr6M2tnvsUoI4xfJXpWYiPHqSDg51PWjezNTym6lrbSXZATTQv3S20gd0tjP5PqsBxohrcWiBjup9Jgw",
     gallery: [
@@ -77,7 +77,7 @@ export const catalogProducts: CatalogProduct[] = [
     compareAtPrice: "1,799 DH",
     description:
       "Basket technique avec finition premium, maintien confortable et silhouette urbaine pensee pour le quotidien.",
-    badge: { label: "New Drop", tone: "primary" },
+    badge: { label: "Nouveaute", tone: "primary" },
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuDScsdk0dK2EmEEl06JHtgQ9NNce_Kidj6G_RDdz82v-GkaxD4itk5Vw350GCuluidbTuaVKI7GWT80sByRRumZFIAJ2WQijMBUutAj3CuQPj-vH_6C3e6sRVaCLThyIejcr19kq0Y5m9Wnj_qfUIhzUhwlw-DxbdutTAU9tr9ZuSXLLqKuOyHby-em-wGS_2-AEk1MKk8FpA_PU_VHCcPPczh6Nyb0otYdkVoflioU7bmk3R0J1TbQc4Fq3jyNuRkxxSAEawfodA",
     gallery: [
@@ -111,7 +111,7 @@ export const catalogProducts: CatalogProduct[] = [
     price: "850 DH",
     compareAtPrice: "1,050 DH",
     description: "Construction premium en suede",
-    badge: { label: "Sale", tone: "tertiary" },
+    badge: { label: "Solde", tone: "tertiary" },
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuC2N9LdLoBFCM0pYhLrw5afno0Yrw5kPD3AOWhgjl-uqCkn06105BONkbeFvoJo0TjiuIkdM2cLaEv4Yk22wvT9Rpkd2fRN69bp8OdmcfK4DAGYSMEVizGstGIiM_TxXf5A2k2uB5ZjoiET_HhVSf0ES2BqO-8B3AnVbeLSTDmjV4Xss8sKr8P199-INm-PW1lkRXXhcfFXA5jAoW8MKoA80BnpGoQ8OzK3_XEgkCozm7InCMX4k3cLGli11IPiPXigrjayO0yeSQ",
     gallery: [
@@ -201,7 +201,7 @@ export const catalogProducts: CatalogProduct[] = [
     name: "Iconic Leather",
     price: "1500 MAD",
     description: "Modele premium en cuir avec finition clean et volume retro.",
-    badge: { label: "Sold Out", tone: "error" },
+    badge: { label: "Rupture", tone: "error" },
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuD-6pNLxJ63BYDu-LRWOAPwS5VklXBz_BlPkcC2XK7ZGwrU9yAI16QgxcHfMXhr8uWPpE5_3SMbUwJsrW1PZ88jQP7ETa42C7cr_TT_KarA2tX6ePKoeYLOpwxCwiEJ0nEOJ2zBUJfVZ0YyyHpvMoKqArMWww1hwFiN1UFQ7MtvdjpEkpXhfYPlYRJ7Kasf5g3BV53E9BE6qU7V10ORpfPxnwhS-VYWQWKNhBa21rCi5gzkULp8Nua2MUlg02IIFx4s4arsoAfUMw",
     gallery: [
