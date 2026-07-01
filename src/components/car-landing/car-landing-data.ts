@@ -18,8 +18,8 @@ export const carLandingConfig = {
   },
   currentPriceMad: 220,
   oldPriceMad: 450,
-  whatsappUrl: "https://wa.me/212691567246?text=Salam%20je%20veux%20commander%20l%27adaptateur%20CarPlay%20sans%20fil",
-  supportPhone: "0691567246",
+  whatsappUrl: "https://wa.me/212750463018?text=Salam%20je%20veux%20commander%20l%27adaptateur%20CarPlay%20sans%20fil",
+  supportPhone: "0750463018",
   supportEmail: "contact@coinoriginal.shop",
   deliveryMessage: {
     ar: "توصيل خلال 24 إلى 48 ساعة في جميع أنحاء المغرب مع الدفع عند الاستلام.",

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Anton, Archivo_Narrow, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
+import { CartProvider } from "@/components/cart-context";
 import "./globals.css";
 
 const anton = Anton({
@@ -45,7 +46,9 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${anton.variable} ${archivoNarrow.variable} ${hankenGrotesk.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <CartProvider>{children}</CartProvider>
+      </body>
     </html>
   );
 }

@@ -10,43 +10,12 @@ import {
   MobileDrawer,
   MobileTopBar,
   SiteFooter,
+  ThemeLogo,
 } from "@/components/homepage-sections";
-
-type CartItem = {
-  id: string;
-  name: string;
-  variant: string;
-  size: string;
-  price: number;
-  quantity: number;
-  image: string;
-};
-
-const initialCartItems: CartItem[] = [
-  {
-    id: "vortex-street-hoodie",
-    name: "Vortex Street Hoodie",
-    variant: "Noir / Serie Limitee",
-    size: "L",
-    price: 450,
-    quantity: 1,
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCnG_wM0uISl0FPNCIfQUHOAqsg_HiKx0wFsrVDdGUyzDSQ51eAyuRBmN2Q0rkk99NmUfrlbxNTooGec76Ftcdvzs-y2WleVcWixSfpwkGmg8uuHFGLmLdcnKxcf5axCNS-ESRPvtf9r3s1fh77XhzewpZ-3Li9OeWdZgarSYBbP-ZOn9BVOl6E9mukLUV0o5woO0db-VQk5ngB1gbXOY_FCT133vUjIZgQklABuDkNM2GpkwDoT0gBrq1V6n-6i6s5tX0WZqeljg",
-  },
-  {
-    id: "cargo-catalyst-pants",
-    name: "Cargo Catalyst Pants",
-    variant: "Olive / Durable Tech",
-    size: "M",
-    price: 380,
-    quantity: 1,
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDskwaYvaiaw5fEDGS4iEJOgznj_eRCtFKjXkSACQvB2WZc5JJGfWvoQLGJzX3-IHI5Xvwhn0aJl8OvZURH73_9MiWBnpi32uxd8yaSzIFYQx0qxi4z2IdVquJQD0n0hi4dckofa1LRnlXnpT7s8XTXnGfEK_QXjLZv-Zrka9uk49tacDZFuQuw9SYbafEvssgSMlvqwnICbZTSxU9tC9MlogDWkn7letl6Ze7eEU7a9gcQKZtbP7RUm5tEc5gUsdwTDfScFyIGIQ",
-  },
-];
+import { useCart } from "@/components/cart-context";
 
 function formatPrice(value: number) {
-  return `${value} DH`;
+  return `${value.toLocaleString("fr-FR")} DH`;
 }
 
 function CartLine({
@@ -55,7 +24,15 @@ function CartLine({
   onIncrease,
   onRemove,
 }: {
-  item: CartItem;
+  item: {
+    id: string;
+    name: string;
+    brand: string;
+    size: string;
+    price: number;
+    quantity: number;
+    image: string;
+  };
   onDecrease: () => void;
   onIncrease: () => void;
   onRemove: () => void;
@@ -77,27 +54,33 @@ function CartLine({
           sizes="(max-width: 768px) 100vw, 128px"
           className="object-cover"
         />
+        <div className="absolute left-2 top-2 z-20 flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-[var(--border-soft)] bg-black/30 md:h-10 md:w-10">
+          <ThemeLogo width={40} height={40} className="h-full w-full object-cover" />
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col justify-between gap-4">
         <div className="flex items-start justify-between gap-4">
           <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--primary)]">
+              {item.brand}
+            </p>
             <h3 className="font-[var(--font-display)] text-xl uppercase leading-none text-[var(--foreground)]">
               {item.name}
             </h3>
             <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
-              {item.variant}
+              Taille: {item.size}
             </p>
           </div>
           <span className="font-[var(--font-display)] text-xl text-[var(--primary)]">
-            {formatPrice(item.price)}
+            {formatPrice(item.price * item.quantity)}
           </span>
         </div>
 
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3 md:gap-4">
             <span className="border border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-[var(--foreground)]">
-              Size: {item.size}
+              {formatPrice(item.price)} / unité
             </span>
 
             <div className="inline-flex items-center border border-[var(--border-soft)]">
@@ -105,7 +88,7 @@ function CartLine({
                 type="button"
                 onClick={onDecrease}
                 className="inline-flex h-9 w-9 items-center justify-center transition-colors hover:bg-[var(--primary-strong)] hover:text-[var(--background)]"
-                aria-label={`Diminuer la quantite de ${item.name}`}
+                aria-label={`Diminuer la quantité de ${item.name}`}
               >
                 <Minus size={14} />
               </button>
@@ -116,7 +99,7 @@ function CartLine({
                 type="button"
                 onClick={onIncrease}
                 className="inline-flex h-9 w-9 items-center justify-center transition-colors hover:bg-[var(--primary-strong)] hover:text-[var(--background)]"
-                aria-label={`Augmenter la quantite de ${item.name}`}
+                aria-label={`Augmenter la quantité de ${item.name}`}
               >
                 <Plus size={14} />
               </button>
@@ -138,8 +121,8 @@ function CartLine({
 }
 
 export function CartPage() {
+  const { items, isReady, updateQuantity, removeFromCart, cartTotal, clearCart } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [cartItems, setCartItems] = useState(initialCartItems);
 
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "auto";
@@ -149,24 +132,10 @@ export function CartPage() {
     };
   }, [mobileMenuOpen]);
 
-  const subtotal = useMemo(
-    () => cartItems.reduce((total, item) => total + item.price * item.quantity, 0),
-    [cartItems],
+  const itemCount = useMemo(
+    () => items.reduce((total, item) => total + item.quantity, 0),
+    [items],
   );
-
-  const updateQuantity = (id: string, delta: number) => {
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-          : item,
-      ),
-    );
-  };
-
-  const removeItem = (id: string) => {
-    setCartItems((items) => items.filter((item) => item.id !== id));
-  };
 
   return (
     <div className="brand-shell brand-grid min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -174,7 +143,7 @@ export function CartPage() {
         mobileMenuOpen={mobileMenuOpen}
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
-      <MobileTopBar />
+      <MobileTopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
       <MobileDrawer
         mobileMenuOpen={mobileMenuOpen}
         onCloseMobileMenu={() => setMobileMenuOpen(false)}
@@ -190,13 +159,23 @@ export function CartPage() {
             Votre Panier
           </h1>
           <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
-            Revision de la selection avant validation
+            {!isReady
+              ? "Chargement..."
+              : itemCount === 0
+                ? "Aucun article pour le moment"
+                : `${itemCount} article${itemCount > 1 ? "s" : ""} dans ton panier`}
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-4">
           <section className="space-y-4 lg:col-span-8">
-            {cartItems.length === 0 ? (
+            {!isReady ? (
+              <div className="border border-[var(--border-soft)] bg-[var(--surface)] px-5 py-12 text-center">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
+                  Chargement du panier...
+                </p>
+              </div>
+            ) : items.length === 0 ? (
               <div className="border border-[var(--border-soft)] bg-[var(--surface)] px-5 py-10 text-center">
                 <p className="font-[var(--font-display)] text-2xl uppercase text-[var(--foreground)]">
                   Panier vide
@@ -208,19 +187,31 @@ export function CartPage() {
                   href="/boutique"
                   className="impact-button impact-button--primary mt-6 inline-flex px-6 py-3 text-sm"
                 >
-                  Retour a la boutique
+                  Retour à la boutique
                 </Link>
               </div>
             ) : (
-              cartItems.map((item) => (
-                <CartLine
-                  key={item.id}
-                  item={item}
-                  onDecrease={() => updateQuantity(item.id, -1)}
-                  onIncrease={() => updateQuantity(item.id, 1)}
-                  onRemove={() => removeItem(item.id)}
-                />
-              ))
+              <>
+                {items.map((item) => (
+                  <CartLine
+                    key={item.id}
+                    item={item}
+                    onDecrease={() => updateQuantity(item.id, -1)}
+                    onIncrease={() => updateQuantity(item.id, 1)}
+                    onRemove={() => removeFromCart(item.id)}
+                  />
+                ))}
+
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={clearCart}
+                    className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)] transition-colors hover:text-red-500"
+                  >
+                    Vider le panier
+                  </button>
+                </div>
+              </>
             )}
           </section>
 
@@ -229,7 +220,7 @@ export function CartPage() {
               <div className="mb-6 flex items-center gap-2">
                 <ShieldCheck size={20} className="text-[var(--accent)]" />
                 <h2 className="font-[var(--font-display)] text-2xl uppercase">
-                  Resume de commande
+                  Résumé de commande
                 </h2>
               </div>
 
@@ -238,14 +229,16 @@ export function CartPage() {
                   <span className="text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
                     Sous-total
                   </span>
-                  <span className="text-lg font-bold">{formatPrice(subtotal)}</span>
+                  <span className="text-lg font-bold">
+                    {!isReady ? "—" : formatPrice(cartTotal)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
                     Livraison
                   </span>
                   <span className="border border-[var(--accent)] px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[var(--accent)]">
-                    A confirmer par tel.
+                    À confirmer par téléphone
                   </span>
                 </div>
               </div>
@@ -254,7 +247,7 @@ export function CartPage() {
                 <span className="font-[var(--font-display)] text-xl uppercase">Total</span>
                 <div className="text-right">
                   <span className="block font-[var(--font-display)] text-4xl text-[var(--primary)]">
-                    {formatPrice(subtotal)}
+                    {!isReady ? "—" : formatPrice(cartTotal)}
                   </span>
                   <span className="text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
                     TVA incluse
@@ -264,10 +257,10 @@ export function CartPage() {
 
               <div className="space-y-4">
                 <Link
-                  href="/checkout"
+                  href={items.length === 0 ? "/boutique" : "/checkout"}
                   className="inline-flex w-full items-center justify-center gap-2 bg-[var(--primary-strong)] px-5 py-4 font-[var(--font-display)] text-lg uppercase text-[var(--background)] transition-all hover:bg-[var(--foreground)] hover:text-[var(--background)] active:scale-95"
                 >
-                  Valider ma commande
+                  {items.length === 0 ? "Continuer mes achats" : "Valider ma commande"}
                   <ArrowRight size={20} />
                 </Link>
 
@@ -276,11 +269,11 @@ export function CartPage() {
                     <Truck size={18} className="mt-0.5 text-[var(--accent)]" />
                     <div>
                       <p className="text-sm font-bold uppercase text-[var(--foreground)]">
-                        Paiement a la livraison
+                        Paiement à la livraison
                       </p>
                       <p className="mt-1 text-xs text-[var(--muted)]">
-                        Vous ne payez rien maintenant. Le paiement se fait a la
-                        livraison apres inspection de votre colis.
+                        Tu ne payes rien maintenant. Le paiement se fait à la livraison après
+                        inspection de ton colis.
                       </p>
                     </div>
                   </div>

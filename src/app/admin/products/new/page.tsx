@@ -12,6 +12,7 @@ import {
   Menu,
   Package,
   Settings,
+  Sparkles,
   ShoppingCart,
   Truck,
   User,
@@ -25,8 +26,9 @@ import {
   createAdminProduct,
   slugifyProductName,
 } from "@/lib/firebase/products";
+import { uploadProductImageUrlsToCloudinary } from "@/lib/cloudinary";
 import type { ProductBadgeTone } from "@/components/catalog-data";
-import { isCloudinaryConfigured, uploadImagesToCloudinary } from "@/lib/cloudinary";
+import { useAdminProductImages } from "@/components/use-admin-product-images";
 
 const DEBUG_SERVER_URL = "http://127.0.0.1:7777/event";
 const DEBUG_SESSION_ID = "firebase-storage-cors";
@@ -60,15 +62,6 @@ const productStatuses = ["Aucun", "Nouveaute", "Solde", "Rupture"] as const;
 const shoeSizeLabels = ["38", "39", "40", "41", "42", "43", "44", "45"];
 const clothingSizeLabels = ["XS", "S", "M", "L", "XL", "XXL"];
 const accessorySizeLabels = ["Unique"];
-
-function readFileAsDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
-    reader.onerror = () => reject(new Error(`Impossible de lire le fichier ${file.name}.`));
-    reader.readAsDataURL(file);
-  });
-}
 
 function getBadgeConfig(status: string): { label: string; tone: ProductBadgeTone; soldOut?: boolean } | undefined {
   if (status === "Nouveaute") {
@@ -136,12 +129,21 @@ export default function AdminNewProductPage() {
   const [compareAtPrice, setCompareAtPrice] = useState("");
   const [description, setDescription] = useState("");
   const [sizeStock, setSizeStock] = useState<SizeStock>(() => createInitialSizeStock(defaultCategory));
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isDragActive, setIsDragActive] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const {
+    displayedUrls,
+    primaryPreview,
+    removeBackground,
+    isProcessing,
+    processError,
+    progress,
+    addFiles,
+    toggleRemoveBackground,
+  } = useAdminProductImages({ defaultRemoveBackground: false });
 
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "auto";
@@ -153,34 +155,22 @@ export default function AdminNewProductPage() {
 
   const sizeLabels = useMemo(() => getSizeLabelsByCategory(category), [category]);
 
-  const primaryPreview = imagePreviews[0];
-
-  const applyFiles = async (files: FileList | File[]) => {
-    const nextFiles = Array.from(files).slice(0, 5);
-
-    if (nextFiles.length === 0) {
-      return;
-    }
-
-    setSelectedFiles(nextFiles);
-    const previews = await Promise.all(nextFiles.map((file) => readFileAsDataUrl(file)));
-    setImagePreviews(previews.filter(Boolean));
-  };
-
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) {
       return;
     }
 
-    void applyFiles(event.target.files);
+    void addFiles(event.target.files);
+    // Reset input so the same file can be selected again.
+    event.target.value = "";
   };
 
-  const handleDrop = (event: DragEvent<HTMLButtonElement>) => {
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsDragActive(false);
 
     if (event.dataTransfer.files.length > 0) {
-      void applyFiles(event.dataTransfer.files);
+      void addFiles(event.dataTransfer.files);
     }
   };
 
@@ -222,7 +212,7 @@ export default function AdminNewProductPage() {
           productName: productName.trim(),
           category,
           status,
-          fileCount: imagePreviews.length,
+          fileCount: displayedUrls.length,
           hasPrimaryPreview: Boolean(primaryPreview),
         },
         ts: Date.now(),
@@ -231,20 +221,15 @@ export default function AdminNewProductPage() {
     // #endregion
     setIsSaving(true);
     const productSlug = slugifyProductName(productName.trim());
-    let galleryUrls = imagePreviews.length ? [...imagePreviews] : [primaryPreview];
-    const shouldUploadToCloudinary = selectedFiles.length > 0 && isCloudinaryConfigured();
+    let galleryUrls = displayedUrls.length ? [...displayedUrls] : [primaryPreview];
 
-    if (shouldUploadToCloudinary) {
-      const uploadResult = await uploadImagesToCloudinary(selectedFiles, productSlug);
-
-      if (uploadResult.error || !uploadResult.data?.length) {
-        setSaveMessage(uploadResult.error ?? "Impossible d'envoyer les images vers Cloudinary.");
-        setIsSaving(false);
-        return;
-      }
-
-      galleryUrls = uploadResult.data;
+    const imageUploadResult = await uploadProductImageUrlsToCloudinary(productSlug, galleryUrls);
+    if (imageUploadResult.error) {
+      setSaveMessage(imageUploadResult.error);
+      setIsSaving(false);
+      return;
     }
+    galleryUrls = imageUploadResult.urls;
 
     const badgeConfig = getBadgeConfig(status);
 
@@ -273,8 +258,7 @@ export default function AdminNewProductPage() {
       category,
       name: productName.trim(),
       priceValue: Number(price),
-      compareAtPriceValue:
-        status === "Solde" && compareAtPrice ? Number(compareAtPrice) : undefined,
+      compareAtPriceValue: compareAtPrice ? Number(compareAtPrice) : undefined,
       description: description.trim(),
       image: galleryUrls[0],
       gallery: galleryUrls.map((image, index) => ({
@@ -330,11 +314,7 @@ export default function AdminNewProductPage() {
       }),
     }).catch(() => {});
     // #endregion
-    setSaveMessage(
-      shouldUploadToCloudinary
-        ? "Produit enregistre dans Firebase avec images Cloudinary."
-        : "Produit enregistre dans Firebase.",
-    );
+    setSaveMessage("Produit enregistre dans Firebase.");
     setIsSaving(false);
     router.push(`/admin/products/edit?slug=${result.data.slug}`);
   };
@@ -363,6 +343,12 @@ export default function AdminNewProductPage() {
             className="block w-full bg-[#ff571a] py-4 text-center font-[var(--font-display)] uppercase text-[#521300] transition-all hover:brightness-110 active:scale-95"
           >
             NEW PRODUCT
+          </Link>
+          <Link
+            href="/"
+            className="mt-3 flex items-center justify-center gap-2 border border-[#ffb59e] py-3 text-center font-mono text-xs uppercase text-[#ffb59e] transition-colors hover:bg-[#ffb59e] hover:text-[#521300]"
+          >
+            Retour au site
           </Link>
           <Link
             href="/logout"
@@ -412,6 +398,15 @@ export default function AdminNewProductPage() {
                 <NavLink key={item.label} {...item} onClick={() => setMobileMenuOpen(false)} />
               ))}
             </nav>
+            <div className="mt-6 border-t border-[#353534] px-4 pt-4">
+              <Link
+                href="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 border border-[#ffb59e] py-3 text-center font-mono text-xs uppercase text-[#ffb59e] transition-colors hover:bg-[#ffb59e] hover:text-[#521300]"
+              >
+                Retour au site
+              </Link>
+            </div>
           </div>
         </div>
       ) : null}
@@ -447,8 +442,9 @@ export default function AdminNewProductPage() {
               onChange={handleFileChange}
             />
 
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => fileInputRef.current?.click()}
               onDragOver={(event) => {
                 event.preventDefault();
@@ -456,25 +452,95 @@ export default function AdminNewProductPage() {
               }}
               onDragLeave={() => setIsDragActive(false)}
               onDrop={handleDrop}
-              className={`relative aspect-square w-full overflow-hidden border-2 border-dashed transition-colors ${
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
+              className={`relative aspect-square w-full cursor-pointer overflow-hidden border-2 border-dashed transition-colors ${
                 isDragActive ? "border-[#ffb59e]" : "border-[#353534]"
-              } bg-[#1A1A1A]`}
+              } ${
+                primaryPreview
+                  ? "bg-[repeating-linear-gradient(45deg,#111_0,#111_14px,#1A1A1A_14px,#1A1A1A_28px)]"
+                  : "bg-[#1A1A1A]"
+              }`}
             >
               {primaryPreview ? (
                 <Image
+                  key={primaryPreview}
                   src={primaryPreview}
                   alt="Apercu du produit"
                   fill
                   sizes="(max-width: 1023px) 100vw, 40vw"
-                  className="object-cover"
+                  className="object-contain"
+                  onError={() => {
+                    // eslint-disable-next-line no-console
+                    console.error("Erreur de chargement de l'image:", primaryPreview);
+                  }}
                 />
               ) : null}
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/30 px-6 text-center">
-                <ImagePlus size={52} className="mb-4 text-[#e6beb2]" />
-                <p className="font-mono text-xs uppercase text-[#e5e2e1]">Glisser & deposer</p>
-                <p className="mt-1 text-xs text-[#e6beb2]">PNG, JPG (MAX. 5MB)</p>
+              {isProcessing ? (
+                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/70 px-6 text-center">
+                  <Sparkles size={32} className="mb-3 animate-pulse text-[#ffb59e]" />
+                  <p className="font-mono text-xs uppercase text-[#e5e2e1]">
+                    {progress
+                      ? `${progress.key} ${Math.round((progress.current / progress.total) * 100)}%`
+                      : "Suppression du fond..."}
+                  </p>
+                </div>
+              ) : null}
+              {primaryPreview ? (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    toggleRemoveBackground();
+                  }}
+                  className={`absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center border transition-all ${
+                    removeBackground
+                      ? "border-[#ffb59e] bg-[#ffb59e] text-[#521300]"
+                      : "border-[#ffb59e]/60 bg-[#0f0f0f]/70 text-[#ffb59e]"
+                  }`}
+                  title={removeBackground ? "Fond supprime (actif)" : "Fond conserve (inactif)"}
+                >
+                  <Sparkles size={16} />
+                </button>
+              ) : null}
+              {!primaryPreview && !isProcessing ? (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/30 px-6 text-center">
+                  <ImagePlus size={52} className="mb-4 text-[#e6beb2]" />
+                  <p className="font-mono text-xs uppercase text-[#e5e2e1]">Glisser & deposer</p>
+                  <p className="mt-1 text-xs text-[#e6beb2]">PNG, JPG (MAX. 5MB)</p>
+                </div>
+              ) : null}
+            </div>
+
+            {primaryPreview ? (
+              <div className="flex items-center justify-between border border-[#353534] bg-[#1A1A1A] px-3 py-2">
+                <span className="font-mono text-xs uppercase text-[#e6beb2]">
+                  Fond automatique
+                </span>
+                <button
+                  type="button"
+                  onClick={() => toggleRemoveBackground()}
+                  className={`flex items-center gap-2 px-3 py-1 font-mono text-[10px] uppercase transition-all ${
+                    removeBackground
+                      ? "bg-[#ffb59e] text-[#521300]"
+                      : "border border-[#ffb59e]/60 text-[#ffb59e]"
+                  }`}
+                >
+                  <Sparkles size={12} />
+                  {removeBackground ? "Actif" : "Inactif"}
+                </button>
               </div>
-            </button>
+            ) : null}
+
+            {processError ? (
+              <div className="border border-red-500 bg-red-900/30 px-3 py-2 text-xs text-red-200">
+                {processError}
+              </div>
+            ) : null}
 
             <div className="grid grid-cols-4 gap-4">
               {Array.from({ length: 4 }).map((_, index) => (
@@ -482,16 +548,26 @@ export default function AdminNewProductPage() {
                   key={index}
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="relative aspect-square overflow-hidden border-2 border-dashed border-[#353534] bg-[#1A1A1A] transition-all hover:border-[#ffb59e]"
+                  className={`relative aspect-square overflow-hidden border-2 border-dashed border-[#353534] transition-all hover:border-[#ffb59e] ${
+                    displayedUrls[index + 1]
+                      ? "bg-[repeating-linear-gradient(45deg,#111_0,#111_14px,#1A1A1A_14px,#1A1A1A_28px)]"
+                      : "bg-[#1A1A1A]"
+                  }`}
                 >
-                  {imagePreviews[index + 1] ? (
-                    <Image
-                      src={imagePreviews[index + 1]}
-                      alt={`Apercu supplementaire ${index + 1}`}
-                      fill
-                      sizes="120px"
-                      className="object-cover"
-                    />
+                  {displayedUrls[index + 1] ? (
+                    <>
+                      <Image
+                        key={displayedUrls[index + 1]}
+                        src={displayedUrls[index + 1]}
+                        alt={`Apercu supplementaire ${index + 1}`}
+                        fill
+                        sizes="120px"
+                        className="object-contain"
+                      />
+                      <div className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center border border-[#ffb59e]/60 bg-[#0f0f0f]/70 text-[#ffb59e]">
+                        <Sparkles size={14} />
+                      </div>
+                    </>
                   ) : (
                     <div className="flex h-full items-center justify-center text-[#e6beb2]">
                       <ImagePlus size={22} />
@@ -651,7 +727,7 @@ export default function AdminNewProductPage() {
               <button
                 type="button"
                 onClick={handleSave}
-                disabled={isSaving}
+                disabled={isSaving || isProcessing}
                 className="bg-[#ffb59e] py-5 font-[var(--font-display)] uppercase text-[#5e1700] shadow-[0_0_20px_rgba(255,181,158,0.2)] transition-all hover:brightness-110 active:scale-95"
               >
                 {isSaving ? "ENREGISTREMENT..." : "ENREGISTRER LE PRODUIT"}

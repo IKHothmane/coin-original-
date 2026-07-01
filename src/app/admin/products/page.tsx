@@ -22,6 +22,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import {
+  deleteAdminProduct,
   fetchAdminProducts,
   isFirebaseConfigured,
   type AdminProductRecord,
@@ -174,6 +175,12 @@ export default function AdminProductsPage() {
             NEW PRODUCT
           </Link>
           <Link
+            href="/"
+            className="mt-3 flex items-center justify-center gap-2 border border-[#ffb59e] py-3 text-center font-mono text-xs uppercase text-[#ffb59e] transition-colors hover:bg-[#ffb59e] hover:text-[#521300]"
+          >
+            Retour au site
+          </Link>
+          <Link
             href="/logout"
             className="mt-2 flex items-center gap-4 py-6 font-mono text-xs uppercase text-[#e5e2e1] transition-colors hover:text-[#ffb59e]"
           >
@@ -221,6 +228,15 @@ export default function AdminProductsPage() {
                 <NavLink key={item.label} {...item} onClick={() => setMobileMenuOpen(false)} />
               ))}
             </nav>
+            <div className="mt-6 border-t border-[#353534] px-4 pt-4">
+              <Link
+                href="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 border border-[#ffb59e] py-3 text-center font-mono text-xs uppercase text-[#ffb59e] transition-colors hover:bg-[#ffb59e] hover:text-[#521300]"
+              >
+                Retour au site
+              </Link>
+            </div>
           </div>
         </div>
       ) : null}
@@ -400,8 +416,21 @@ export default function AdminProductsPage() {
                           </Link>
                           <button
                             type="button"
-                            className="border border-[#353534] p-2 text-[#e5e2e1] transition-all hover:border-[#ffb4ab] hover:text-[#ffb4ab]"
+                            onClick={async () => {
+                              if (window.confirm(`Supprimer "${product.name}" ? Cette action est irreversible.`)) {
+                                const result = await deleteAdminProduct(product.slug);
+                                if (result.error) {
+                                  alert(result.error);
+                                } else {
+                                  setInventoryProducts((current) =>
+                                    current.filter((item) => item.slug !== product.slug),
+                                  );
+                                }
+                              }
+                            }}
+                            className="relative z-10 cursor-pointer border border-[#353534] bg-[#201f1f] p-2 text-[#e5e2e1] transition-all hover:border-[#ffb4ab] hover:text-[#ffb4ab]"
                             aria-label={`Supprimer ${product.name}`}
+                            title={`Supprimer ${product.name}`}
                           >
                             <Trash2 size={18} />
                           </button>

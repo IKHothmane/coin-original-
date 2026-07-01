@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { House, Menu, ShoppingBag, Store } from "lucide-react";
+import { useCart } from "@/components/cart-context";
+import { House, Menu, ShoppingBag, ShoppingCart, Store } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -43,7 +44,7 @@ function BrandLogo({
   );
 }
 
-function ThemeLogo({
+export function ThemeLogo({
   width,
   height,
   className,
@@ -78,6 +79,41 @@ function ThemeLogo({
   );
 }
 
+function useMounted() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted;
+}
+
+function CartIconBadge({ className }: { className?: string }) {
+  const { cartCount } = useCart();
+  const mounted = useMounted();
+
+  return (
+    <span className={`relative inline-flex items-center justify-center text-[var(--foreground)] ${className ?? ""}`}>
+      <ShoppingCart size={22} strokeWidth={2.2} aria-hidden="true" />
+      {mounted && cartCount > 0 ? (
+        <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--primary-strong)] px-1 text-[10px] font-bold text-[var(--background)]">
+          {cartCount > 9 ? "9+" : cartCount}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+function CartCountDot() {
+  const { cartCount } = useCart();
+  const mounted = useMounted();
+
+  if (!mounted || cartCount === 0) return null;
+
+  return (
+    <span className="absolute -right-1.5 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[var(--primary-strong)] text-[8px] font-bold text-[var(--background)]">
+      {cartCount > 9 ? "9+" : cartCount}
+    </span>
+  );
+}
+
 export function DesktopTopBar({
 }: Pick<MenuActionProps, "mobileMenuOpen" | "onOpenMobileMenu">) {
   return (
@@ -101,7 +137,7 @@ export function DesktopTopBar({
             className="inline-flex h-11 w-11 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
             aria-label="Ouvrir le panier"
           >
-            <ShoppingBag size={16} strokeWidth={2.2} aria-hidden="true" />
+            <CartIconBadge />
           </Link>
           <div className="hidden md:block">
             <ThemeToggle />
@@ -112,15 +148,36 @@ export function DesktopTopBar({
   );
 }
 
-export function MobileTopBar() {
+export function MobileTopBar({
+  onOpenMobileMenu,
+}: Pick<MenuActionProps, "onOpenMobileMenu">) {
   return (
     <div className="fixed inset-x-0 top-0 z-40 border-b border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface)_92%,transparent)] backdrop-blur md:hidden">
       <div className="mx-auto flex h-18 w-full items-center justify-between gap-3 px-4">
-        <BrandLogo
-          imageSize={44}
-          textClassName="font-[var(--font-display)] text-xl uppercase tracking-tight text-[var(--primary-strong)]"
-        />
-        <span className="info-chip text-[10px]">Maroc</span>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onOpenMobileMenu}
+            className="inline-flex h-10 w-10 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
+            aria-label="Ouvrir le menu"
+          >
+            <Menu size={22} />
+          </button>
+          <BrandLogo
+            imageSize={44}
+            textClassName="hidden font-[var(--font-display)] text-xl uppercase tracking-tight text-[var(--primary-strong)] sm:inline"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/panier"
+            className="inline-flex h-10 w-10 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
+            aria-label="Ouvrir le panier"
+          >
+            <CartIconBadge />
+          </Link>
+          <span className="info-chip text-[10px]">Maroc</span>
+        </div>
       </div>
     </div>
   );
@@ -141,7 +198,7 @@ export function MobileDrawer({
       onClick={onCloseMobileMenu}
     >
       <aside
-        className="ml-auto flex h-full w-[58%] max-w-[232px] flex-col border-l border-[var(--border-soft)] bg-[var(--surface)] shadow-[0_0_40px_rgba(0,0,0,0.35)] md:w-[288px] md:max-w-[288px]"
+        className="mr-auto flex h-full w-[58%] max-w-[232px] flex-col border-r border-[var(--border-soft)] bg-[var(--surface)] shadow-[0_0_40px_rgba(0,0,0,0.35)] md:w-[288px] md:max-w-[288px]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex h-16 items-center justify-between border-b border-[var(--border-soft)] px-4">
@@ -250,8 +307,11 @@ export function BottomDock({
             <Store size={14} strokeWidth={2.15} />
             <span>Boutique</span>
           </Link>
-          <Link href="/panier" className="mobile-dock__item" aria-label="Panier">
-            <ShoppingBag size={14} strokeWidth={2.15} />
+          <Link href="/panier" className="mobile-dock__item relative" aria-label="Panier">
+            <span className="relative inline-flex">
+              <ShoppingBag size={14} strokeWidth={2.15} />
+              <CartCountDot />
+            </span>
             <span>Panier</span>
           </Link>
           <button
@@ -366,7 +426,7 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
   return (
     <article className="surface-panel flex h-full flex-col overflow-hidden">
       <Link href={`/produit/${product.slug}`} className="group flex h-full flex-col">
-        <div className="relative aspect-square overflow-hidden">
+        <div className="product-image-frame aspect-square">
           <Image
             src={product.image}
             alt={product.name}
@@ -374,6 +434,9 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
             sizes="(max-width: 640px) 50vw, 25vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
+          <div className="absolute left-2 top-2 z-20 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[var(--border-soft)] bg-black/30 sm:left-3 sm:top-3 sm:h-12 sm:w-12">
+            <ThemeLogo width={48} height={48} className="h-full w-full object-cover" />
+          </div>
           <div className="absolute bottom-0 left-0 flex flex-col bg-[var(--primary-strong)] px-2 py-1 text-[var(--background)] sm:px-3">
             {product.compareAtPrice ? (
               <span className="font-mono text-[10px] uppercase leading-none text-white/70 line-through sm:text-xs">

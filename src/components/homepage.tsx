@@ -36,7 +36,7 @@ export function Homepage() {
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
       <div className="md:hidden">
-        <MobileTopBar />
+        <MobileTopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
       </div>
       <MobileDrawer
         mobileMenuOpen={mobileMenuOpen}

@@ -16,6 +16,7 @@ import {
   MobileDrawer,
   MobileTopBar,
   SiteFooter,
+  ThemeLogo,
 } from "@/components/homepage-sections";
 import {
   boutiqueProducts,
@@ -59,17 +60,20 @@ function sortProducts(products: BoutiqueProduct[], sortBy: BoutiqueSortValue) {
 function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
   return (
     <article className="group border border-[var(--border-soft)] bg-[var(--surface)] transition-all hover:border-[var(--primary-strong)]">
-      <div className="relative aspect-[3/4] overflow-hidden">
+      <div className="product-image-frame aspect-[3/4]">
         <Image
           alt={product.name}
           src={product.image}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          className="object-cover transition-transform duration-700 group-hover:scale-105"
         />
+        <div className="absolute left-2 top-2 z-20 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[var(--border-soft)] bg-black/30 sm:left-3 sm:top-3 sm:h-12 sm:w-12">
+          <ThemeLogo width={48} height={48} className="h-full w-full object-cover" />
+        </div>
         {product.badge ? (
           <div
-            className={`absolute left-2 top-2 px-2 py-1 font-mono text-[9px] uppercase sm:left-4 sm:top-4 sm:text-[10px] ${badgeToneClasses(product.badge.tone)}`}
+            className={`absolute right-2 top-2 px-2 py-1 font-mono text-[9px] uppercase sm:right-4 sm:top-4 sm:text-[10px] ${badgeToneClasses(product.badge.tone)}`}
           >
             {product.badge.label}
           </div>
@@ -356,7 +360,7 @@ export function BoutiquePage() {
         mobileMenuOpen={mobileMenuOpen}
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
-      <MobileTopBar />
+      <MobileTopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
       <MobileDrawer
         mobileMenuOpen={mobileMenuOpen}
         onCloseMobileMenu={() => setMobileMenuOpen(false)}

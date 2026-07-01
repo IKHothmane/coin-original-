@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -8,6 +9,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import type { CatalogProduct, ProductBadgeTone } from "@/components/catalog-data";
+import { getCloudinaryBackgroundRemovedUrl } from "@/lib/cloudinary";
 import {
   firebaseDb,
   isFirebaseConfigured as isFirebaseClientConfigured,
@@ -184,6 +186,14 @@ function mapFirebaseDocumentToAdminProduct(
     : Object.keys(stockBySize).filter((size) => (stockBySize[size] ?? 0) > 0);
   const computedStock = Object.values(stockBySize).reduce((sum, quantity) => sum + quantity, 0);
   const stock = product.soldOut ? 0 : computedStock;
+  const productImage = getCloudinaryBackgroundRemovedUrl(product.image);
+  const productGallery = (product.gallery?.length
+    ? product.gallery
+    : [{ src: product.image, alt: `${product.name} vue principale` }]
+  ).map((galleryItem) => ({
+    ...galleryItem,
+    src: getCloudinaryBackgroundRemovedUrl(galleryItem.src),
+  }));
 
   return {
     id,
@@ -197,10 +207,8 @@ function mapFirebaseDocumentToAdminProduct(
     compareAtPriceLabel: product.compareAtPriceValue ? formatMad(product.compareAtPriceValue) : undefined,
     description: product.description,
     badge: product.badge,
-    image: product.image,
-    gallery: product.gallery?.length
-      ? product.gallery
-      : [{ src: product.image, alt: `${product.name} vue principale` }],
+    image: productImage,
+    gallery: productGallery,
     sizes,
     stockBySize,
     stock,
@@ -383,6 +391,29 @@ export async function updateAdminProduct(slug: string, input: ProductMutationInp
     return {
       data: null,
       error: error instanceof Error ? error.message : "Impossible de mettre a jour le produit dans Firebase.",
+    };
+  }
+}
+
+export async function deleteAdminProduct(slug: string) {
+  if (!isFirebaseClientConfigured()) {
+    return {
+      data: null,
+      error: "Firebase n'est pas configure.",
+    };
+  }
+
+  try {
+    await deleteDoc(doc(firebaseDb, "products", slug));
+
+    return {
+      data: { slug },
+      error: null,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Impossible de supprimer le produit.",
     };
   }
 }
