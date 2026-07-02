@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Anton, Archivo_Narrow, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import { CartProvider } from "@/components/cart-context";
 import { JsonLd } from "@/components/json-ld";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const anton = Anton({
@@ -25,7 +26,7 @@ const jetBrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://coin-original.ma";
+const siteUrl = SITE_URL;
 const siteName = "Coin Original";
 const siteDescription =
   "Coin Original — boutique streetwear premium au Maroc. Sneakers, vetements et accessoires urbains avec paiement a la livraison. Livraison gratuite au Maroc.";

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { BoutiquePage } from "@/components/boutique-page";
 import { JsonLd } from "@/components/json-ld";
 import { fetchCatalogProductsWithFallback } from "@/lib/products/storefront";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Boutique | Sneakers & Streetwear Maroc",
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 
 export default async function BoutiqueRoute() {
   const products = await fetchCatalogProductsWithFallback();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://coin-original.ma";
+  const siteUrl = SITE_URL;
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",

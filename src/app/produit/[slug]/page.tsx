@@ -3,6 +3,7 @@ import { catalogProducts, getProductBySlug } from "@/components/catalog-data";
 import { ProductPage } from "@/components/product-page";
 import { JsonLd } from "@/components/json-ld";
 import { fetchCatalogProductBySlugWithFallback, fetchCatalogProductsWithFallback } from "@/lib/products/storefront";
+import { SITE_URL } from "@/lib/site";
 
 type ProductRouteProps = {
   params: Promise<{
@@ -28,7 +29,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: ProductRouteProps): Promise<Metadata> {
   const { slug } = await params;
   const product = await fetchCatalogProductBySlugWithFallback(slug);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://coin-original.ma";
+  const siteUrl = SITE_URL;
 
   if (!product) {
     return {
@@ -75,7 +76,7 @@ function parsePrice(price: string) {
 export default async function ProduitSlugPage({ params }: ProductRouteProps) {
   const { slug } = await params;
   const product = (await fetchCatalogProductBySlugWithFallback(slug)) ?? getProductBySlug(slug) ?? undefined;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://coin-original.ma";
+  const siteUrl = SITE_URL;
 
   const productJsonLd = product
     ? {

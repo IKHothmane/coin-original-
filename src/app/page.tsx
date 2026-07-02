@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Homepage } from "@/components/homepage";
 import { JsonLd } from "@/components/json-ld";
 import { RootHostRedirect } from "@/components/root-host-redirect";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Streetwear Premium Maroc | Sneakers & Vetements Urbains",
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://coin-original.ma";
+  const siteUrl = SITE_URL;
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",

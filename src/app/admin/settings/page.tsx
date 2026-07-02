@@ -37,7 +37,7 @@ const initialSettings: SettingsState = {
   shippingDays: 3,
   freeShippingEnabled: true,
   freeShippingThreshold: "500",
-  adminEmail: "admin@coin-original.ma",
+  adminEmail: "admin@coinoriginal.shop",
   newPassword: "",
   twoFactorEnabled: false,
 };

@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 import { fetchCatalogProductsWithFallback } from "@/lib/products/storefront";
+import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-static";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://coin-original.ma";
+  const siteUrl = SITE_URL;
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: siteUrl, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
