@@ -1,3 +1,4 @@
+import { GoogleAnalytics } from "@/components/google-analytics";
 import type { Metadata } from "next";
 import { Anton, Archivo_Narrow, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import { CartProvider } from "@/components/cart-context";
@@ -146,6 +147,7 @@ export default function RootLayout({
       className={`${anton.variable} ${archivoNarrow.variable} ${hankenGrotesk.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <GoogleAnalytics />
         <CartProvider>{children}</CartProvider>
         <JsonLd data={[organizationJsonLd, websiteJsonLd]} />
       </body>
