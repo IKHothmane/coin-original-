@@ -319,6 +319,7 @@ export function CarLandingPage({ showBackLink = false }: CarLandingPageProps) {
               <img
                 src={landingImages.hero}
                 alt="Adaptateur CarPlay sans fil mis en scene dans un interieur automobile premium."
+                loading="lazy"
                 className="h-[360px] w-full rounded-[1.5rem] object-cover sm:h-[420px] md:h-[520px]"
               />
               <div className="absolute inset-x-4 bottom-4 rounded-[1.25rem] border border-white/10 bg-slate-950/70 p-4 backdrop-blur md:inset-x-8 md:bottom-8 md:rounded-[1.5rem] md:p-5">

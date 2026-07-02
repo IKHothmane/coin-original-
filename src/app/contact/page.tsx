@@ -23,7 +23,7 @@ export default function ContactPage() {
       "@type": "Organization",
       name: "Coin Original",
       url: siteUrl,
-      logo: `${siteUrl}/logo%20ligh.jpg`,
+      logo: `${siteUrl}/og-image.png`,
       contactPoint: {
         "@type": "ContactPoint",
         telephone: whatsappNumber,
@@ -34,6 +34,39 @@ export default function ContactPage() {
       sameAs: [instagramUrl, facebookUrl, tiktokUrl].filter(Boolean),
     },
   };
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Quel est le délai de livraison ?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "3 à 5 jours ouvrés selon la ville. Livraison gratuite à partir de 500 MAD.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Comment puis-je retourner un article ?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Vous avez 7 jours après réception. Contactez-nous par WhatsApp avec votre numéro de commande.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Quels modes de paiement acceptez-vous ?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Paiement à la livraison en espèces uniquement. Aucun paiement en ligne requis.",
+        },
+      },
+    ],
+  };
+
+  const jsonLdData = [contactJsonLd, faqJsonLd];
 
   return (
     <>
@@ -154,7 +187,7 @@ export default function ContactPage() {
           </div>
         </div>
       </main>
-      <JsonLd data={contactJsonLd} />
+      <JsonLd data={jsonLdData} />
     </>
   );
 }

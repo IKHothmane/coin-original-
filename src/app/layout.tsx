@@ -77,7 +77,7 @@ export const metadata: Metadata = {
     description: siteDescription,
     images: [
       {
-        url: "/logo%20ligh.jpg",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "Coin Original — Streetwear Premium Maroc",
@@ -88,7 +88,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${siteName} | Streetwear Premium Maroc`,
     description: siteDescription,
-    images: ["/logo%20ligh.jpg"],
+    images: ["/og-image.png"],
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
@@ -105,7 +105,7 @@ const organizationJsonLd = {
   "@type": "Organization",
   name: siteName,
   url: siteUrl,
-  logo: `${siteUrl}/logo%20ligh.jpg`,
+  logo: `${siteUrl}/og-image.png`,
   sameAs: [
     process.env.NEXT_PUBLIC_INSTAGRAM_URL,
     process.env.NEXT_PUBLIC_FACEBOOK_URL,
