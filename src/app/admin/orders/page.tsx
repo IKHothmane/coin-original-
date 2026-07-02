@@ -282,18 +282,6 @@ export default function AdminOrdersPage() {
             </div>
           ) : null}
         </div>
-
-        <footer className="mt-12 border-t-2 border-[#353534] pb-4 pt-8 text-center">
-          <div className="mb-4 flex items-center justify-center gap-2">
-            <Truck size={16} className="text-[#ff571a]" />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-[#e5e2e1]">
-              Proudly Moroccan Origin
-            </span>
-          </div>
-          <p className="font-mono text-[10px] uppercase tracking-widest text-[#e6beb2]">
-            © 2024 Coin Original Clothing. All Rights Reserved.
-          </p>
-        </footer>
       </div>
 
       <button

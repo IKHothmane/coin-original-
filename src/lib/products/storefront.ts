@@ -1,13 +1,45 @@
-import {
-  catalogProducts,
-  featuredProductSlugs,
-  type CatalogProduct,
-} from "@/components/catalog-data";
-import type { FeaturedProduct } from "@/components/homepage-data";
-import { getProductRepository } from "./repository";
+import { useEffect, useState } from "react";
+import type { CatalogProduct } from "@/components/catalog-data";
+import { fetchCatalogProductsFromFirebase, fetchCatalogProductBySlugFromFirebase } from "@/lib/firebase/products";
+import { isFirebaseConfigured } from "@/lib/firebase/client";
 
-function toFeaturedProduct(product: CatalogProduct): FeaturedProduct {
-  return {
+export async function fetchCatalogProductsWithFallback(): Promise<CatalogProduct[]> {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  if (!isFirebaseConfigured()) {
+    return [];
+  }
+
+  try {
+    const products = await fetchCatalogProductsFromFirebase();
+    return products;
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchCatalogProductBySlugWithFallback(slug: string): Promise<CatalogProduct | null> {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  if (!isFirebaseConfigured()) {
+    return null;
+  }
+
+  try {
+    const product = await fetchCatalogProductBySlugFromFirebase(slug);
+    return product;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchFeaturedProductsWithFallback() {
+  const products = await fetchCatalogProductsWithFallback();
+  return products.slice(0, 4).map((product) => ({
     slug: product.slug,
     name: product.name,
     description: product.description,
@@ -16,31 +48,71 @@ function toFeaturedProduct(product: CatalogProduct): FeaturedProduct {
     badge: product.badge?.label,
     badgeTone: product.badge?.tone,
     image: product.image,
-  };
+  }));
 }
 
-export async function fetchCatalogProductsWithFallback() {
-  const repository = getProductRepository();
-  return repository.fetchCatalogProducts();
+export function useFirebaseProducts() {
+  const [products, setProducts] = useState<CatalogProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      try {
+        const data = await fetchCatalogProductsWithFallback();
+        if (!cancelled) {
+          setProducts(data);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "Erreur de chargement");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
+  return { products, loading, error };
 }
 
-export async function fetchCatalogProductBySlugWithFallback(slug: string) {
-  const repository = getProductRepository();
-  return repository.fetchCatalogProductBySlug(slug);
+export function useFirebaseProduct(slug: string) {
+  const [product, setProduct] = useState<CatalogProduct | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      try {
+        const data = await fetchCatalogProductBySlugWithFallback(slug);
+        if (!cancelled) {
+          setProduct(data);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "Erreur de chargement");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [slug]);
+
+  return { product, loading, error };
 }
-
-export async function fetchFeaturedProductsWithFallback() {
-  const products = await fetchCatalogProductsWithFallback();
-  const featured = featuredProductSlugs
-    .map((slug) => products.find((product) => product.slug === slug))
-    .filter((product): product is CatalogProduct => Boolean(product))
-    .map(toFeaturedProduct);
-
-  if (featured.length > 0) {
-    return featured;
-  }
-
-  return products.slice(0, 4).map(toFeaturedProduct);
-}
-
-export { catalogProducts, featuredProductSlugs };

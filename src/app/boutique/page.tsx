@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { BoutiquePage } from "@/components/boutique-page";
 import { JsonLd } from "@/components/json-ld";
-import { fetchCatalogProductsWithFallback } from "@/lib/products/storefront";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -16,7 +15,6 @@ export const metadata: Metadata = {
 };
 
 export default async function BoutiqueRoute() {
-  const products = await fetchCatalogProductsWithFallback();
   const siteUrl = SITE_URL;
 
   const breadcrumbJsonLd = {
@@ -40,7 +38,7 @@ export default async function BoutiqueRoute() {
 
   return (
     <>
-      <BoutiquePage initialProducts={products} />
+      <BoutiquePage />
       <JsonLd data={breadcrumbJsonLd} />
     </>
   );

@@ -1,5 +1,7 @@
-import { Footer } from "@/components/footer";
+import { FooterWrapper } from "@/components/footer-wrapper";
 import { GoogleAnalytics } from "@/components/google-analytics";
+import { I18nProvider } from "@/components/i18n-provider";
+import { InstagramFloatingButton } from "@/components/instagram-floating-button";
 import type { Metadata } from "next";
 import { Anton, Archivo_Narrow, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import { CartProvider } from "@/components/cart-context";
@@ -67,6 +69,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   alternates: {
     canonical: "/",
+    languages: {
+      "fr": "/",
+      "ar": "/ar",
+      "x-default": "/",
+    },
   },
   openGraph: {
     type: "website",
@@ -150,8 +157,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <GoogleAnalytics />
         <CartProvider>
-          {children}
-          <Footer />
+          <I18nProvider>
+            {children}
+            <FooterWrapper />
+            <InstagramFloatingButton />
+          </I18nProvider>
         </CartProvider>
         <JsonLd data={[organizationJsonLd, websiteJsonLd]} />
       </body>

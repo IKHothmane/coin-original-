@@ -15,7 +15,6 @@ import {
   DesktopTopBar,
   MobileDrawer,
   MobileTopBar,
-  SiteFooter,
   ThemeLogo,
 } from "@/components/homepage-sections";
 import {
@@ -57,7 +56,10 @@ function sortProducts(products: BoutiqueProduct[], sortBy: BoutiqueSortValue) {
   return sortedProducts;
 }
 
+import { useTranslation } from "@/lib/i18n/use-translation";
+
 function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
+  const { t } = useTranslation();
   return (
     <article className="group border border-[var(--border-soft)] bg-[var(--surface)] transition-all hover:border-[var(--primary-strong)]">
       <div className="product-image-frame aspect-[3/4]">
@@ -82,7 +84,7 @@ function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
           <Link
             href={`/produit/${product.slug}`}
             className="inline-flex border-2 border-[var(--primary)] bg-[var(--surface)] p-2 text-[var(--primary)] transition-all hover:bg-[var(--primary-strong)] hover:text-[var(--background)] sm:p-3"
-            aria-label={`Voir ${product.name}`}
+            aria-label={`${t("product.voir")} ${product.name}`}
           >
             <ShoppingCart size={16} className="sm:h-5 sm:w-5" />
           </Link>
@@ -144,11 +146,12 @@ function BoutiqueHeader({
   searchQuery: string;
   onSearchChange: (value: string) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 className="font-[var(--font-display)] text-3xl uppercase text-[var(--primary)] sm:text-4xl md:text-5xl">
-          Boutique
+          {t("boutique.title")}
         </h1>
         <p className="mt-1.5 max-w-2xl text-xs text-[var(--muted)] sm:mt-2 sm:text-sm md:text-base">
           La selection streetwear premium de Coin Original, inspiree de ton
@@ -161,7 +164,7 @@ function BoutiqueHeader({
             type="text"
             value={searchQuery}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Rechercher..."
+            placeholder={t("boutique.search")}
             className="w-full border border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 pr-10 text-xs outline-none transition-all focus:border-[var(--primary-strong)] sm:w-56 sm:px-4 sm:py-3 sm:pr-11 sm:text-sm"
           />
           <Search
@@ -173,7 +176,7 @@ function BoutiqueHeader({
           href={`/produit/${boutiqueProducts[0]?.slug ?? "speed-volt-runner"}`}
           className="inline-flex items-center justify-center border border-[var(--border-soft)] px-3 py-2.5 font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--foreground)] transition-colors hover:border-[var(--primary-strong)] hover:text-[var(--primary)] sm:px-4 sm:py-3 sm:text-[10px]"
         >
-          Voir un produit
+          {t("boutique.voir_produit")}
         </Link>
       </div>
     </div>
@@ -191,14 +194,15 @@ function BoutiqueToolbar({
   sortBy: BoutiqueSortValue;
   onSortChange: (value: BoutiqueSortValue) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="mb-5 flex flex-col gap-2 border-b border-[var(--border-soft)] pb-5 sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:pb-6">
       <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--muted)] sm:text-[10px]">
-        Affichage de {shownCount} sur {totalCount} produits
+        {t("boutique.affichage")} {shownCount} {t("boutique.sur")} {totalCount} {t("boutique.produits")}
       </p>
       <div className="flex items-center gap-2">
         <span className="font-mono text-[9px] uppercase tracking-[0.16em] sm:text-[10px]">
-          Trier par:
+          {t("boutique.trier_par")}
         </span>
         <select
           value={sortBy}
@@ -207,7 +211,7 @@ function BoutiqueToolbar({
         >
           {sortOptions.map((option) => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {t(`boutique.${option.value}`)}
             </option>
           ))}
         </select>
@@ -217,10 +221,11 @@ function BoutiqueToolbar({
 }
 
 function EmptyResults({ searchQuery }: { searchQuery: string }) {
+  const { t } = useTranslation();
   return (
     <div className="border border-[var(--border-soft)] bg-[var(--surface)] px-5 py-10 text-center">
       <p className="font-[var(--font-display)] text-2xl uppercase text-[var(--primary)]">
-        Aucun produit trouve
+        {t("boutique.aucun_produit")}
       </p>
       <p className="mt-3 text-sm text-[var(--muted)]">
         Aucun resultat pour &quot;{searchQuery}&quot;. Essaie un autre mot-cle ou
@@ -282,8 +287,10 @@ function Pagination({
 }
 
 export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiqueProduct[] }) {
+  const { t, lang } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [products, setProducts] = useState<BoutiqueProduct[]>(initialProducts ?? boutiqueProducts);
+  const [products, setProducts] = useState<BoutiqueProduct[]>(initialProducts ?? []);
+  const [loading, setLoading] = useState(initialProducts === undefined);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<BoutiqueSortValue>("latest");
   const [currentPage, setCurrentPage] = useState(1);
@@ -297,15 +304,20 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
   }, [mobileMenuOpen]);
 
   useEffect(() => {
-    if (initialProducts) return;
+    if (initialProducts) {
+      setLoading(false);
+      return;
+    }
 
     let isMounted = true;
+    setLoading(true);
 
     const loadProducts = async () => {
       const nextProducts = await fetchCatalogProductsWithFallback();
 
       if (isMounted) {
         setProducts(nextProducts);
+        setLoading(false);
       }
     };
 
@@ -372,7 +384,7 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main className="min-h-screen w-full px-3 pb-24 pt-20 md:px-5">
+      <main className="min-h-screen w-full px-3 pb-24 pt-20 md:px-5" dir={lang === "ar" ? "rtl" : "ltr"}>
         <div className="py-6 sm:py-10">
           <BoutiqueHeader searchQuery={searchQuery} onSearchChange={handleSearchChange} />
 
@@ -383,7 +395,11 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
             onSortChange={handleSortChange}
           />
 
-          {visibleProducts.length > 0 ? (
+          {loading ? (
+            <div className="py-20 text-center">
+              <p className="text-[var(--muted)]">{t("boutique.chargement")}</p>
+            </div>
+          ) : visibleProducts.length > 0 ? (
             <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
               {visibleProducts.map((product) => (
                 <BoutiqueCard key={product.name} product={product} />
@@ -400,8 +416,6 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
           />
         </div>
       </main>
-
-      <SiteFooter />
     </div>
   );
 }

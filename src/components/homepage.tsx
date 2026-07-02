@@ -55,7 +55,6 @@ export function Homepage() {
         <CategoriesSection />
       </main>
 
-      <SiteFooter />
     </div>
   );
 }

@@ -21,11 +21,20 @@ export function isFirebaseConfigured() {
 export function getFirebaseApp() {
   if (!getApps().length) {
     const config = getFirebaseConfig();
+    if (!config.apiKey || !config.projectId) {
+      throw new Error("Firebase config incomplete. Check your .env.local file.");
+    }
     return initializeApp(config);
   }
 
   return getApp();
 }
 
-export const firebaseApp = getFirebaseApp();
-export const firebaseDb = getFirestore(firebaseApp);
+let _firebaseDb: ReturnType<typeof getFirestore> | null = null;
+
+export function getFirebaseDb() {
+  if (!_firebaseDb) {
+    _firebaseDb = getFirestore(getFirebaseApp());
+  }
+  return _firebaseDb;
+}

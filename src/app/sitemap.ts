@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { fetchCatalogProductsWithFallback } from "@/lib/products/storefront";
+import { fetchCatalogProductsFromFirebase } from "@/lib/firebase/products";
 import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-static";
@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/car`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.6 },
   ];
 
-  const products = await fetchCatalogProductsWithFallback();
+  const products = await fetchCatalogProductsFromFirebase();
 
   const productRoutes: MetadataRoute.Sitemap = products.map((product) => ({
     url: `${siteUrl}/produit/${product.slug}`,

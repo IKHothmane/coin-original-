@@ -1,5 +1,5 @@
 import { collection, addDoc, getDocs, orderBy, query, doc, updateDoc, Timestamp } from "firebase/firestore";
-import { firebaseDb, isFirebaseConfigured } from "@/lib/firebase/client";
+import { getFirebaseDb, isFirebaseConfigured } from "@/lib/firebase/client";
 import type { Order, OrderInput, OrderStatus } from "./types";
 
 const ORDERS_STORAGE_KEY = "coin-original-orders";
@@ -78,14 +78,16 @@ function createLocalOrderRepository(): OrderRepository {
   };
 }
 
-function createFirebaseOrderRepository(): OrderRepository {
-  const ordersCollection = collection(firebaseDb, "orders");
+function getOrdersCollection() {
+  return collection(getFirebaseDb(), "orders");
+}
 
+function createFirebaseOrderRepository(): OrderRepository {
   return {
     create: async (input) => {
       try {
         const order = createOrderFromInput(input);
-        const docRef = await addDoc(ordersCollection, {
+        const docRef = await addDoc(getOrdersCollection(), {
           ...order,
           createdAt: Timestamp.fromDate(new Date(order.createdAt)),
           updatedAt: Timestamp.fromDate(new Date(order.updatedAt)),
@@ -101,7 +103,7 @@ function createFirebaseOrderRepository(): OrderRepository {
     },
     fetchAll: async () => {
       try {
-        const snapshot = await getDocs(query(ordersCollection, orderBy("createdAt", "desc")));
+        const snapshot = await getDocs(query(getOrdersCollection(), orderBy("createdAt", "desc")));
         return snapshot.docs.map((documentSnapshot) => {
           const data = documentSnapshot.data();
           return {
@@ -128,7 +130,7 @@ function createFirebaseOrderRepository(): OrderRepository {
     },
     updateStatus: async (id, status) => {
       try {
-        await updateDoc(doc(firebaseDb, "orders", id), {
+        await updateDoc(doc(getFirebaseDb(), "orders", id), {
           status,
           updatedAt: Timestamp.now(),
         });

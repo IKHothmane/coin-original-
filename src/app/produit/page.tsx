@@ -1,6 +1,5 @@
-import { catalogProducts } from "@/components/catalog-data";
-import { ProductPage } from "@/components/product-page";
+import { ProduitSlugPage } from "@/components/produit-slug-page";
 
 export default function ProduitPage() {
-  return <ProductPage key={catalogProducts[0].slug} slug={catalogProducts[0].slug} product={catalogProducts[0]} />;
+  return <ProduitSlugPage slug="" />;
 }

@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useCart } from "@/components/cart-context";
-import { House, Menu, ShoppingBag, ShoppingCart, Store } from "lucide-react";
+import { House, Menu, ShoppingBag, ShoppingCart, Store, Instagram } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   categories,
@@ -17,6 +18,7 @@ import {
   type TrustItem,
 } from "@/components/homepage-data";
 import { fetchFeaturedProductsWithFallback } from "@/lib/products/storefront";
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 type MenuActionProps = {
   mobileMenuOpen: boolean;
@@ -118,6 +120,8 @@ function CartCountDot() {
 
 export function DesktopTopBar({
 }: Pick<MenuActionProps, "mobileMenuOpen" | "onOpenMobileMenu">) {
+  const { t } = useTranslation();
+  
   return (
     <nav className="fixed inset-x-0 top-0 z-50 hidden border-b border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface)_92%,transparent)] backdrop-blur md:block">
       <div className="flex h-20 w-full items-center justify-between gap-4 px-3 md:px-5">
@@ -131,16 +135,19 @@ export function DesktopTopBar({
         <div className="flex items-center gap-3">
           <input
             type="text"
-            placeholder="Rechercher des chaussures..."
+            placeholder={t("nav.rechercher")}
             className="hidden border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-2 text-sm text-[var(--foreground)] outline-none md:block"
           />
           <Link
             href="/panier"
             className="inline-flex h-11 w-11 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
-            aria-label="Ouvrir le panier"
+            aria-label={t("nav.ouvrir_panier")}
           >
             <CartIconBadge />
           </Link>
+          <div className="hidden md:block">
+            <LanguageSwitcher />
+          </div>
           <div className="hidden md:block">
             <ThemeToggle />
           </div>
@@ -153,6 +160,8 @@ export function DesktopTopBar({
 export function MobileTopBar({
   onOpenMobileMenu,
 }: Pick<MenuActionProps, "onOpenMobileMenu">) {
+  const { t } = useTranslation();
+  
   return (
     <div className="fixed inset-x-0 top-0 z-40 border-b border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface)_92%,transparent)] backdrop-blur md:hidden">
       <div className="mx-auto flex h-18 w-full items-center justify-between gap-3 px-4">
@@ -161,7 +170,7 @@ export function MobileTopBar({
             type="button"
             onClick={onOpenMobileMenu}
             className="inline-flex h-10 w-10 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
-            aria-label="Ouvrir le menu"
+            aria-label={t("nav.ouvrir_menu")}
           >
             <Menu size={22} />
           </button>
@@ -174,7 +183,7 @@ export function MobileTopBar({
           <Link
             href="/panier"
             className="inline-flex h-10 w-10 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
-            aria-label="Ouvrir le panier"
+            aria-label={t("nav.ouvrir_panier")}
           >
             <CartIconBadge />
           </Link>
@@ -189,6 +198,8 @@ export function MobileDrawer({
   mobileMenuOpen,
   onCloseMobileMenu,
 }: Pick<MenuActionProps, "mobileMenuOpen" | "onCloseMobileMenu">) {
+  const { t } = useTranslation();
+  
   if (!mobileMenuOpen) {
     return null;
   }
@@ -206,16 +217,16 @@ export function MobileDrawer({
         <div className="flex h-16 items-center justify-between border-b border-[var(--border-soft)] px-4">
           <div className="flex flex-col">
             <span className="font-[var(--font-display)] text-2xl uppercase text-[var(--primary-strong)]">
-              Menu
+              {t("nav.menu")}
             </span>
             <span className="text-[8px] uppercase tracking-[0.16em] text-[var(--muted)]">
-              Navigation rapide
+              {t("nav.navigation_rapide")}
             </span>
           </div>
           <button
             type="button"
             className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-soft)] text-2xl text-[var(--foreground)]"
-            aria-label="Fermer le menu"
+            aria-label={t("nav.fermer_menu")}
             onClick={onCloseMobileMenu}
           >
             ×
@@ -227,31 +238,39 @@ export function MobileDrawer({
             <span className="text-[var(--muted)]">⌕</span>
             <input
               className="w-full bg-transparent text-xs outline-none"
-              placeholder="Chercher..."
+              placeholder={t("nav.chercher")}
               type="text"
             />
           </div>
 
           <nav className="flex flex-col gap-2.5">
             <DrawerLink href="/boutique" active onClick={onCloseMobileMenu}>
-              Boutique
+              {t("nav.boutique")}
             </DrawerLink>
             <DrawerLink href="/panier" onClick={onCloseMobileMenu}>
-              Panier
+              {t("nav.panier")}
             </DrawerLink>
             <DrawerLink href="/#trust" onClick={onCloseMobileMenu}>
-              A propos
+              {t("nav.a_propos")}
             </DrawerLink>
             <DrawerLink href="/#footer" onClick={onCloseMobileMenu}>
-              Contact
+              {t("nav.contact")}
             </DrawerLink>
           </nav>
 
-          <div className="mt-auto rounded-[1rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-3">
-            <p className="mb-2.5 text-[8px] uppercase tracking-[0.14em] text-[var(--muted)]">
-              Theme
-            </p>
-            <ThemeToggle />
+          <div className="mt-auto space-y-3">
+            <div className="rounded-[1rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-3">
+              <p className="mb-2.5 text-[8px] uppercase tracking-[0.14em] text-[var(--muted)]">
+                {t("nav.langue")}
+              </p>
+              <LanguageSwitcher />
+            </div>
+            <div className="rounded-[1rem] border border-[var(--border-soft)] bg-[var(--surface-soft)] p-3">
+              <p className="mb-2.5 text-[8px] uppercase tracking-[0.14em] text-[var(--muted)]">
+                {t("nav.theme")}
+              </p>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </aside>
@@ -287,6 +306,8 @@ export function BottomDock({
   mobileMenuOpen,
   onOpenMobileMenu,
 }: Pick<MenuActionProps, "mobileMenuOpen" | "onOpenMobileMenu">) {
+  const { t } = useTranslation();
+  
   return (
     <div className="mobile-dock">
       <div className="mobile-dock__shell">
@@ -301,31 +322,31 @@ export function BottomDock({
         />
 
         <nav className="mobile-dock__nav" aria-label="Navigation principale">
-          <Link href="/" className="mobile-dock__item" aria-label="Accueil">
+          <Link href="/" className="mobile-dock__item" aria-label={t("nav.accueil")}>
             <House size={14} strokeWidth={2.15} />
-            <span>Accueil</span>
+            <span>{t("nav.accueil")}</span>
           </Link>
-          <Link href="/boutique" className="mobile-dock__item" aria-label="Boutique">
+          <Link href="/boutique" className="mobile-dock__item" aria-label={t("nav.boutique")}>
             <Store size={14} strokeWidth={2.15} />
-            <span>Boutique</span>
+            <span>{t("nav.boutique")}</span>
           </Link>
-          <Link href="/panier" className="mobile-dock__item relative" aria-label="Panier">
+          <Link href="/panier" className="mobile-dock__item relative" aria-label={t("nav.panier")}>
             <span className="relative inline-flex">
               <ShoppingBag size={14} strokeWidth={2.15} />
               <CartCountDot />
             </span>
-            <span>Panier</span>
+            <span>{t("nav.panier")}</span>
           </Link>
           <button
             type="button"
             className="mobile-dock__item"
-            aria-label="Ouvrir le menu"
+            aria-label={t("nav.ouvrir_menu")}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-menu"
             onClick={onOpenMobileMenu}
           >
             <Menu size={14} strokeWidth={2.15} />
-            <span>Menu</span>
+            <span>{t("nav.menu")}</span>
           </button>
         </nav>
       </div>
@@ -334,6 +355,8 @@ export function BottomDock({
 }
 
 export function HeroSection() {
+  const { t } = useTranslation();
+  
   return (
     <section className="relative flex min-h-[500px] items-end overflow-hidden sm:min-h-[600px]">
       <div className="absolute inset-0 z-0">
@@ -352,29 +375,26 @@ export function HeroSection() {
       <div className="relative z-10 flex w-full flex-col gap-4 px-3 pb-8 sm:gap-6 sm:pb-12 md:px-5 md:pb-20">
         <div className="max-w-2xl">
           <span className="mb-3 inline-flex bg-[var(--primary-strong)] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--background)] sm:mb-4 sm:px-4 sm:text-xs">
-            Nouveau drop : Ete 24
+            {t("homepage.nouveau_drop")}
           </span>
           <h1 className="mb-4 font-[var(--font-display)] text-3xl leading-none text-white uppercase sm:mb-6 sm:text-5xl md:text-[clamp(4.5rem,8vw,7rem)]">
-            Le Coffre
-            <br />
-            est Ouvert.
+            {t("homepage.hero_title")}
           </h1>
           <p className="mb-6 max-w-lg text-sm leading-6 text-[var(--muted)] sm:mb-8 sm:text-base md:text-lg">
-            Arrivages exclusifs de chaussures et hoodies heavy-weight. Le style
-            urbain premium livre partout au Maroc.
+            {t("homepage.hero_desc")}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
             <a
               href="#shop"
               className="impact-button impact-button--primary !h-11 w-full !px-5 !py-3 !text-sm sm:!h-14 sm:w-auto sm:!px-10 sm:!py-4 sm:!text-lg"
             >
-              Voir La Collection
+              {t("homepage.voir_collection")}
             </a>
             <a
               href="#categories"
               className="impact-button impact-button--secondary !h-11 w-full !border-white !px-5 !py-3 !text-sm !text-white sm:!h-14 sm:w-auto sm:!px-10 sm:!py-4 sm:!text-lg"
             >
-              Voir Les Hoodies
+              {t("homepage.voir_hoodies")}
             </a>
           </div>
         </div>
@@ -384,11 +404,13 @@ export function HeroSection() {
 }
 
 export function PartnersSection() {
+  const { t } = useTranslation();
+  
   return (
     <section className="border-b border-[var(--border-soft)] bg-[var(--surface)]/80 py-12">
       <div className="flex w-full flex-col gap-8 px-3 md:px-5">
         <p className="meta-label text-center text-xs text-[var(--muted)]">
-          Partenaires Urbains Globaux
+          {t("homepage.partenaires")}
         </p>
         <div className="partners-marquee sm:hidden">
           <div className="partners-track">
@@ -418,6 +440,8 @@ export function PartnersSection() {
 }
 
 function ProductCard({ product }: { product: FeaturedProduct }) {
+  const { t } = useTranslation();
+  
   const badgeClassName =
     product.badgeTone === "tertiary"
       ? "bg-red-600 text-white"
@@ -468,7 +492,7 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
             </p>
           </div>
           <span className="impact-button impact-button--secondary mt-3 !h-9 w-full !px-2 !py-2 !text-center !text-xs sm:mt-6 sm:!h-11 sm:!px-4 sm:!py-3 sm:!text-base">
-            Ajouter Au Panier
+            {t("product.ajouter")}
           </span>
         </div>
       </Link>
@@ -477,6 +501,7 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
 }
 
 export function ShopSection() {
+  const { t } = useTranslation();
   const [products, setProducts] = useState<FeaturedProduct[]>(featuredProducts);
 
   useEffect(() => {
@@ -502,17 +527,17 @@ export function ShopSection() {
       <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:mb-8 sm:flex-row sm:items-end sm:gap-4">
         <div>
           <h2 className="font-[var(--font-display)] text-2xl leading-none uppercase text-[var(--foreground)] sm:text-3xl">
-            Derniers Drops
+            {t("homepage.derniers_drops")}
           </h2>
           <p className="mt-1 text-xs text-[var(--muted)] sm:mt-2 sm:text-sm">
-            Authentifies et prets pour expedition.
+            {t("homepage.authentifies")}
           </p>
         </div>
         <a
           href="#footer"
           className="meta-label border border-[var(--border-soft)] px-3 py-1.5 text-[10px] text-[var(--primary)] sm:border-0 sm:px-0 sm:py-0 sm:text-xs"
         >
-          Voir Tout
+          {t("homepage.voir_tout")}
         </a>
       </div>
 
@@ -526,10 +551,12 @@ export function ShopSection() {
 }
 
 function TrustCard({ item }: { item: TrustItem }) {
+  const { t } = useTranslation();
+  
   return (
     <article className="surface-panel p-4 text-left sm:p-5 md:p-6">
       <p className="meta-label mb-3 text-[10px] text-[var(--primary)] sm:mb-4 sm:text-xs">
-        Service
+        {t("homepage.service")}
       </p>
       <h3 className="font-[var(--font-display)] text-lg uppercase sm:text-xl md:text-2xl">
         {item.title}
@@ -542,6 +569,8 @@ function TrustCard({ item }: { item: TrustItem }) {
 }
 
 export function TrustSection() {
+  const { t } = useTranslation();
+  
   return (
     <section
       id="trust"
@@ -549,16 +578,13 @@ export function TrustSection() {
     >
       <div className="w-full px-3 text-center md:px-5">
         <div className="mb-6 inline-flex items-center border border-[var(--primary-strong)] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--primary-strong)] sm:mb-8 sm:px-6 sm:text-xs">
-          Aucune Carte Bancaire Requise
+          {t("homepage.carte_bancaire")}
         </div>
         <h2 className="mb-4 font-[var(--font-display)] text-2xl uppercase leading-none text-[var(--foreground)] sm:mb-6 sm:text-4xl md:text-[clamp(2.8rem,6vw,4.8rem)]">
-          Paiement a la
-          <br />
-          livraison au Maroc
+          {t("homepage.paiement_livraison")}
         </h2>
         <p className="mx-auto mb-8 max-w-2xl text-sm leading-6 text-[var(--muted)] sm:mb-10 sm:text-base md:text-lg">
-          Commandez maintenant, payez a votre porte. Nous livrons dans tout le
-          Maroc avec un service rapide et fiable.
+          {t("homepage.commandez")}
         </p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-5 lg:grid-cols-3">
           {trustItems.map((item) => (
@@ -571,6 +597,8 @@ export function TrustSection() {
 }
 
 function CategoryCard({ category }: { category: CategoryItem }) {
+  const { t } = useTranslation();
+  
   return (
     <article
       className={`relative overflow-hidden border border-[var(--border-soft)] ${category.span}`}
@@ -591,7 +619,7 @@ function CategoryCard({ category }: { category: CategoryItem }) {
           href="#shop"
           className="category-cta mt-2 px-3 py-1.5 text-xs font-[var(--font-display)] uppercase sm:mt-3 sm:px-4 sm:py-2 sm:text-sm"
         >
-          Explorer
+          {t("homepage.explorer")}
         </a>
       </div>
     </article>
@@ -599,13 +627,15 @@ function CategoryCard({ category }: { category: CategoryItem }) {
 }
 
 export function CategoriesSection() {
+  const { t } = useTranslation();
+  
   return (
     <section
       id="categories"
       className="w-full px-3 pt-12 pb-0 md:px-5 md:pt-16 md:pb-0"
     >
       <h2 className="mb-6 font-[var(--font-display)] text-2xl uppercase leading-none text-[var(--foreground)] sm:mb-8 sm:text-3xl">
-        Explorer Les Categories
+        {t("homepage.explorer_categories")}
       </h2>
       <div className="grid auto-rows-[150px] grid-cols-2 gap-3 sm:auto-rows-[190px] sm:gap-4 md:grid-cols-4 md:auto-rows-[280px] md:gap-5">
         {categories.map((category) => (
@@ -614,19 +644,19 @@ export function CategoriesSection() {
 
         <article className="surface-panel col-span-2 flex flex-col items-center justify-center p-4 text-center sm:p-5 md:col-span-1 md:p-6">
           <p className="meta-label mb-3 text-xs text-[var(--primary)] sm:mb-4">
-            Exclusif
+            {t("homepage.exclusif")}
           </p>
           <h3 className="font-[var(--font-display)] text-xl uppercase sm:text-2xl md:text-3xl">
-            Liste Des Drops
+            {t("homepage.liste_drops")}
           </h3>
           <p className="mt-2 max-w-xs text-xs leading-5 text-[var(--muted)] sm:mt-3 sm:text-sm sm:leading-6">
-            Sois le premier informe de la prochaine sortie limitee.
+            {t("homepage.premier_informe")}
           </p>
           <a
             href="#footer"
             className="impact-button impact-button--primary mt-4 !h-11 !px-4 !py-2 !text-sm sm:mt-5 sm:!px-5 sm:!py-3 sm:!text-base md:mt-6"
           >
-            Rejoindre La Liste
+            {t("homepage.rejoindre_liste")}
           </a>
         </article>
       </div>
@@ -635,6 +665,8 @@ export function CategoriesSection() {
 }
 
 export function SiteFooter() {
+  const { t } = useTranslation();
+  
   return (
     <footer id="footer" className="site-footer">
       <div className="site-footer__canvas">
@@ -652,10 +684,10 @@ export function SiteFooter() {
         <div className="site-footer__overlay px-3 md:px-5">
           <div className="site-footer__content grid gap-6 md:grid-cols-[1.1fr_0.9fr_1fr] md:gap-8">
             <div className="site-footer__block">
-              <a href="#top" className="inline-flex items-center gap-4" aria-label="Retour en haut">
+              <a href="#top" className="inline-flex items-center gap-4" aria-label={t("footer.retour_haut")}>
                 <ThemeLogo
-                  width={68}
-                  height={68}
+                  width={64}
+                  height={64}
                   className="h-16 w-16 rounded-full border border-[#d5cec3] bg-white/80 object-cover"
                 />
                 <span className="font-[var(--font-display)] text-3xl uppercase text-[#9b4c1f]">
@@ -663,55 +695,63 @@ export function SiteFooter() {
                 </span>
               </a>
               <p className="mt-4 max-w-sm text-sm leading-6 text-[#5f5549]">
-                La premiere boutique de chaussures et de streetwear premium au Maroc,
-                avec paiement a la livraison garanti.
+                {t("footer.brand_desc")}
               </p>
             </div>
 
             <div className="site-footer__block grid grid-cols-2 gap-5 text-[#564d42]">
               <div className="min-w-0">
                 <h4 className="font-[var(--font-display)] text-xl uppercase text-[#3e3429]">
-                  Boutique
+                  {t("footer.boutique")}
                 </h4>
                 <ul className="mt-4 space-y-2 text-sm">
-                  <li>Chaussures</li>
-                  <li>Sweats a capuche</li>
-                  <li>T-shirts</li>
-                  <li>Nouveautes</li>
+                  <li>{t("footer.chaussures")}</li>
+                  <li>{t("footer.sweats")}</li>
+                  <li>{t("footer.tshirts")}</li>
+                  <li>{t("footer.nouveautes")}</li>
                 </ul>
               </div>
               <div className="min-w-0">
                 <h4 className="font-[var(--font-display)] text-xl uppercase text-[#3e3429]">
-                  Mentions
+                  {t("footer.mentions")}
                 </h4>
                 <ul className="mt-4 space-y-2 text-sm">
-                  <li>Mentions legales</li>
-                  <li>Politique de confidentialite</li>
-                  <li>Infos livraison</li>
+                  <li>{t("footer.mentions_legales")}</li>
+                  <li>{t("footer.politique")}</li>
+                  <li>{t("footer.livraison")}</li>
                 </ul>
               </div>
             </div>
 
             <div className="site-footer__block">
               <h4 className="font-[var(--font-display)] text-xl uppercase text-[#3e3429]">
-                Contact
+                {t("footer.contact")}
               </h4>
               <div className="mt-4 space-y-3 text-sm text-[#564d42]">
-                <p>Support sur WhatsApp</p>
-                <p>Instagram</p>
+                <p>{t("footer.whatsapp")}</p>
+                <a
+                  href="https://www.instagram.com/coinoriginal_?igsh=dnFqNng4aXZ2MDY5&utm_source=qr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-[#564d42] hover:text-[#9b4c1f] transition-colors"
+                  aria-label="Instagram"
+                >
+                  <Instagram size={20} />
+                  <span>{t("footer.instagram")}</span>
+                </a>
               </div>
               <div className="mt-6 overflow-hidden rounded-[1.1rem] border border-[#d8d0c6] bg-white/55 shadow-[0_12px_30px_rgba(60,45,30,0.08)] backdrop-blur-sm">
                 <div className="meta-label border-b border-[#d8d0c6] px-4 py-3 text-xs text-[#73695d]">
-                  Abonne-toi aux mises a jour
+                  {t("footer.newsletter")}
                 </div>
                 <div className="flex">
                   <input
                     type="email"
-                    placeholder="Adresse e-mail"
+                    placeholder={t("footer.email")}
                     className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-[#3e3429] outline-none placeholder:text-[#8c8378]"
                   />
                   <button className="bg-[var(--primary-strong)] px-5 py-3 font-[var(--font-display)] uppercase text-[var(--background)]">
-                    S&apos;inscrire
+                    {t("footer.subscribe")}
                   </button>
                 </div>
               </div>

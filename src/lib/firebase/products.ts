@@ -23,9 +23,13 @@ import {
   slugifyProductName,
 } from "@/lib/products/utils";
 import {
-  firebaseDb,
+  getFirebaseDb,
   isFirebaseConfigured as isFirebaseClientConfigured,
 } from "@/lib/firebase/client";
+
+function getProductsCollection() {
+  return collection(getFirebaseDb(), "products");
+}
 
 type FirebaseProductDocument = {
   slug: string;
@@ -50,8 +54,6 @@ type FirebaseProductDocument = {
   createdAt: number;
   updatedAt: number;
 };
-
-const productsCollection = collection(firebaseDb, "products");
 
 export function isFirebaseConfigured() {
   return isFirebaseClientConfigured();
@@ -162,7 +164,7 @@ export async function fetchAdminProducts() {
   }
 
   try {
-    const snapshot = await getDocs(query(productsCollection, orderBy("createdAt", "desc")));
+    const snapshot = await getDocs(query(getProductsCollection(), orderBy("createdAt", "desc")));
 
     return snapshot.docs.map((documentSnapshot) =>
       mapFirebaseDocumentToAdminProduct(
@@ -182,7 +184,7 @@ export async function fetchAdminProductBySlug(slug: string) {
   }
 
   try {
-    const documentSnapshot = await getDoc(doc(firebaseDb, "products", slug));
+    const documentSnapshot = await getDoc(doc(getFirebaseDb(), "products", slug));
 
     if (!documentSnapshot.exists()) {
       return null;
@@ -209,7 +211,7 @@ export async function createAdminProduct(input: ProductMutationInput) {
   try {
     const slug = input.slug ?? slugifyProductName(input.name);
     const payload = mapInputToFirebaseDocument({ ...input, slug });
-    await setDoc(doc(firebaseDb, "products", slug), payload);
+    await setDoc(doc(getFirebaseDb(), "products", slug), payload);
 
     return {
       data: mapFirebaseDocumentToAdminProduct(slug, payload),
@@ -232,7 +234,7 @@ export async function updateAdminProduct(slug: string, input: ProductMutationInp
   }
 
   try {
-    const existingSnapshot = await getDoc(doc(firebaseDb, "products", slug));
+    const existingSnapshot = await getDoc(doc(getFirebaseDb(), "products", slug));
     const existingProduct = existingSnapshot.exists()
       ? (existingSnapshot.data() as FirebaseProductDocument)
       : undefined;
@@ -241,7 +243,7 @@ export async function updateAdminProduct(slug: string, input: ProductMutationInp
       existingProduct?.createdAt,
     );
 
-    await setDoc(doc(firebaseDb, "products", slug), payload);
+    await setDoc(doc(getFirebaseDb(), "products", slug), payload);
 
     return {
       data: mapFirebaseDocumentToAdminProduct(slug, payload),
@@ -264,7 +266,7 @@ export async function deleteAdminProduct(slug: string) {
   }
 
   try {
-    await deleteDoc(doc(firebaseDb, "products", slug));
+    await deleteDoc(doc(getFirebaseDb(), "products", slug));
 
     return {
       data: { slug },

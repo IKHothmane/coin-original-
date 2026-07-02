@@ -20,7 +20,6 @@ import {
   DesktopTopBar,
   MobileTopBar,
   MobileDrawer,
-  SiteFooter,
   ThemeLogo,
 } from "@/components/homepage-sections";
 import { type CatalogProduct, catalogProducts } from "@/components/catalog-data";
@@ -174,8 +173,8 @@ export function ProductPage({ product, slug }: ProductPageProps) {
   const router = useRouter();
   const { addToCart } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [fetchedProduct, setFetchedProduct] = useState<CatalogProduct | null>(null);
-  const [isLoadingProduct, setIsLoadingProduct] = useState(!product && Boolean(slug));
+  const [fetchedProduct, setFetchedProduct] = useState<CatalogProduct | null>(product ?? null);
+  const [isLoadingProduct, setIsLoadingProduct] = useState(true);
   const [selectedSize, setSelectedSize] = useState(product?.sizes[0] ?? "");
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -225,7 +224,7 @@ export function ProductPage({ product, slug }: ProductPageProps) {
     return () => window.clearTimeout(timer);
   }, [addedToCart]);
 
-  const activeProduct = fetchedProduct ?? product ?? null;
+  const activeProduct = fetchedProduct;
 
   const priceValue = useMemo(
     () => (activeProduct ? parsePrice(activeProduct.price) : 0),
@@ -277,7 +276,6 @@ export function ProductPage({ product, slug }: ProductPageProps) {
             Chargement du produit...
           </p>
         </main>
-        <SiteFooter />
       </div>
     );
   }
@@ -303,7 +301,6 @@ export function ProductPage({ product, slug }: ProductPageProps) {
             Retour à la boutique
           </Link>
         </main>
-        <SiteFooter />
       </div>
     );
   }
@@ -766,8 +763,6 @@ export function ProductPage({ product, slug }: ProductPageProps) {
           </div>
         </div>
       </main>
-
-      <SiteFooter />
     </div>
   );
 }

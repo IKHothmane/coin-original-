@@ -1,5 +1,3 @@
-import { catalogProducts, featuredProductSlugs, type ProductBadgeTone } from "@/components/catalog-data";
-
 export type FeaturedProduct = {
   slug: string;
   name: string;
@@ -7,7 +5,7 @@ export type FeaturedProduct = {
   price: string;
   compareAtPrice?: string;
   badge?: string;
-  badgeTone?: ProductBadgeTone;
+  badgeTone?: string;
   image: string;
 };
 
@@ -26,19 +24,7 @@ export const partners = ["NIKE", "ADIDAS", "STUSSY", "JORDAN", "SUPREME"];
 
 export const partnersLoop = [...partners, ...partners];
 
-export const featuredProducts: FeaturedProduct[] = featuredProductSlugs
-  .map((slug) => catalogProducts.find((product) => product.slug === slug))
-  .filter((product): product is NonNullable<typeof product> => Boolean(product))
-  .map((product) => ({
-    slug: product.slug,
-    name: product.name,
-    description: product.description,
-    price: product.price,
-    compareAtPrice: product.compareAtPrice,
-    badge: product.badge?.label,
-    badgeTone: product.badge?.tone,
-    image: product.image,
-  }));
+export const featuredProducts: FeaturedProduct[] = [];
 
 export const trustItems: TrustItem[] = [
   {

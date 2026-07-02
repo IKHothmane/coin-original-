@@ -143,7 +143,7 @@ export function AdminShell({ children, pageTitle, pageSubtitle }: AdminShellProp
         </div>
       ) : null}
 
-      <main className="min-h-screen px-3 pb-28 pt-20 lg:ml-64 lg:px-5 lg:pb-10 lg:pt-0">
+      <main className="min-h-screen px-3 pb-28 pt-16 lg:ml-64 lg:px-0 lg:pr-5 lg:pb-10 lg:pt-0">
         {pageTitle ? (
           <header className="sticky top-0 z-30 -mx-4 hidden h-20 items-center justify-between border-b-2 border-[#353534] bg-[#131313] px-10 lg:mx-0 lg:flex">
             <div>
@@ -175,28 +175,6 @@ export function AdminShell({ children, pageTitle, pageSubtitle }: AdminShellProp
 
         {children}
       </main>
-
-      <footer className="hidden border-t-2 border-[#353534] bg-[#0e0e0e] py-6 lg:ml-64 lg:block">
-        <div className="flex items-center justify-between px-10">
-          <div className="font-[var(--font-display)] text-3xl uppercase text-[#e5e2e1] opacity-50">
-            COIN ORIGINAL
-          </div>
-          <p className="font-mono text-[10px] text-[#e6beb2]">
-            © 2024 COIN ORIGINAL MOROCCO. ALL RIGHTS RESERVED.
-          </p>
-          <div className="flex gap-4 font-mono text-[10px] uppercase text-[#e6beb2]">
-            <Link href="/support" className="transition-colors hover:text-[#ffb59e]">
-              Support
-            </Link>
-            <Link href="/privacy" className="transition-colors hover:text-[#ffb59e]">
-              Privacy Policy
-            </Link>
-            <Link href="/status" className="transition-colors hover:text-[#ffb59e]">
-              System Status
-            </Link>
-          </div>
-        </div>
-      </footer>
 
       <div className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t-2 border-[#353534] bg-[#131313] lg:hidden">
         {adminNavItems.map((item) => (

@@ -11,14 +11,6 @@ import {
   isFirebaseConfigured,
   updateAdminProduct as updateFirebaseAdminProduct,
 } from "@/lib/firebase/products";
-import {
-  createAdminProduct as createSupabaseAdminProduct,
-  deleteAdminProduct as deleteSupabaseAdminProduct,
-  fetchAdminProductBySlug as fetchSupabaseAdminProductBySlug,
-  fetchAdminProducts as fetchSupabaseAdminProducts,
-  isSupabaseConfigured,
-  updateAdminProduct as updateSupabaseAdminProduct,
-} from "@/lib/supabase/products";
 import type { AdminProductRecord, ProductMutationInput } from "./types";
 
 export type ProductRepository = {
@@ -78,36 +70,11 @@ function createFirebaseProductRepository(): ProductRepository {
     delete: (slug) => deleteFirebaseAdminProduct(slug),
     fetchCatalogProducts: async () => {
       const products = await fetchFirebaseAdminProducts();
-      return products.length > 0 ? mapAdminProductsToCatalog(products) : catalogProducts;
+      return mapAdminProductsToCatalog(products);
     },
     fetchCatalogProductBySlug: async (slug) => {
       const product = await fetchFirebaseAdminProductBySlug(slug);
-      if (product) {
-        return mapAdminProductsToCatalog([product])[0] ?? null;
-      }
-      return getProductBySlug(slug) ?? null;
-    },
-  };
-}
-
-function createSupabaseProductRepository(): ProductRepository {
-  return {
-    isConfigured: () => isSupabaseConfigured(),
-    fetchAll: () => fetchSupabaseAdminProducts(),
-    fetchBySlug: (slug) => fetchSupabaseAdminProductBySlug(slug),
-    create: (input) => createSupabaseAdminProduct(input),
-    update: (slug, input) => updateSupabaseAdminProduct(slug, input),
-    delete: (slug) => deleteSupabaseAdminProduct(slug),
-    fetchCatalogProducts: async () => {
-      const products = await fetchSupabaseAdminProducts();
-      return products.length > 0 ? mapAdminProductsToCatalog(products) : catalogProducts;
-    },
-    fetchCatalogProductBySlug: async (slug) => {
-      const product = await fetchSupabaseAdminProductBySlug(slug);
-      if (product) {
-        return mapAdminProductsToCatalog([product])[0] ?? null;
-      }
-      return getProductBySlug(slug) ?? null;
+      return product ? mapAdminProductsToCatalog([product])[0] ?? null : null;
     },
   };
 }
@@ -117,20 +84,12 @@ export function getProductRepository(): ProductRepository {
     return createFirebaseProductRepository();
   }
 
-  if (isSupabaseConfigured()) {
-    return createSupabaseProductRepository();
-  }
-
   return createStaticProductRepository();
 }
 
 export function getActiveProductBackendLabel(): string {
   if (isFirebaseConfigured()) {
     return "Firebase";
-  }
-
-  if (isSupabaseConfigured()) {
-    return "Supabase";
   }
 
   return "Catalogue statique";

@@ -59,6 +59,7 @@ type CartStore = {
 function createCartStore(): CartStore {
   let items = readCartFromStorage();
   const listeners = new Set<() => void>();
+  let serverSnapshotCache = items;
 
   return {
     subscribe(callback) {
@@ -71,10 +72,12 @@ function createCartStore(): CartStore {
       return items;
     },
     getServerSnapshot() {
-      return [];
+      // Return the same snapshot during hydration
+      return serverSnapshotCache;
     },
     setItems(updater) {
       items = updater(items);
+      serverSnapshotCache = items;
       writeCartToStorage(items);
       listeners.forEach((callback) => callback());
     },
