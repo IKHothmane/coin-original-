@@ -1,3 +1,4 @@
+import { Footer } from "@/components/footer";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import type { Metadata } from "next";
 import { Anton, Archivo_Narrow, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
@@ -148,7 +149,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <GoogleAnalytics />
-        <CartProvider>{children}</CartProvider>
+        <CartProvider>
+          {children}
+          <Footer />
+        </CartProvider>
         <JsonLd data={[organizationJsonLd, websiteJsonLd]} />
       </body>
     </html>
