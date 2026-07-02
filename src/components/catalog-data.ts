@@ -1,4 +1,6 @@
-export type ProductBadgeTone = "primary" | "tertiary" | "error";
+import type { ProductBadgeTone, ProductGalleryItem } from "@/lib/products/types";
+
+export type { ProductBadgeTone, ProductGalleryItem };
 
 export type CatalogProduct = {
   slug: string;
@@ -13,10 +15,7 @@ export type CatalogProduct = {
     tone: ProductBadgeTone;
   };
   image: string;
-  gallery: {
-    src: string;
-    alt: string;
-  }[];
+  gallery: ProductGalleryItem[];
   sizes: string[];
   soldOut?: boolean;
   authenticityLabel?: string;

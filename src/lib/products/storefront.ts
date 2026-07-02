@@ -1,24 +1,10 @@
 import {
   catalogProducts,
   featuredProductSlugs,
-  getProductBySlug,
   type CatalogProduct,
 } from "@/components/catalog-data";
 import type { FeaturedProduct } from "@/components/homepage-data";
-import {
-  fetchCatalogProductBySlugFromFirebase,
-  fetchCatalogProductsFromFirebase,
-} from "@/lib/firebase/products";
-
-export async function fetchCatalogProductsWithFallback() {
-  const firebaseProducts = await fetchCatalogProductsFromFirebase();
-  return firebaseProducts.length > 0 ? firebaseProducts : catalogProducts;
-}
-
-export async function fetchCatalogProductBySlugWithFallback(slug: string) {
-  const firebaseProduct = await fetchCatalogProductBySlugFromFirebase(slug);
-  return firebaseProduct ?? getProductBySlug(slug) ?? null;
-}
+import { getProductRepository } from "./repository";
 
 function toFeaturedProduct(product: CatalogProduct): FeaturedProduct {
   return {
@@ -31,6 +17,16 @@ function toFeaturedProduct(product: CatalogProduct): FeaturedProduct {
     badgeTone: product.badge?.tone,
     image: product.image,
   };
+}
+
+export async function fetchCatalogProductsWithFallback() {
+  const repository = getProductRepository();
+  return repository.fetchCatalogProducts();
+}
+
+export async function fetchCatalogProductBySlugWithFallback(slug: string) {
+  const repository = getProductRepository();
+  return repository.fetchCatalogProductBySlug(slug);
 }
 
 export async function fetchFeaturedProductsWithFallback() {
@@ -46,3 +42,5 @@ export async function fetchFeaturedProductsWithFallback() {
 
   return products.slice(0, 4).map(toFeaturedProduct);
 }
+
+export { catalogProducts, featuredProductSlugs };

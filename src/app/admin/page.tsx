@@ -1,23 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
-  Bell,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  Package,
   Package2,
-  Settings,
   ShoppingCart,
   TrendingUp,
   Truck,
-  User,
   Users,
-  X,
 } from "lucide-react";
-import Link from "next/link";
+import { AdminShell } from "@/components/admin/admin-shell";
 
 type StatCard = {
   title: string;
@@ -37,53 +28,15 @@ type RecentOrder = {
 };
 
 const stats: StatCard[] = [
-  {
-    title: "Ventes Totales",
-    value: "128,450 MAD",
-    change: "+14.2%",
-    icon: TrendingUp,
-    trend: "up",
-  },
-  {
-    title: "Commandes",
-    value: "842",
-    change: "+8.1%",
-    icon: ShoppingCart,
-    trend: "up",
-  },
-  {
-    title: "Produits Actifs",
-    value: "56",
-    change: "-2",
-    icon: Package2,
-    trend: "down",
-  },
-  {
-    title: "Nouveaux Clients",
-    value: "324",
-    change: "+23%",
-    icon: Users,
-    trend: "up",
-  },
+  { title: "Ventes Totales", value: "128,450 MAD", change: "+14.2%", icon: TrendingUp, trend: "up" },
+  { title: "Commandes", value: "842", change: "+8.1%", icon: ShoppingCart, trend: "up" },
+  { title: "Produits Actifs", value: "56", change: "-2", icon: Package2, trend: "down" },
+  { title: "Nouveaux Clients", value: "324", change: "+23%", icon: Users, trend: "up" },
 ];
 
 const recentOrders: RecentOrder[] = [
-  {
-    id: "#9821",
-    client: "Amine Belkhayat",
-    city: "Casablanca",
-    status: "EN COURS",
-    amount: "850 MAD",
-    statusTone: "neutral",
-  },
-  {
-    id: "#9820",
-    client: "Yasmine Tazi",
-    city: "Marrakech",
-    status: "LIVRE",
-    amount: "1,200 MAD",
-    statusTone: "success",
-  },
+  { id: "#9821", client: "Amine Belkhayat", city: "Casablanca", status: "EN COURS", amount: "850 MAD", statusTone: "neutral" },
+  { id: "#9820", client: "Yasmine Tazi", city: "Marrakech", status: "LIVRE", amount: "1,200 MAD", statusTone: "success" },
 ];
 
 const revenueBars = [
@@ -94,49 +47,6 @@ const revenueBars = [
 ];
 
 const customerBars = ["h-1/4", "h-2/4", "h-1/3", "h-3/4", "h-full"];
-
-const desktopNavItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, active: true },
-  { href: "/admin/products", label: "Products", icon: Package, active: false },
-  { href: "/admin/orders", label: "Orders", icon: ShoppingCart, active: false },
-  { href: "/admin/settings", label: "Settings", icon: Settings, active: false },
-];
-
-const mobileDockItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, active: true },
-  { href: "/admin/products", label: "Produits", icon: Package, active: false },
-  { href: "/admin/orders", label: "Commandes", icon: ShoppingCart, active: false },
-  { href: "/admin/settings", label: "Reglages", icon: Settings, active: false },
-];
-
-function NavLink({
-  href,
-  label,
-  icon: Icon,
-  active,
-  onClick,
-}: {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  active: boolean;
-  onClick?: () => void;
-}) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className={`flex items-center gap-3 px-4 py-3 font-mono text-xs uppercase transition-colors ${
-        active
-          ? "bg-[#ff571a] text-white"
-          : "text-[#e5e2e1] hover:bg-[#2A2A2A]"
-      }`}
-    >
-      <Icon size={18} />
-      {label}
-    </Link>
-  );
-}
 
 function StatusBadge({ status, tone }: { status: string; tone: RecentOrder["statusTone"] }) {
   return (
@@ -151,107 +61,9 @@ function StatusBadge({ status, tone }: { status: string; tone: RecentOrder["stat
 }
 
 export default function AdminPage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen ? "hidden" : "auto";
-
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [mobileMenuOpen]);
-
   return (
-    <div className="min-h-screen bg-[#0F0F0F] font-[var(--font-body)] text-[#e5e2e1]">
-      <aside className="hidden lg:fixed lg:left-0 lg:top-0 lg:flex lg:h-full lg:w-64 lg:flex-col lg:border-r-2 lg:border-[#2A2A2A] lg:bg-[#131313] lg:py-8">
-        <div className="mb-8 px-6">
-          <h1 className="font-[var(--font-display)] text-3xl uppercase text-[#ffb59e]">
-            Admin Panel
-          </h1>
-          <p className="font-mono text-[10px] uppercase tracking-widest text-[#e6beb2]">
-            Management Suite
-          </p>
-        </div>
-
-        <nav className="flex-grow space-y-1 px-4">
-          {desktopNavItems.map((item) => (
-            <NavLink key={item.label} {...item} />
-          ))}
-        </nav>
-
-        <div className="mt-auto px-4">
-          <Link
-            href="/admin/products/new"
-            className="block w-full bg-[#ff571a] py-3 text-center font-[var(--font-display)] text-lg uppercase text-white transition-transform hover:scale-105"
-          >
-            New Product
-          </Link>
-          <Link
-            href="/logout"
-            className="mt-4 flex items-center gap-3 px-4 py-3 font-mono text-xs uppercase text-[#e5e2e1] transition-colors hover:bg-[#2A2A2A]"
-          >
-            <LogOut size={18} />
-            Logout
-          </Link>
-        </div>
-      </aside>
-
-      <header className="fixed left-0 right-0 top-0 z-40 flex h-16 items-center justify-between border-b-2 border-[#2A2A2A] bg-[#131313] px-4 lg:hidden">
-        <button type="button" onClick={() => setMobileMenuOpen(true)} aria-label="Ouvrir le menu admin">
-          <Menu size={24} />
-        </button>
-        <h1 className="font-[var(--font-display)] text-xl uppercase text-[#ffb59e]">Admin</h1>
-        <div className="flex items-center gap-4">
-          <Bell size={20} />
-          <User size={20} className="text-[#ff571a]" />
-        </div>
-      </header>
-
-      {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/70"
-            aria-label="Fermer le menu admin"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          <div className="absolute left-0 top-0 h-full w-72 border-r-2 border-[#2A2A2A] bg-[#131313] py-6">
-            <div className="mb-6 flex items-center justify-between px-6">
-              <h2 className="font-[var(--font-display)] text-2xl uppercase text-[#ffb59e]">Admin</h2>
-              <button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Fermer le drawer">
-                <X size={24} />
-              </button>
-            </div>
-            <nav className="space-y-1 px-4">
-              {desktopNavItems.map((item) => (
-                <NavLink
-                  key={item.label}
-                  {...item}
-                  onClick={() => setMobileMenuOpen(false)}
-                />
-              ))}
-            </nav>
-          </div>
-        </div>
-      ) : null}
-
-      <header className="hidden lg:fixed lg:left-64 lg:right-0 lg:top-0 lg:flex lg:h-20 lg:items-center lg:justify-between lg:border-b-2 lg:border-[#2A2A2A] lg:bg-[#131313] lg:px-10">
-        <span className="font-mono text-xs uppercase text-[#ff571a]">
-          Vue d&apos;ensemble / Statistiques
-        </span>
-        <div className="flex items-center gap-6">
-          <div className="relative">
-            <Bell size={20} className="cursor-pointer transition-colors hover:text-[#ff571a]" />
-            <span className="absolute right-0 top-0 h-2 w-2 bg-[#ff571a]" />
-          </div>
-          <div className="flex items-center gap-2 border-l border-[#2A2A2A] pl-6">
-            <span className="font-mono text-xs">ADMIN_01</span>
-            <User size={20} className="text-[#ff571a]" />
-          </div>
-        </div>
-      </header>
-
-      <main className="px-3 pb-24 pt-20 lg:ml-64 lg:px-5 lg:pt-28">
+    <AdminShell pageTitle="Tableau De Bord" pageSubtitle="Vue d&apos;ensemble / Statistiques">
+      <div className="py-6 lg:py-10">
         <div className="mb-6 flex flex-col gap-4 md:mb-10 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="font-[var(--font-display)] text-3xl uppercase leading-none md:text-6xl">
@@ -308,9 +120,7 @@ export default function AdminPage() {
           <div className="col-span-6 flex min-h-[180px] flex-col justify-between border-2 border-[#2A2A2A] bg-[#1c1b1b] p-4 transition-colors hover:bg-[#2A2A2A] sm:p-6 lg:col-span-4 lg:p-8">
             <div>
               <ShoppingCart size={32} className="mb-4 text-[#ff571a]" />
-              <p className="font-mono text-[10px] uppercase text-[#e6beb2]">
-                {stats[1].title}
-              </p>
+              <p className="font-mono text-[10px] uppercase text-[#e6beb2]">{stats[1].title}</p>
             </div>
             <p className="font-[var(--font-display)] text-4xl text-[#e5e2e1] sm:text-5xl">
               {stats[1].value}
@@ -320,9 +130,7 @@ export default function AdminPage() {
           <div className="col-span-6 flex min-h-[180px] cursor-pointer flex-col justify-between overflow-hidden border-2 border-[#ff571a] bg-[#ff571a] p-4 text-[#521300] sm:p-6 lg:col-span-4 lg:p-8">
             <div className="transition-transform hover:-translate-y-1">
               <Package2 size={32} className="mb-4 text-[#521300]" />
-              <p className="font-mono text-[10px] uppercase text-[#521300]">
-                {stats[2].title}
-              </p>
+              <p className="font-mono text-[10px] uppercase text-[#521300]">{stats[2].title}</p>
             </div>
             <div className="flex items-end justify-between gap-4">
               <p className="font-[var(--font-display)] text-4xl sm:text-5xl">{stats[2].value}</p>
@@ -391,26 +199,7 @@ export default function AdminPage() {
             </table>
           </div>
         </div>
-      </main>
-
-      <div className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t-2 border-[#2A2A2A] bg-[#131313] lg:hidden">
-        {mobileDockItems.map((item) => {
-          const Icon = item.icon;
-
-          return (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`flex flex-col items-center gap-1 ${
-                item.active ? "text-[#ff571a]" : "text-[#e5e2e1]"
-              }`}
-            >
-              <Icon size={20} />
-              <span className="font-mono text-[9px] uppercase">{item.label}</span>
-            </Link>
-          );
-        })}
       </div>
-    </div>
+    </AdminShell>
   );
 }

@@ -1,61 +1,16 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { ProductBadgeTone } from "@/components/catalog-data";
-
-type ProductGalleryItem = {
-  src: string;
-  alt: string;
-};
-
-type StockStatus = "Actif" | "Stock faible" | "Hors stock";
-
-export type AdminProductRecord = {
-  id: string;
-  slug: string;
-  brand: string;
-  category: string;
-  name: string;
-  priceValue: number;
-  priceLabel: string;
-  compareAtPriceValue?: number;
-  compareAtPriceLabel?: string;
-  description: string;
-  badge?: {
-    label: string;
-    tone: ProductBadgeTone;
-  };
-  image: string;
-  gallery: ProductGalleryItem[];
-  sizes: string[];
-  stockBySize: Record<string, number>;
-  stock: number;
-  stockStatus: StockStatus;
-  collectionLabel: string;
-  soldOut: boolean;
-  authenticityLabel?: string;
-  deliveryLabel?: string;
-  deliveryRegion?: string;
-};
-
-export type ProductMutationInput = {
-  slug?: string;
-  brand: string;
-  category: string;
-  name: string;
-  priceValue: number;
-  compareAtPriceValue?: number;
-  description: string;
-  image: string;
-  gallery: ProductGalleryItem[];
-  stockBySize: Record<string, number>;
-  badge?: {
-    label: string;
-    tone: ProductBadgeTone;
-  };
-  soldOut?: boolean;
-  authenticityLabel?: string;
-  deliveryLabel?: string;
-  deliveryRegion?: string;
-};
+import type {
+  AdminProductRecord,
+  ProductBadgeTone,
+  ProductGalleryItem,
+  ProductMutationInput,
+} from "@/lib/products/types";
+import {
+  formatMad,
+  getCollectionLabel,
+  getStockStatus,
+  slugifyProductName,
+} from "@/lib/products/utils";
 
 type SupabaseProductRow = {
   id: string;
@@ -113,44 +68,6 @@ export function getSupabaseBrowserClient() {
   }
 
   return browserClient;
-}
-
-function formatMad(value: number) {
-  return `${new Intl.NumberFormat("fr-FR").format(value)} MAD`;
-}
-
-export function slugifyProductName(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function getCollectionLabel(product: { category: string }) {
-  if (product.category === "Chaussures") {
-    return "Collection Summer 24";
-  }
-
-  if (product.category === "Vetements" || product.category === "Hoodies") {
-    return "Essentials Series";
-  }
-
-  return "Lifestyle Pack";
-}
-
-function getStockStatus(stock: number): StockStatus {
-  if (stock <= 0) {
-    return "Hors stock";
-  }
-
-  if (stock <= 8) {
-    return "Stock faible";
-  }
-
-  return "Actif";
 }
 
 function mapSupabaseRowToAdminProduct(row: SupabaseProductRow): AdminProductRecord {
@@ -308,6 +225,26 @@ export async function updateAdminProduct(slug: string, input: ProductMutationInp
   }
 
   return { data: mapSupabaseRowToAdminProduct(data as SupabaseProductRow), error: null };
+}
+
+export async function deleteAdminProduct(slug: string) {
+  const client = getSupabaseBrowserClient();
+
+  if (!client) {
+    return {
+      data: null,
+      error:
+        "Supabase n'est pas configure. Ajoute NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.",
+    };
+  }
+
+  const { error } = await client.from("products").delete().eq("slug", slug);
+
+  if (error) {
+    return { data: null, error: error.message };
+  }
+
+  return { data: { slug }, error: null };
 }
 
 function sanitizeFileName(value: string) {

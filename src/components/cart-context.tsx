@@ -4,9 +4,8 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import type { CartItem } from "@/components/cart-types";
@@ -50,6 +49,40 @@ function writeCartToStorage(items: CartItem[]) {
   }
 }
 
+type CartStore = {
+  subscribe: (callback: () => void) => () => void;
+  getSnapshot: () => CartItem[];
+  getServerSnapshot: () => CartItem[];
+  setItems: (updater: (current: CartItem[]) => CartItem[]) => void;
+};
+
+function createCartStore(): CartStore {
+  let items = readCartFromStorage();
+  const listeners = new Set<() => void>();
+
+  return {
+    subscribe(callback) {
+      listeners.add(callback);
+      return () => {
+        listeners.delete(callback);
+      };
+    },
+    getSnapshot() {
+      return items;
+    },
+    getServerSnapshot() {
+      return [];
+    },
+    setItems(updater) {
+      items = updater(items);
+      writeCartToStorage(items);
+      listeners.forEach((callback) => callback());
+    },
+  };
+}
+
+const cartStore = createCartStore();
+
 type CartContextValue = {
   items: CartItem[];
   isReady: boolean;
@@ -64,19 +97,25 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
+function useIsReady() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [isReady, setIsReady] = useState(false);
+  const items = useSyncExternalStore(
+    cartStore.subscribe,
+    cartStore.getSnapshot,
+    cartStore.getServerSnapshot,
+  );
+  const isReady = useIsReady();
 
-  useEffect(() => {
-    setItems(readCartFromStorage());
-    setIsReady(true);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+  const setItems = useCallback((updater: (current: CartItem[]) => CartItem[]) => {
+    cartStore.setItems(updater);
   }, []);
-
-  useEffect(() => {
-    writeCartToStorage(items);
-  }, [items]);
 
   const addToCart = useCallback(
     (product: CatalogProduct, size: string, quantity = 1) => {
@@ -109,36 +148,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
         ];
       });
     },
-    [],
+    [setItems],
   );
 
-  const removeFromCart = useCallback((itemId: string) => {
-    setItems((current) => current.filter((item) => item.id !== itemId));
-  }, []);
+  const removeFromCart = useCallback(
+    (itemId: string) => {
+      setItems((current) => current.filter((item) => item.id !== itemId));
+    },
+    [setItems],
+  );
 
-  const updateQuantity = useCallback((itemId: string, delta: number) => {
-    setItems((current) =>
-      current.map((item) =>
-        item.id === itemId
-          ? { ...item, quantity: Math.max(1, Math.min(10, item.quantity + delta)) }
-          : item,
-      ),
-    );
-  }, []);
+  const updateQuantity = useCallback(
+    (itemId: string, delta: number) => {
+      setItems((current) =>
+        current.map((item) =>
+          item.id === itemId
+            ? { ...item, quantity: Math.max(1, Math.min(10, item.quantity + delta)) }
+            : item,
+        ),
+      );
+    },
+    [setItems],
+  );
 
-  const setQuantity = useCallback((itemId: string, quantity: number) => {
-    setItems((current) =>
-      current.map((item) =>
-        item.id === itemId
-          ? { ...item, quantity: Math.max(1, Math.min(10, quantity)) }
-          : item,
-      ),
-    );
-  }, []);
+  const setQuantity = useCallback(
+    (itemId: string, quantity: number) => {
+      setItems((current) =>
+        current.map((item) =>
+          item.id === itemId
+            ? { ...item, quantity: Math.max(1, Math.min(10, quantity)) }
+            : item,
+        ),
+      );
+    },
+    [setItems],
+  );
 
   const clearCart = useCallback(() => {
-    setItems([]);
-  }, []);
+    setItems(() => []);
+  }, [setItems]);
 
   const cartCount = useMemo(
     () => items.reduce((total, item) => total + item.quantity, 0),

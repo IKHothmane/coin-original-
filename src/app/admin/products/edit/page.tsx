@@ -4,10 +4,9 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AdminEditProductPage } from "@/components/admin-edit-product-page";
-import {
-  fetchAdminProductBySlug,
-  type AdminProductRecord,
-} from "@/lib/firebase/products";
+import { AdminShell } from "@/components/admin/admin-shell";
+import type { AdminProductRecord } from "@/lib/products/types";
+import { getProductRepository } from "@/lib/products/repository";
 
 function AdminEditProductLoading() {
   return (
@@ -19,7 +18,7 @@ function AdminEditProductLoading() {
   );
 }
 
-function AdminEditProductStaticContent() {
+function AdminEditProductContent() {
   const searchParams = useSearchParams();
   const slug = searchParams.get("slug");
   const [product, setProduct] = useState<AdminProductRecord | null>(null);
@@ -36,7 +35,7 @@ function AdminEditProductStaticContent() {
       }
 
       setIsLoading(true);
-      const nextProduct = await fetchAdminProductBySlug(slug);
+      const nextProduct = await getProductRepository().fetchBySlug(slug);
 
       if (isMounted) {
         setProduct(nextProduct);
@@ -74,8 +73,12 @@ function AdminEditProductStaticContent() {
 
 export default function AdminEditProductStaticPage() {
   return (
-    <Suspense fallback={<AdminEditProductLoading />}>
-      <AdminEditProductStaticContent />
-    </Suspense>
+    <AdminShell>
+      <main className="min-h-screen px-3 pb-24 pt-4 lg:px-5 lg:pb-10 lg:pt-10">
+        <Suspense fallback={<AdminEditProductLoading />}>
+          <AdminEditProductContent />
+        </Suspense>
+      </main>
+    </AdminShell>
   );
 }

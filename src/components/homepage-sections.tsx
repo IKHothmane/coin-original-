@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useCart } from "@/components/cart-context";
 import { House, Menu, ShoppingBag, ShoppingCart, Store } from "lucide-react";
 import Image from "next/image";
@@ -16,7 +16,7 @@ import {
   type FeaturedProduct,
   type TrustItem,
 } from "@/components/homepage-data";
-import { fetchFeaturedProductsWithFallback } from "@/lib/firebase/storefront";
+import { fetchFeaturedProductsWithFallback } from "@/lib/products/storefront";
 
 type MenuActionProps = {
   mobileMenuOpen: boolean;
@@ -80,9 +80,11 @@ export function ThemeLogo({
 }
 
 function useMounted() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  return mounted;
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 }
 
 function CartIconBadge({ className }: { className?: string }) {

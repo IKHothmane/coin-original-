@@ -25,7 +25,7 @@ import {
   type BoutiqueProduct,
   type BoutiqueSortValue,
 } from "@/components/boutique-page-data";
-import { fetchCatalogProductsWithFallback } from "@/lib/firebase/storefront";
+import { fetchCatalogProductsWithFallback } from "@/lib/products/storefront";
 
 function badgeToneClasses(tone: NonNullable<BoutiqueProduct["badge"]>["tone"]) {
   if (tone === "tertiary") {
@@ -281,9 +281,9 @@ function Pagination({
   );
 }
 
-export function BoutiquePage() {
+export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiqueProduct[] }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [products, setProducts] = useState<BoutiqueProduct[]>(boutiqueProducts);
+  const [products, setProducts] = useState<BoutiqueProduct[]>(initialProducts ?? boutiqueProducts);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<BoutiqueSortValue>("latest");
   const [currentPage, setCurrentPage] = useState(1);
@@ -297,6 +297,8 @@ export function BoutiquePage() {
   }, [mobileMenuOpen]);
 
   useEffect(() => {
+    if (initialProducts) return;
+
     let isMounted = true;
 
     const loadProducts = async () => {
@@ -312,7 +314,7 @@ export function BoutiquePage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [initialProducts]);
 
   const filteredProducts = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();

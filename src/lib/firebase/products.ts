@@ -8,71 +8,24 @@ import {
   query,
   setDoc,
 } from "firebase/firestore";
-import type { CatalogProduct, ProductBadgeTone } from "@/components/catalog-data";
+import type { CatalogProduct } from "@/components/catalog-data";
 import { getCloudinaryBackgroundRemovedUrl } from "@/lib/cloudinary";
+import type {
+  AdminProductRecord,
+  ProductBadgeTone,
+  ProductGalleryItem,
+  ProductMutationInput,
+} from "@/lib/products/types";
+import {
+  formatMad,
+  getCollectionLabel,
+  getStockStatus,
+  slugifyProductName,
+} from "@/lib/products/utils";
 import {
   firebaseDb,
   isFirebaseConfigured as isFirebaseClientConfigured,
 } from "@/lib/firebase/client";
-
-const DEBUG_SERVER_URL = "http://127.0.0.1:7777/event";
-const DEBUG_SESSION_ID = "firebase-storage-cors";
-
-type ProductGalleryItem = {
-  src: string;
-  alt: string;
-};
-
-type StockStatus = "Actif" | "Stock faible" | "Hors stock";
-
-export type AdminProductRecord = {
-  id: string;
-  slug: string;
-  brand: string;
-  category: string;
-  name: string;
-  priceValue: number;
-  priceLabel: string;
-  compareAtPriceValue?: number;
-  compareAtPriceLabel?: string;
-  description: string;
-  badge?: {
-    label: string;
-    tone: ProductBadgeTone;
-  };
-  image: string;
-  gallery: ProductGalleryItem[];
-  sizes: string[];
-  stockBySize: Record<string, number>;
-  stock: number;
-  stockStatus: StockStatus;
-  collectionLabel: string;
-  soldOut: boolean;
-  authenticityLabel?: string;
-  deliveryLabel?: string;
-  deliveryRegion?: string;
-};
-
-export type ProductMutationInput = {
-  slug?: string;
-  brand: string;
-  category: string;
-  name: string;
-  priceValue: number;
-  compareAtPriceValue?: number;
-  description: string;
-  image: string;
-  gallery: ProductGalleryItem[];
-  stockBySize: Record<string, number>;
-  badge?: {
-    label: string;
-    tone: ProductBadgeTone;
-  };
-  soldOut?: boolean;
-  authenticityLabel?: string;
-  deliveryLabel?: string;
-  deliveryRegion?: string;
-};
 
 type FirebaseProductDocument = {
   slug: string;
@@ -102,44 +55,6 @@ const productsCollection = collection(firebaseDb, "products");
 
 export function isFirebaseConfigured() {
   return isFirebaseClientConfigured();
-}
-
-function formatMad(value: number) {
-  return `${new Intl.NumberFormat("fr-FR").format(value)} MAD`;
-}
-
-export function slugifyProductName(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function getCollectionLabel(product: { category: string }) {
-  if (product.category === "Chaussures") {
-    return "Collection Summer 24";
-  }
-
-  if (product.category === "Vetements" || product.category === "Hoodies") {
-    return "Essentials Series";
-  }
-
-  return "Lifestyle Pack";
-}
-
-function getStockStatus(stock: number): StockStatus {
-  if (stock <= 0) {
-    return "Hors stock";
-  }
-
-  if (stock <= 8) {
-    return "Stock faible";
-  }
-
-  return "Actif";
 }
 
 function mapInputToFirebaseDocument(
@@ -294,68 +209,13 @@ export async function createAdminProduct(input: ProductMutationInput) {
   try {
     const slug = input.slug ?? slugifyProductName(input.name);
     const payload = mapInputToFirebaseDocument({ ...input, slug });
-    // #region debug-point D:firebase-create-start
-    fetch(DEBUG_SERVER_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        sessionId: DEBUG_SESSION_ID,
-        runId: "pre-fix",
-        hypothesisId: "D",
-        location: "src/lib/firebase/products.ts:createAdminProduct:start",
-        msg: "[DEBUG] Firestore create started",
-        data: {
-          slug,
-          image: payload.image,
-          galleryCount: payload.gallery.length,
-        },
-        ts: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     await setDoc(doc(firebaseDb, "products", slug), payload);
-
-    // #region debug-point D:firebase-create-success
-    fetch(DEBUG_SERVER_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        sessionId: DEBUG_SESSION_ID,
-        runId: "pre-fix",
-        hypothesisId: "D",
-        location: "src/lib/firebase/products.ts:createAdminProduct:success",
-        msg: "[DEBUG] Firestore create succeeded",
-        data: {
-          slug,
-        },
-        ts: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
 
     return {
       data: mapFirebaseDocumentToAdminProduct(slug, payload),
       error: null,
     };
   } catch (error) {
-    // #region debug-point D:firebase-create-error
-    fetch(DEBUG_SERVER_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        sessionId: DEBUG_SESSION_ID,
-        runId: "pre-fix",
-        hypothesisId: "D",
-        location: "src/lib/firebase/products.ts:createAdminProduct:error",
-        msg: "[DEBUG] Firestore create failed",
-        data: {
-          error: error instanceof Error ? error.message : String(error),
-          code:
-            error && typeof error === "object" && "code" in error
-              ? String((error as { code?: unknown }).code)
-              : null,
-        },
-        ts: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     return {
       data: null,
       error: error instanceof Error ? error.message : "Impossible d'enregistrer le produit dans Firebase.",

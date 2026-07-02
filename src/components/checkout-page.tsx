@@ -19,6 +19,7 @@ import {
   SiteFooter,
 } from "@/components/homepage-sections";
 import { useCart } from "@/components/cart-context";
+import { createOrder } from "@/lib/orders/store";
 
 function formatPrice(value: number) {
   return `${value.toLocaleString("fr-FR")} DH`;
@@ -29,6 +30,15 @@ export function CheckoutPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
+
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    city: "",
+    address: "",
+    notes: "",
+  });
 
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "auto";
@@ -39,14 +49,44 @@ export function CheckoutPage() {
 
   const total = cartTotal;
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (items.length === 0) return;
+
     setIsSubmitting(true);
-    window.setTimeout(() => {
-      setIsSubmitting(false);
+
+    const result = await createOrder({
+      customer: {
+        fullName: formData.fullName.trim(),
+        phone: formData.phone.trim(),
+        city: formData.city.trim(),
+        address: formData.address.trim(),
+        notes: formData.notes.trim() || undefined,
+      },
+      items: items.map((item) => ({
+        id: item.id,
+        slug: item.slug,
+        name: item.name,
+        brand: item.brand,
+        size: item.size,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+      })),
+      total,
+    });
+
+    setIsSubmitting(false);
+
+    if (result.data) {
+      setOrderId(result.data.id);
       setIsSubmitted(true);
       clearCart();
-    }, 1600);
+    }
+  };
+
+  const updateField = (field: keyof typeof formData, value: string) => {
+    setFormData((current) => ({ ...current, [field]: value }));
   };
 
   return (
@@ -167,6 +207,11 @@ export function CheckoutPage() {
                     <h2 className="font-[var(--font-display)] text-xl uppercase text-[var(--foreground)] md:text-2xl">
                       Commande Enregistrée
                     </h2>
+                    {orderId ? (
+                      <p className="mt-2 font-mono text-xs uppercase text-[var(--primary)]">
+                        Reference: {orderId}
+                      </p>
+                    ) : null}
                     <p className="mx-auto mt-2 max-w-xl text-xs text-[var(--muted)] md:mt-3 md:text-sm">
                       Merci. Un agent Coin Original vous appellera bientôt sur WhatsApp ou par
                       téléphone pour confirmer votre commande.
@@ -187,6 +232,8 @@ export function CheckoutPage() {
                       <input
                         type="text"
                         required
+                        value={formData.fullName}
+                        onChange={(event) => updateField("fullName", event.target.value)}
                         placeholder="EX: MOHAMMED ALAMI"
                         className="w-full border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
                       />
@@ -203,6 +250,8 @@ export function CheckoutPage() {
                         <input
                           type="tel"
                           required
+                          value={formData.phone}
+                          onChange={(event) => updateField("phone", event.target.value)}
                           placeholder="06 12 34 56 78"
                           className="min-w-0 flex-1 border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
                         />
@@ -217,6 +266,8 @@ export function CheckoutPage() {
                         <input
                           type="text"
                           required
+                          value={formData.city}
+                          onChange={(event) => updateField("city", event.target.value)}
                           placeholder="EX: CASABLANCA"
                           className="w-full border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
                         />
@@ -228,6 +279,8 @@ export function CheckoutPage() {
                         <input
                           type="text"
                           required
+                          value={formData.address}
+                          onChange={(event) => updateField("address", event.target.value)}
                           placeholder="QUARTIER, RUE, N°"
                           className="w-full border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
                         />
@@ -240,6 +293,8 @@ export function CheckoutPage() {
                       </label>
                       <textarea
                         rows={3}
+                        value={formData.notes}
+                        onChange={(event) => updateField("notes", event.target.value)}
                         placeholder="Instructions pour le livreur..."
                         className="w-full resize-none border-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
                       />

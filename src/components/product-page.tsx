@@ -24,7 +24,7 @@ import {
   ThemeLogo,
 } from "@/components/homepage-sections";
 import { type CatalogProduct, catalogProducts } from "@/components/catalog-data";
-import { fetchCatalogProductBySlugWithFallback } from "@/lib/firebase/storefront";
+import { fetchCatalogProductBySlugWithFallback } from "@/lib/products/storefront";
 import { useCart } from "@/components/cart-context";
 
 function cn(...classes: Array<string | false | null | undefined>) {
