@@ -4,10 +4,9 @@ import { useFirebaseProduct } from "@/lib/products/storefront";
 import { ProductPage } from "@/components/product-page";
 
 export function ProduitSlugPage({ slug }: { slug: string }) {
-  // Skip Firebase fetch for build-time placeholder slug
-  const { product, loading } = useFirebaseProduct(slug === "placeholder" ? "" : slug);
+  const { product, loading } = useFirebaseProduct(slug);
 
-  if (loading && slug !== "placeholder") {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p>Chargement du produit...</p>
@@ -15,5 +14,5 @@ export function ProduitSlugPage({ slug }: { slug: string }) {
     );
   }
 
-  return <ProductPage slug={slug === "placeholder" ? "" : slug} product={product ?? undefined} />;
+  return <ProductPage slug={slug} product={product ?? undefined} />;
 }

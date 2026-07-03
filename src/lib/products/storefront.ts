@@ -1,39 +1,37 @@
 import { useEffect, useState } from "react";
 import type { CatalogProduct } from "@/components/catalog-data";
+import { catalogProducts, getProductBySlug } from "@/components/catalog-data";
 import { fetchCatalogProductsFromFirebase, fetchCatalogProductBySlugFromFirebase } from "@/lib/firebase/products";
 import { isFirebaseConfigured } from "@/lib/firebase/client";
 
 export async function fetchCatalogProductsWithFallback(): Promise<CatalogProduct[]> {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
   if (!isFirebaseConfigured()) {
-    return [];
+    return catalogProducts;
   }
 
   try {
     const products = await fetchCatalogProductsFromFirebase();
-    return products;
+    return products.length > 0 ? products : catalogProducts;
   } catch {
-    return [];
+    return catalogProducts;
   }
 }
 
 export async function fetchCatalogProductBySlugWithFallback(slug: string): Promise<CatalogProduct | null> {
-  if (typeof window === "undefined") {
-    return null;
-  }
+  if (!slug) return null;
+
+  // Always check hardcoded catalog first as fallback
+  const hardcodedProduct = getProductBySlug(slug);
 
   if (!isFirebaseConfigured()) {
-    return null;
+    return hardcodedProduct ?? null;
   }
 
   try {
     const product = await fetchCatalogProductBySlugFromFirebase(slug);
-    return product;
+    return product ?? hardcodedProduct ?? null;
   } catch {
-    return null;
+    return hardcodedProduct ?? null;
   }
 }
 
