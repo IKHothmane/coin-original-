@@ -12,12 +12,16 @@ export const metadata: Metadata = {
 export async function generateStaticParams() {
   try {
     const products = await fetchAdminProducts();
+    // Ensure we always return at least one param for static export
+    if (!products.length) {
+      return [{ slug: "placeholder" }];
+    }
     return products.map((product) => ({
       slug: product.slug,
     }));
   } catch {
-    // Return empty array or fallback if Firebase is not available
-    return [];
+    // Return fallback if Firebase is not available
+    return [{ slug: "placeholder" }];
   }
 }
 
