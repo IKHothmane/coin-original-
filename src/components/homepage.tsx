@@ -25,7 +25,8 @@ function SplashScreen({ onClose }: { onClose: () => void }) {
         playsInline
         preload="auto"
         onEnded={onClose}
-        className="splash-screen__video absolute inset-0 h-full w-full object-cover"
+        onClick={onClose}
+        className="splash-screen__video absolute inset-0 h-full w-full object-cover cursor-pointer"
       />
     </div>
   );
@@ -36,7 +37,14 @@ export function Homepage() {
   const [showSplash, setShowSplash] = useState(false);
 
   useEffect(() => {
-    setShowSplash(true);
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const splashSeen = window.localStorage.getItem("coinOriginalSplashSeen") === "true";
+    if (!splashSeen) {
+      setShowSplash(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -53,6 +61,9 @@ export function Homepage() {
 
   const handleCloseSplash = () => {
     setShowSplash(false);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("coinOriginalSplashSeen", "true");
+    }
   };
 
   return (
