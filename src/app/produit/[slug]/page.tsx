@@ -23,8 +23,8 @@ export async function generateStaticParams() {
 
 export const dynamic = "force-static";
 
-export default async function ProduitPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function ProduitPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
 
   return (
     <>
