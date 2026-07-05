@@ -396,13 +396,14 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
       </div>
 
       <div className="col-span-12 flex flex-col gap-4 lg:col-span-7">
-        <section className="space-y-6 border border-[#2A2A2A] bg-[#1A1A1A] p-6">
-          <div className="flex items-center gap-2">
+        <section className="relative overflow-hidden space-y-6 border border-[#342f2d] bg-[linear-gradient(180deg,#151414_0%,#101010_100%)] p-6 shadow-[12px_12px_0_0_rgba(0,0,0,0.16)]">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:26px_26px]" />
+          <div className="relative z-10 flex items-center gap-2">
             <span className="h-[2px] w-8 bg-[#ffb59e]" />
             <h3 className="font-mono text-xs uppercase text-[#ffb59e]">Informations de Base</h3>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="relative z-10 grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="flex flex-col gap-2">
               <label className="font-mono text-xs uppercase text-[#e6beb2]">Nom du Produit</label>
               <input
@@ -428,7 +429,7 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="relative z-10 grid grid-cols-1 gap-6 md:grid-cols-3">
             <div className="flex flex-col gap-2">
               <label className="font-mono text-xs uppercase text-[#e6beb2]">Prix de Vente (MAD)</label>
               <div className="relative">
@@ -476,7 +477,7 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="relative z-10 grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="flex flex-col gap-2">
               <label className="font-mono text-xs uppercase text-[#e6beb2]">Visibilite</label>
               <button
@@ -493,7 +494,7 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="relative z-10 flex flex-col gap-2">
             <label className="font-mono text-xs uppercase text-[#e6beb2]">Description du Produit (optionnel)</label>
             <textarea
               rows={4}
@@ -505,13 +506,14 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
           </div>
         </section>
 
-        <section className="space-y-6 border border-[#2A2A2A] bg-[#1A1A1A] p-6">
-          <div className="flex items-center gap-2">
+        <section className="relative overflow-hidden space-y-6 border border-[#342f2d] bg-[linear-gradient(180deg,#151414_0%,#101010_100%)] p-6 shadow-[12px_12px_0_0_rgba(0,0,0,0.16)]">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:26px_26px]" />
+          <div className="relative z-10 flex items-center gap-2">
             <span className="h-[2px] w-8 bg-[#ffb59e]" />
             <h3 className="font-mono text-xs uppercase text-[#ffb59e]">Gestion des Tailles</h3>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
+          <div className="relative z-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
             {sizeLabels.map((size) => (
               <button
                 key={size}
@@ -533,21 +535,21 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Link
             href="/admin/products"
-            className="border-2 border-white py-5 text-center font-[var(--font-display)] uppercase text-white transition-all hover:bg-white hover:text-black active:scale-95"
+            className="border border-white py-5 text-center font-[var(--font-display)] uppercase text-white transition-all hover:bg-white hover:text-black active:scale-95"
           >
             ANNULER
           </Link>
           <button
             type="submit"
             disabled={isSubmitting || isProcessing}
-            className="bg-[#ffb59e] py-5 font-[var(--font-display)] uppercase text-[#5e1700] shadow-[0_0_20px_rgba(255,181,158,0.2)] transition-all hover:brightness-110 active:scale-95"
+            className="border border-[#ff8a62] bg-[linear-gradient(135deg,#ffcfbf_0%,#ff6a33_100%)] py-5 font-[var(--font-display)] uppercase text-[#5e1700] shadow-[10px_10px_0_0_rgba(63,19,6,0.28)] transition-all hover:brightness-110 active:scale-95"
           >
             {isSubmitting ? "ENREGISTREMENT..." : submitLabel}
           </button>
         </div>
 
         <div className="mt-8 flex justify-end">
-          <div className="flex w-full max-w-xl flex-col gap-4 border-2 border-dashed border-[#ffb59e] bg-[#2a2a2a] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-full max-w-xl flex-col gap-4 border border-[#ffb59e] bg-[linear-gradient(180deg,#1a1716_0%,#121111_100%)] px-6 py-4 shadow-[10px_10px_0_0_rgba(0,0,0,0.16)] sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <Truck size={24} className="text-[#ffb59e]" />
               <div>

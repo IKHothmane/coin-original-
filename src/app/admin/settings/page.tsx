@@ -52,13 +52,13 @@ function ToggleField({
       type="button"
       onClick={() => onChange(!checked)}
       aria-pressed={checked}
-      className={`relative inline-flex h-7 w-14 items-center border-2 transition-colors ${
-        checked ? "border-[#ff571a] bg-[#ff571a]" : "border-[#353534] bg-[#2a2a2a]"
+      className={`relative inline-flex h-8 w-16 items-center border transition-colors ${
+        checked ? "border-[#ff6a33] bg-[#ff6a33]" : "border-[#353534] bg-[#191818]"
       }`}
     >
       <span
-        className={`absolute h-5 w-5 bg-white transition-transform ${
-          checked ? "translate-x-7" : "translate-x-1"
+        className={`absolute h-6 w-6 bg-white transition-transform ${
+          checked ? "translate-x-8" : "translate-x-1"
         }`}
       />
     </button>
@@ -75,14 +75,15 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="border border-[#2f2b29] bg-[#141313] p-5 sm:p-6">
+    <section className="relative overflow-hidden border border-[#342f2d] bg-[linear-gradient(180deg,#141313_0%,#101010_100%)] p-5 shadow-[12px_12px_0_0_rgba(0,0,0,0.16)] sm:p-6">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:26px_26px]" />
       <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center border border-[#3a2f2b] bg-[#1d1817]">
+        <div className="relative z-10 flex h-10 w-10 items-center justify-center border border-[#3a2f2b] bg-[#1d1817]">
           <Icon size={18} className="text-[#ffba20]" />
         </div>
-        <h3 className="font-[var(--font-display)] text-2xl uppercase text-[#e5e2e1]">{title}</h3>
+        <h3 className="relative z-10 font-[var(--font-display)] text-2xl uppercase text-[#e5e2e1]">{title}</h3>
       </div>
-      <div className="space-y-6">{children}</div>
+      <div className="relative z-10 space-y-6">{children}</div>
     </section>
   );
 }
@@ -276,7 +277,7 @@ export default function AdminSettingsPage() {
           </div>
 
           <div className="space-y-4">
-            <section className="overflow-hidden border border-[#2f2b29] bg-[#141313]">
+            <section className="overflow-hidden border border-[#3a3431] bg-[linear-gradient(180deg,#141313_0%,#0f0f10_100%)] shadow-[14px_14px_0_0_rgba(0,0,0,0.18)]">
               <div className="relative h-64">
                 <Image
                   src="/hero-home.jpg"
@@ -286,8 +287,9 @@ export default function AdminSettingsPage() {
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-black/55" />
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:26px_26px]" />
                 <div className="absolute bottom-5 left-5 right-5">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#ffb59e]">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#ffcfbf]">
                     Premium Standard
                   </p>
                   <h3 className="mt-3 font-[var(--font-display)] text-4xl uppercase leading-none text-white">
@@ -299,11 +301,13 @@ export default function AdminSettingsPage() {
               </div>
             </section>
 
-            <section className="border border-[#2f2b29] bg-[#141313] p-5">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-[#ffb59e]">
+            <section className="relative overflow-hidden border border-[#3a3431] bg-[linear-gradient(180deg,#141313_0%,#0f0f10_100%)] p-5 shadow-[14px_14px_0_0_rgba(0,0,0,0.18)]">
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:26px_26px]" />
+              <div className="absolute inset-y-0 left-0 w-1 bg-[linear-gradient(180deg,#ffcfbf_0%,#ff6a33_100%)] opacity-80" />
+              <p className="relative z-10 font-mono text-[10px] uppercase tracking-widest text-[#ffb59e]">
                 Resume rapide
               </p>
-              <div className="mt-5 space-y-4">
+              <div className="relative z-10 mt-5 space-y-4">
                 <div className="flex items-center justify-between border-b border-[#2a2a2a] pb-3">
                   <span className="font-mono text-[10px] uppercase text-[#e6beb2]">Devise</span>
                   <span className="font-[var(--font-display)] text-2xl text-[#e5e2e1]">
