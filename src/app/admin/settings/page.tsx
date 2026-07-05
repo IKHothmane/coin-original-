@@ -3,16 +3,14 @@
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
-  Bell,
   Save,
-  Settings,
   Shield,
   Store,
   Truck,
-  User,
 } from "lucide-react";
 import Image from "next/image";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { AdminPageIntro } from "@/components/admin/admin-ui";
 
 type SettingsState = {
   storeName: string;
@@ -77,9 +75,11 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="border-2 border-[#353534] bg-[#1a1a1a] p-5 sm:p-6">
+    <section className="border border-[#2f2b29] bg-[#141313] p-5 sm:p-6">
       <div className="mb-6 flex items-center gap-3">
-        <Icon size={20} className="text-[#ffba20]" />
+        <div className="flex h-10 w-10 items-center justify-center border border-[#3a2f2b] bg-[#1d1817]">
+          <Icon size={18} className="text-[#ffba20]" />
+        </div>
         <h3 className="font-[var(--font-display)] text-2xl uppercase text-[#e5e2e1]">{title}</h3>
       </div>
       <div className="space-y-6">{children}</div>
@@ -117,52 +117,19 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <AdminShell>
-      <header className="sticky top-0 z-30 -mx-4 hidden h-20 items-center justify-between border-b-2 border-[#353534] bg-[#131313] px-10 lg:mx-0 lg:flex">
-        <div>
-          <p className="font-mono text-[10px] uppercase tracking-widest text-[#ffb59e]">
-            Admin / Reglages
-          </p>
-          <h1 className="font-[var(--font-display)] text-3xl uppercase tracking-tight text-[#e5e2e1]">
-            Coin Original
-          </h1>
-        </div>
-        <div className="flex items-center gap-4">
-          <button type="button" className="p-2 text-[#e5e2e1] transition-colors hover:text-[#ffb59e]">
-            <Bell size={20} />
-          </button>
-          <button type="button" className="p-2 text-[#e5e2e1] transition-colors hover:text-[#ffb59e]">
-            <User size={20} />
-          </button>
-        </div>
-      </header>
-
-      <div className="py-6 lg:py-10">
-        <div className="mb-8 flex flex-col gap-6 lg:mb-10 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-widest text-[#ffb59e]">
-              Configuration boutique
-            </p>
-            <h2 className="mt-2 font-[var(--font-display)] text-4xl leading-none text-[#e5e2e1] sm:text-5xl lg:text-7xl">
-              SETTINGS
-            </h2>
-            <p className="mt-4 max-w-2xl text-sm text-[#e6beb2] sm:text-base">
-              Controle le nom de la boutique, la livraison COD, la securite admin et les
-              parametres de fonctionnement depuis un seul ecran.
-            </p>
-          </div>
-          <div className="inline-flex items-center gap-3 self-start border border-[#5c4037] bg-[#201f1f] px-4 py-3 lg:self-end">
-            <Settings size={18} className="text-[#ff571a]" />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb59e]">
-              Version 2.4.0
-            </span>
-          </div>
-        </div>
+    <AdminShell pageTitle="Reglages" pageSubtitle="Configuration / Boutique">
+      <div className="space-y-6 py-6 lg:space-y-8 lg:py-10">
+        <AdminPageIntro
+          eyebrow="Configuration boutique"
+          title="Reglages admin"
+          description="Centralise les preferences boutique, la logistique marocaine et la securite du compte dans un seul ecran plus net et plus premium."
+          badge="Version 2.4.0"
+        />
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-4">
             <SectionCard icon={Store} title="Boutique">
-              <Field label="Store Name">
+              <Field label="Nom de la boutique">
                 <input
                   type="text"
                   value={settings.storeName}
@@ -172,7 +139,7 @@ export default function AdminSettingsPage() {
               </Field>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Currency">
+                <Field label="Devise">
                   <select
                     value={settings.currency}
                     onChange={(event) => updateField("currency", event.target.value)}
@@ -184,7 +151,7 @@ export default function AdminSettingsPage() {
                   </select>
                 </Field>
 
-                <Field label="Language">
+                <Field label="Langue">
                   <select
                     value={settings.language}
                     onChange={(event) => updateField("language", event.target.value)}
@@ -211,14 +178,14 @@ export default function AdminSettingsPage() {
             </SectionCard>
 
             <SectionCard icon={Truck} title="Livraison & COD">
-              <div className="border-l-4 border-[#ffba20] bg-[#ffba20]/10 p-4">
+              <div className="border-l-4 border-[#ffba20] bg-[#1d1812] p-4">
                 <p className="font-mono text-[10px] uppercase tracking-widest text-[#ffba20]">
                   Optimise pour la livraison contre remboursement au Maroc
                 </p>
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="COD Handling Fees (MAD)">
+                <Field label="Frais COD (MAD)">
                   <input
                     type="number"
                     value={settings.codFees}
@@ -227,7 +194,7 @@ export default function AdminSettingsPage() {
                   />
                 </Field>
 
-                <Field label="Free Shipping Threshold (MAD)">
+                <Field label="Seuil livraison gratuite (MAD)">
                   <input
                     type="number"
                     value={settings.freeShippingThreshold}
@@ -237,7 +204,7 @@ export default function AdminSettingsPage() {
                 </Field>
               </div>
 
-              <Field label="Est. Shipping Time (Days)">
+              <Field label="Delai estime (jours)">
                 <div className="flex items-center gap-4">
                   <input
                     type="range"
@@ -268,7 +235,7 @@ export default function AdminSettingsPage() {
             </SectionCard>
 
             <SectionCard icon={Shield} title="Compte & Securite">
-              <Field label="Admin Email">
+              <Field label="Email admin">
                 <input
                   type="email"
                   value={settings.adminEmail}
@@ -277,7 +244,7 @@ export default function AdminSettingsPage() {
                 />
               </Field>
 
-              <Field label="New Password">
+              <Field label="Nouveau mot de passe">
                 <input
                   type="password"
                   value={settings.newPassword}
@@ -309,7 +276,7 @@ export default function AdminSettingsPage() {
           </div>
 
           <div className="space-y-4">
-            <section className="overflow-hidden border-2 border-[#353534] bg-[#1a1a1a]">
+            <section className="overflow-hidden border border-[#2f2b29] bg-[#141313]">
               <div className="relative h-64">
                 <Image
                   src="/hero-home.jpg"
@@ -332,7 +299,7 @@ export default function AdminSettingsPage() {
               </div>
             </section>
 
-            <section className="border-2 border-[#353534] bg-[#201f1f] p-5">
+            <section className="border border-[#2f2b29] bg-[#141313] p-5">
               <p className="font-mono text-[10px] uppercase tracking-widest text-[#ffb59e]">
                 Resume rapide
               </p>
@@ -367,23 +334,23 @@ export default function AdminSettingsPage() {
         </div>
       </div>
 
-      <div className="fixed bottom-16 left-0 right-0 z-40 p-4 lg:bottom-0 lg:left-64">
-        <div className="mx-auto max-w-6xl border-2 border-[#353534] bg-[#131313]/95 p-3 backdrop-blur sm:p-4">
+      <div className="fixed bottom-16 left-0 right-0 z-40 p-4 lg:bottom-0 lg:left-72">
+        <div className="mx-auto max-w-6xl border border-[#2f2b29] bg-[#111111]/95 p-3 backdrop-blur sm:p-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <button
               type="button"
               onClick={handleReset}
-              className="border-2 border-white px-4 py-4 font-[var(--font-display)] text-lg uppercase text-white transition-colors hover:bg-white hover:text-black active:scale-95"
+              className="border border-[#f2ece9] px-4 py-4 font-[var(--font-display)] text-lg uppercase text-white transition-colors hover:bg-white hover:text-black active:scale-95"
             >
-              Reset
+              Reinitialiser
             </button>
             <button
               type="button"
               onClick={handleSave}
-              className="flex items-center justify-center gap-3 bg-[#ff571a] px-4 py-4 font-[var(--font-display)] text-lg uppercase text-[#521300] shadow-[6px_6px_0px_0px_#521300] transition-all hover:brightness-110 active:translate-x-1 active:translate-y-1 active:shadow-none"
+              className="flex items-center justify-center gap-3 border border-[#ff8a62] bg-[linear-gradient(135deg,#ffb59e_0%,#ff6a33_100%)] px-4 py-4 font-[var(--font-display)] text-lg uppercase text-[#521300] transition-all hover:brightness-110 active:scale-[0.99]"
             >
               <Save size={20} />
-              Save Changes
+              Sauvegarder
             </button>
           </div>
         </div>

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { AdminPageIntro } from "@/components/admin/admin-ui";
 import { ProductForm } from "@/components/admin/product-form";
 import { uploadProductImageUrlsToCloudinary } from "@/lib/cloudinary";
 import type { AdminProductRecord } from "@/lib/products/types";
@@ -68,18 +69,12 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
 
   return (
     <div>
-      <header className="mb-10 flex flex-col gap-5 border-b-4 border-[#ffb59e] pb-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <nav className="mb-2 flex items-center gap-2 font-mono text-xs uppercase text-[#e6beb2]">
-            <span>Admin</span>
-            <span>/</span>
-            <span>Catalogue</span>
-          </nav>
-          <h1 className="font-[var(--font-display)] text-4xl uppercase leading-none text-white sm:text-5xl lg:text-7xl">
-            MODIFIER UN PRODUIT
-          </h1>
-        </div>
-      </header>
+      <AdminPageIntro
+        eyebrow="Catalogue"
+        title="Modifier un produit"
+        description={`Mets a jour ${product.name} sans sortir du flux admin unifie.`}
+        badge={product.slug}
+      />
 
       <ProductForm
         initialProduct={product}
@@ -91,7 +86,7 @@ export function AdminEditProductPage({ product }: AdminEditProductPageProps) {
       <button
         type="button"
         onClick={handleDelete}
-        className="mt-8 flex w-full cursor-pointer items-center justify-center gap-2 border-2 border-red-500 py-4 font-[var(--font-display)] uppercase text-red-400 transition-all hover:bg-red-500 hover:text-white active:scale-95"
+        className="mt-8 flex w-full cursor-pointer items-center justify-center gap-2 border border-red-500 py-4 font-[var(--font-display)] uppercase text-red-400 transition-all hover:bg-red-500 hover:text-white active:scale-95"
       >
         <Trash2 size={20} />
         Supprimer ce produit

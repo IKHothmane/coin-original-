@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { useSearchParams } from "next/navigation";
 import { useCart } from "@/components/cart-context";
-import { House, Menu, ShoppingBag, ShoppingCart, Store, Instagram } from "lucide-react";
+import { House, Menu, ShoppingBag, ShoppingCart, Store, Instagram, User, LogIn } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useAuth } from "@/components/auth-context";
 import {
   categories,
   featuredProducts,
@@ -121,7 +123,8 @@ function CartCountDot() {
 export function DesktopTopBar({
 }: Pick<MenuActionProps, "mobileMenuOpen" | "onOpenMobileMenu">) {
   const { t } = useTranslation();
-  
+  const { user, loading } = useAuth();
+
   return (
     <nav className="fixed inset-x-0 top-0 z-50 hidden border-b border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface)_92%,transparent)] backdrop-blur md:block">
       <div className="flex h-20 w-full items-center justify-between gap-4 px-3 md:px-5">
@@ -138,6 +141,25 @@ export function DesktopTopBar({
             placeholder={t("nav.rechercher")}
             className="hidden border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-2 text-sm text-[var(--foreground)] outline-none md:block"
           />
+          {loading ? null : user ? (
+            <Link
+              href="/mon-compte"
+              className="inline-flex h-11 items-center gap-2 border border-[var(--border-soft)] px-3 text-[var(--foreground)] transition-colors hover:border-[var(--primary)]"
+              aria-label="Mon compte"
+            >
+              <User size={18} />
+              <span className="text-xs font-mono uppercase tracking-widest hidden lg:inline">{user.displayName || "Mon compte"}</span>
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex h-11 items-center gap-2 border border-[var(--border-soft)] px-3 text-[var(--foreground)] transition-colors hover:border-[var(--primary)]"
+              aria-label="Se connecter"
+            >
+              <LogIn size={18} />
+              <span className="text-xs font-mono uppercase tracking-widest hidden lg:inline">Connexion</span>
+            </Link>
+          )}
           <Link
             href="/panier"
             className="inline-flex h-11 w-11 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
@@ -161,7 +183,8 @@ export function MobileTopBar({
   onOpenMobileMenu,
 }: Pick<MenuActionProps, "onOpenMobileMenu">) {
   const { t } = useTranslation();
-  
+  const { user, loading } = useAuth();
+
   return (
     <div className="fixed inset-x-0 top-0 z-40 border-b border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface)_92%,transparent)] backdrop-blur md:hidden">
       <div className="mx-auto flex h-18 w-full items-center justify-between gap-3 px-4">
@@ -180,6 +203,23 @@ export function MobileTopBar({
           />
         </div>
         <div className="flex items-center gap-2">
+          {loading ? null : user ? (
+            <Link
+              href="/mon-compte"
+              className="inline-flex h-10 w-10 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
+              aria-label="Mon compte"
+            >
+              <User size={20} />
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex h-10 w-10 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
+              aria-label="Se connecter"
+            >
+              <LogIn size={20} />
+            </Link>
+          )}
           <Link
             href="/panier"
             className="inline-flex h-10 w-10 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
@@ -199,7 +239,8 @@ export function MobileDrawer({
   onCloseMobileMenu,
 }: Pick<MenuActionProps, "mobileMenuOpen" | "onCloseMobileMenu">) {
   const { t } = useTranslation();
-  
+  const { user, loading } = useAuth();
+
   if (!mobileMenuOpen) {
     return null;
   }
@@ -250,6 +291,11 @@ export function MobileDrawer({
             <DrawerLink href="/panier" onClick={onCloseMobileMenu}>
               {t("nav.panier")}
             </DrawerLink>
+            {!loading && (
+              <DrawerLink href={user ? "/mon-compte" : "/login"} onClick={onCloseMobileMenu}>
+                {user ? "Mon compte" : "Connexion"}
+              </DrawerLink>
+            )}
             <DrawerLink href="/#trust" onClick={onCloseMobileMenu}>
               {t("nav.a_propos")}
             </DrawerLink>
@@ -533,12 +579,12 @@ export function ShopSection() {
             {t("homepage.authentifies")}
           </p>
         </div>
-        <a
-          href="#footer"
+        <Link
+          href="/boutique"
           className="meta-label border border-[var(--border-soft)] px-3 py-1.5 text-[10px] text-[var(--primary)] sm:border-0 sm:px-0 sm:py-0 sm:text-xs"
         >
           {t("homepage.voir_tout")}
-        </a>
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -615,12 +661,12 @@ function CategoryCard({ category }: { category: CategoryItem }) {
         <h3 className="font-[var(--font-display)] text-xl uppercase text-white sm:text-2xl md:text-4xl">
           {category.title}
         </h3>
-        <a
-          href="#shop"
-          className="category-cta mt-2 px-3 py-1.5 text-xs font-[var(--font-display)] uppercase sm:mt-3 sm:px-4 sm:py-2 sm:text-sm"
+        <Link
+          href={`/boutique?category=${encodeURIComponent(category.title)}`}
+          className="category-cta mt-2 inline-block px-3 py-1.5 text-xs font-[var(--font-display)] uppercase sm:mt-3 sm:px-4 sm:py-2 sm:text-sm"
         >
           {t("homepage.explorer")}
-        </a>
+        </Link>
       </div>
     </article>
   );
@@ -642,7 +688,10 @@ export function CategoriesSection() {
           <CategoryCard key={category.title} category={category} />
         ))}
 
-        <article className="surface-panel col-span-2 flex flex-col items-center justify-center p-4 text-center sm:p-5 md:col-span-1 md:p-6">
+        <Link
+          href="/boutique?badge=Nouveaute"
+          className="surface-panel col-span-2 flex flex-col items-center justify-center p-4 text-center transition-colors hover:border-[var(--primary-strong)] sm:p-5 md:col-span-1 md:p-6"
+        >
           <p className="meta-label mb-3 text-xs text-[var(--primary)] sm:mb-4">
             {t("homepage.exclusif")}
           </p>
@@ -652,13 +701,10 @@ export function CategoriesSection() {
           <p className="mt-2 max-w-xs text-xs leading-5 text-[var(--muted)] sm:mt-3 sm:text-sm sm:leading-6">
             {t("homepage.premier_informe")}
           </p>
-          <a
-            href="#footer"
-            className="impact-button impact-button--primary mt-4 !h-11 !px-4 !py-2 !text-sm sm:mt-5 sm:!px-5 sm:!py-3 sm:!text-base md:mt-6"
-          >
+          <span className="impact-button impact-button--primary mt-4 !h-11 !px-4 !py-2 !text-sm sm:mt-5 sm:!px-5 sm:!py-3 sm:!text-base md:mt-6">
             {t("homepage.rejoindre_liste")}
-          </a>
-        </article>
+          </span>
+        </Link>
       </div>
     </section>
   );
@@ -684,7 +730,7 @@ export function SiteFooter() {
         <div className="site-footer__overlay px-3 md:px-5">
           <div className="site-footer__content grid gap-6 md:grid-cols-[1.1fr_0.9fr_1fr] md:gap-8">
             <div className="site-footer__block">
-              <a href="#top" className="inline-flex items-center gap-4" aria-label={t("footer.retour_haut")}>
+              <a href="/" className="inline-flex items-center gap-4" aria-label={t("footer.retour_haut")}>
                 <ThemeLogo
                   width={64}
                   height={64}
@@ -705,10 +751,26 @@ export function SiteFooter() {
                   {t("footer.boutique")}
                 </h4>
                 <ul className="mt-4 space-y-2 text-sm">
-                  <li>{t("footer.chaussures")}</li>
-                  <li>{t("footer.sweats")}</li>
-                  <li>{t("footer.tshirts")}</li>
-                  <li>{t("footer.nouveautes")}</li>
+                  <li>
+                    <Link href="/boutique?category=Chaussures" className="hover:text-[#9b4c1f] transition-colors">
+                      {t("footer.chaussures")}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/boutique?category=Vetements" className="hover:text-[#9b4c1f] transition-colors">
+                      {t("footer.sweats")}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/boutique?category=Vetements" className="hover:text-[#9b4c1f] transition-colors">
+                      {t("footer.tshirts")}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/boutique" className="hover:text-[#9b4c1f] transition-colors">
+                      {t("footer.nouveautes")}
+                    </Link>
+                  </li>
                 </ul>
               </div>
               <div className="min-w-0">
@@ -716,9 +778,31 @@ export function SiteFooter() {
                   {t("footer.mentions")}
                 </h4>
                 <ul className="mt-4 space-y-2 text-sm">
-                  <li>{t("footer.mentions_legales")}</li>
-                  <li>{t("footer.politique")}</li>
-                  <li>{t("footer.livraison")}</li>
+                  <li>
+                    <Link href="/mentions-legales" className="hover:text-[#9b4c1f] transition-colors">
+                      {t("footer.mentions_legales")}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/politique-confidentialite" className="hover:text-[#9b4c1f] transition-colors">
+                      {t("footer.politique")}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/cgv" className="hover:text-[#9b4c1f] transition-colors">
+                      {t("footer.cgv")}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/contact" className="hover:text-[#9b4c1f] transition-colors">
+                      {t("footer.contact_link")}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/faq" className="hover:text-[#9b4c1f] transition-colors">
+                      {t("footer.faq")}
+                    </Link>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -728,7 +812,15 @@ export function SiteFooter() {
                 {t("footer.contact")}
               </h4>
               <div className="mt-4 space-y-3 text-sm text-[#564d42]">
-                <p>{t("footer.whatsapp")}</p>
+                <a
+                  href="https://wa.me/212600000000"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-[#564d42] hover:text-[#9b4c1f] transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                  <span>{t("footer.whatsapp")}</span>
+                </a>
                 <a
                   href="https://www.instagram.com/coinoriginal_?igsh=dnFqNng4aXZ2MDY5&utm_source=qr"
                   target="_blank"

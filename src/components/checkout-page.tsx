@@ -19,6 +19,7 @@ import {
   SiteFooter,
 } from "@/components/homepage-sections";
 import { useCart } from "@/components/cart-context";
+import { useAuth } from "@/components/auth-context";
 import { createOrder } from "@/lib/orders/store";
 
 function formatPrice(value: number) {
@@ -27,13 +28,15 @@ function formatPrice(value: number) {
 
 export function CheckoutPage() {
   const { items, cartTotal, clearCart } = useCart();
+  const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    fullName: "",
+    fullName: user?.displayName || "",
+    email: user?.email || "",
     phone: "",
     city: "",
     address: "",
@@ -58,6 +61,7 @@ export function CheckoutPage() {
     const result = await createOrder({
       customer: {
         fullName: formData.fullName.trim(),
+        email: formData.email.trim() || user?.email || undefined,
         phone: formData.phone.trim(),
         city: formData.city.trim(),
         address: formData.address.trim(),
@@ -235,6 +239,19 @@ export function CheckoutPage() {
                         value={formData.fullName}
                         onChange={(event) => updateField("fullName", event.target.value)}
                         placeholder="EX: MOHAMMED ALAMI"
+                        className="w-full border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-[10px] uppercase tracking-[0.16em] text-[var(--primary)]">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(event) => updateField("email", event.target.value)}
+                        placeholder="EX: email@example.com"
                         className="w-full border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
                       />
                     </div>

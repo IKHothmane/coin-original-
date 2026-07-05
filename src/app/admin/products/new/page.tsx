@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { AdminPageIntro } from "@/components/admin/admin-ui";
 import { ProductForm } from "@/components/admin/product-form";
 import { uploadProductImageUrlsToCloudinary } from "@/lib/cloudinary";
 import type { ProductFormData } from "@/lib/products/schema";
@@ -52,25 +53,14 @@ export default function AdminNewProductPage() {
   };
 
   return (
-    <AdminShell>
-      <main className="min-h-screen px-3 pb-24 pt-4 lg:px-5 lg:pb-10 lg:pt-10">
-        <header className="mb-10 flex flex-col gap-5 border-b-4 border-[#ffb59e] pb-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <nav className="mb-2 flex items-center gap-2 font-mono text-xs uppercase text-[#e6beb2]">
-              <span>Admin</span>
-              <span>/</span>
-              <span>Catalogue</span>
-            </nav>
-            <h1 className="font-[var(--font-display)] text-4xl uppercase leading-none text-white sm:text-5xl lg:text-7xl">
-              AJOUTER UN PRODUIT
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 self-start border border-green-500/50 bg-green-900/30 px-3 py-2 lg:self-end">
-            <span className="font-mono text-[10px] uppercase text-green-400">
-              Stock Morocco Cloud
-            </span>
-          </div>
-        </header>
+    <AdminShell pageTitle="Nouveau produit" pageSubtitle="Catalogue / Creation">
+      <main className="min-h-screen space-y-6 pb-24 pt-6 lg:space-y-8 lg:pb-10 lg:pt-10">
+        <AdminPageIntro
+          eyebrow="Catalogue"
+          title="Ajouter un produit"
+          description="Cree une nouvelle fiche produit avec un habillage coherent avec le reste du back-office."
+          badge="Stock Morocco Cloud"
+        />
 
         <ProductForm
           onSubmit={handleSubmit}

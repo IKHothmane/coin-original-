@@ -73,8 +73,8 @@ function AdminEditProductContent() {
 
 export default function AdminEditProductStaticPage() {
   return (
-    <AdminShell>
-      <main className="min-h-screen px-3 pb-24 pt-4 lg:px-5 lg:pb-10 lg:pt-10">
+    <AdminShell pageTitle="Edition produit" pageSubtitle="Catalogue / Mise a jour">
+      <main className="min-h-screen pb-24 pt-6 lg:pb-10 lg:pt-10">
         <Suspense fallback={<AdminEditProductLoading />}>
           <AdminEditProductContent />
         </Suspense>

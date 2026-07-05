@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bell, ChevronLeft, ChevronRight, Pencil, PlusSquare, Search, Trash2, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pencil, PlusSquare, Search, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { AdminMetricCard, AdminPageIntro, AdminPanel } from "@/components/admin/admin-ui";
 import type { AdminProductRecord } from "@/lib/products/types";
 import { getActiveProductBackendLabel, getProductRepository } from "@/lib/products/repository";
 
@@ -79,97 +80,64 @@ export default function AdminProductsPage() {
   const visibleCount = filteredProducts.length;
 
   return (
-    <AdminShell>
-      <header className="sticky top-0 z-30 -mx-4 hidden h-20 items-center justify-between border-b-2 border-[#353534] bg-[#131313] px-10 lg:mx-0 lg:flex">
-        <div className="font-[var(--font-display)] text-3xl uppercase tracking-tight text-[#ffb59e]">
-          Coin Original
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="relative hidden lg:block">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="RECHERCHER UN PRODUIT..."
-              className="w-64 border-2 border-[#353534] bg-[#201f1f] px-4 py-2 pr-11 font-mono text-xs uppercase text-[#e5e2e1] outline-none transition-all placeholder:text-[#e6beb2] focus:border-[#ff571a]"
-            />
-            <Search size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#e6beb2]" />
-          </div>
-          <button type="button" className="p-2 text-[#e5e2e1] transition-colors hover:text-[#ffb59e]">
-            <Bell size={20} />
-          </button>
-          <button type="button" className="p-2 text-[#e5e2e1] transition-colors hover:text-[#ffb59e]">
-            <User size={20} />
-          </button>
-        </div>
-      </header>
+    <AdminShell pageTitle="Produits" pageSubtitle="Catalogue / Inventaire">
+      <div className="space-y-6 py-6 lg:space-y-8 lg:py-10">
+        <AdminPageIntro
+          eyebrow="Catalogue"
+          title="Gestion des produits"
+          description="Pilotage du stock, de la visibilite et du contenu produit dans un back-office plus structure et plus premium."
+          badge={getActiveProductBackendLabel()}
+          action={
+            <Link
+              href="/admin/products/new"
+              className="inline-flex items-center justify-center gap-3 self-start border border-[#ff8f68] bg-[linear-gradient(135deg,#ffb59e_0%,#ff6a33_100%)] px-6 py-4 font-[var(--font-display)] text-xl text-[#5e1700] transition-all hover:scale-[1.01] active:scale-95"
+            >
+              <PlusSquare size={22} />
+              Ajouter un produit
+            </Link>
+          }
+        />
 
-      <div className="py-6 lg:px-0 lg:py-10">
-        <div className="mb-8 flex flex-col justify-between gap-6 lg:mb-12 lg:flex-row lg:items-end">
-          <div>
-            <h2 className="mb-4 font-[var(--font-display)] text-4xl leading-none text-[#e5e2e1] sm:text-5xl lg:text-7xl">
-              GESTION DES PRODUITS
-            </h2>
-            <p className="max-w-xl text-base text-[#e6beb2] lg:text-lg">
-              Interface d&apos;administration pour la mise a jour de l&apos;inventaire streetwear.
-            </p>
-            <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-[#ffb59e]">
-              Source: {getActiveProductBackendLabel()}
-            </p>
-          </div>
-          <Link
-            href="/admin/products/new"
-            className="inline-flex items-center justify-center gap-3 self-start bg-[#ffb59e] px-6 py-4 font-[var(--font-display)] text-xl text-[#5e1700] shadow-[8px_8px_0px_0px_rgba(255,181,158,0.2)] transition-all hover:scale-105 active:scale-95"
-          >
-            <PlusSquare size={22} />
-            AJOUTER UN PRODUIT
-          </Link>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <AdminMetricCard
+            label="Total produits"
+            value={isLoading ? "..." : String(totalProducts)}
+            detail="Catalogue visible"
+            icon={PlusSquare}
+            accent="sand"
+          />
+          <AdminMetricCard
+            label="Stock faible"
+            value={isLoading ? "..." : String(lowStockCount)}
+            detail="References a reapprovisionner"
+            icon={Search}
+            accent="gold"
+          />
+          <AdminMetricCard label="Ventes 24h" value="+45" detail="Rythme jour" icon={Pencil} accent="orange" />
+          <AdminMetricCard label="Systeme" value="ON" detail="Flux catalogue operationnel" icon={PlusSquare} accent="sand" />
         </div>
 
-        <div className="mb-6 lg:hidden">
-          <div className="relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="RECHERCHER UN PRODUIT..."
-              className="w-full border-2 border-[#353534] bg-[#201f1f] px-4 py-3 pr-11 font-mono text-xs uppercase text-[#e5e2e1] outline-none transition-all placeholder:text-[#e6beb2] focus:border-[#ff571a]"
-            />
-            <Search size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#e6beb2]" />
-          </div>
-        </div>
-
-        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div className="border-2 border-[#353534] bg-[#201f1f] p-6">
-            <p className="mb-2 font-mono text-[10px] uppercase text-[#ffb59e]">Total Produits</p>
-            <p className="font-[var(--font-display)] text-4xl text-[#e5e2e1]">
-              {isLoading ? "..." : totalProducts}
-            </p>
-          </div>
-          <div className="border-2 border-[#353534] bg-[#201f1f] p-6">
-            <p className="mb-2 font-mono text-[10px] uppercase text-[#ffba20]">Stock Faible</p>
-            <p className="font-[var(--font-display)] text-4xl text-[#e5e2e1]">
-              {isLoading ? "..." : `${lowStockCount} Items`}
-            </p>
-          </div>
-          <div className="border-2 border-[#353534] bg-[#201f1f] p-6">
-            <p className="mb-2 font-mono text-[10px] uppercase text-[#fff6f5]">Ventes (24h)</p>
-            <p className="font-[var(--font-display)] text-4xl text-[#e5e2e1]">+45</p>
-          </div>
-          <div className="border-2 border-[#353534] bg-[#201f1f] p-6">
-            <p className="mb-2 font-mono text-[10px] uppercase text-[#e6beb2]">Status Systeme</p>
-            <div className="mt-2 flex items-center gap-2">
-              <span className="h-3 w-3 animate-pulse rounded-full bg-[#ffb4a8]" />
-              <span className="font-mono text-xs uppercase text-[#e5e2e1]">Operationnel</span>
+        <AdminPanel
+          eyebrow="Inventaire"
+          title="Catalogue complet"
+          action={
+            <div className="relative w-full min-w-[260px] sm:w-72">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="RECHERCHER UN PRODUIT..."
+                className="w-full border border-[#2f2b29] bg-[#161514] px-4 py-3 pr-11 font-mono text-[10px] uppercase tracking-widest text-[#e5e2e1] outline-none transition-all placeholder:text-[#a38d86] focus:border-[#ff571a]"
+              />
+              <Search size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#e6beb2]" />
             </div>
-          </div>
-        </div>
-
-        <div className="overflow-hidden border-2 border-[#353534] bg-[#201f1f]">
+          }
+        >
+        <div className="overflow-hidden border border-[#2f2b29] bg-[#161514]">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[980px] border-collapse text-left">
               <thead>
-                <tr className="border-b-2 border-[#353534] bg-[#2a2a2a]">
+                <tr className="border-b border-[#2f2b29] bg-[#1d1b1a]">
                   <th className="p-6 font-mono text-[10px] uppercase text-[#e6beb2]">Produit</th>
                   <th className="p-6 font-mono text-[10px] uppercase text-[#e6beb2]">SKU</th>
                   <th className="p-6 font-mono text-[10px] uppercase text-[#e6beb2]">Prix</th>
@@ -178,7 +146,7 @@ export default function AdminProductsPage() {
                   <th className="p-6 text-right font-mono text-[10px] uppercase text-[#e6beb2]">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y-2 divide-[#353534]">
+              <tbody className="divide-y divide-[#2f2b29]">
                 {isLoading ? (
                   <tr>
                     <td colSpan={6} className="p-10 text-center font-mono text-xs uppercase text-[#e6beb2]">
@@ -198,7 +166,7 @@ export default function AdminProductsPage() {
                 ) : null}
 
                 {filteredProducts.map((product) => (
-                  <tr key={product.slug} className="group transition-colors hover:bg-[#1c1b1b]">
+                  <tr key={product.slug} className="group transition-colors hover:bg-[#1b1a19]">
                     <td className="p-6">
                       <div className="flex items-center gap-4">
                         <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden border border-[#5c4037] bg-[#353534]">
@@ -277,7 +245,7 @@ export default function AdminProductsPage() {
             </table>
           </div>
 
-          <div className="flex flex-col gap-4 border-t-2 border-[#353534] bg-[#2a2a2a] p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 border-t border-[#2f2b29] bg-[#1d1b1a] p-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="font-mono text-xs text-[#e6beb2]">
               Affichage de 1-{visibleCount} sur {totalProducts} produits
             </p>
@@ -315,6 +283,7 @@ export default function AdminProductsPage() {
             </div>
           </div>
         </div>
+        </AdminPanel>
       </div>
     </AdminShell>
   );

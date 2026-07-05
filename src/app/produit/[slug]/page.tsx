@@ -11,27 +11,26 @@ export const metadata: Metadata = {
 };
 
 export async function generateStaticParams() {
+  let slugs = new Set<string>();
+
+  // Always include hardcoded catalog products
+  catalogProducts.forEach((product) => slugs.add(product.slug));
+
+  // Also include Firebase products if available
   try {
     const products = await fetchAdminProducts();
-    if (products.length > 0) {
-      return products.map((product) => ({
-        slug: product.slug,
-      }));
-    }
+    products.forEach((product) => slugs.add(product.slug));
   } catch {
-    // Firebase not available, use hardcoded catalog
+    // Firebase not available, catalog products already included
   }
 
-  // Fallback: use hardcoded catalog products for static export
-  return catalogProducts.map((product) => ({
-    slug: product.slug,
-  }));
+  return Array.from(slugs).map((slug) => ({ slug }));
 }
 
 export const dynamic = "force-static";
 
-export default async function ProduitPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function ProduitPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
 
   return (
     <>

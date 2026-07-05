@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { BoutiquePage } from "@/components/boutique-page";
 import { JsonLd } from "@/components/json-ld";
 import { SITE_URL } from "@/lib/site";
@@ -47,7 +48,9 @@ export default async function ArabicBoutiqueRoute() {
   return (
     <>
       <main dir="rtl">
-        <BoutiquePage />
+        <Suspense fallback={<div className="min-h-screen bg-[var(--background)]" />}>
+          <BoutiquePage />
+        </Suspense>
       </main>
       <JsonLd data={breadcrumbJsonLd} />
     </>

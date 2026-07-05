@@ -51,8 +51,8 @@ export function useAdminProductImages({
 }: UseAdminProductImagesOptions) {
   const [rawFiles, setRawFiles] = useState<File[]>([]);
   const [dataUrls, setDataUrls] = useState<string[]>(initialImageUrls);
-  const [processedUrls, setProcessedUrls] = useState<string[]>([]);
-  const [removeBackground, setRemoveBackground] = useState(defaultRemoveBackground);
+  const [processedUrls, setProcessedUrls] = useState<Record<number, string>>({});
+  const [removeBackgroundMap, setRemoveBackgroundMap] = useState<Record<number, boolean>>({});
   const [isProcessing, setIsProcessing] = useState(false);
   const [processError, setProcessError] = useState<string | null>(null);
   const [progress, setProgress] = useState<{ key: string; current: number; total: number } | null>(null);
@@ -75,11 +75,13 @@ export function useAdminProductImages({
   }, []);
 
   const displayedUrls = useMemo(() => {
-    if (removeBackground && processedUrls.length > 0) {
-      return processedUrls;
-    }
-    return dataUrls;
-  }, [dataUrls, processedUrls, removeBackground]);
+    return dataUrls.map((url, index) => {
+      if (removeBackgroundMap[index] && processedUrls[index]) {
+        return processedUrls[index];
+      }
+      return url;
+    });
+  }, [dataUrls, processedUrls, removeBackgroundMap]);
 
   const primaryPreview = displayedUrls[0];
 
@@ -88,7 +90,8 @@ export function useAdminProductImages({
     if (nextFiles.length === 0) return;
 
     setRawFiles(nextFiles);
-    setProcessedUrls([]);
+    setProcessedUrls({});
+    setRemoveBackgroundMap({});
     setProcessError(null);
 
     const previews = await Promise.all(nextFiles.map((file) => readFileAsDataUrl(file)));
@@ -96,50 +99,65 @@ export function useAdminProductImages({
     setDataUrls(filtered);
   }, []);
 
-  const processImages = useCallback(async () => {
-    const filesToProcess =
-      rawFiles.length > 0
-        ? rawFiles
-        : await Promise.all(
-            dataUrls.map((url, index) => urlToFile(url, `image-${index + 1}.png`)),
-          );
-
-    if (filesToProcess.length === 0) return;
+  const processSingleImage = useCallback(async (index: number) => {
+    const url = dataUrls[index];
+    if (!url) return;
 
     setIsProcessing(true);
     setProcessError(null);
     setProgress(null);
     try {
-      const results = await Promise.all(
-        filesToProcess.map((file) =>
-          removeImageBackground(file, (key, current, total) => {
-            setProgress({ key, current, total });
-          }),
-        ),
-      );
-      setProcessedUrls(results);
+      const file = rawFiles[index] ?? await urlToFile(url, `image-${index + 1}.png`);
+      const result = await removeImageBackground(file, (key, current, total) => {
+        setProgress({ key, current, total });
+      });
+      setProcessedUrls((prev) => ({ ...prev, [index]: result }));
     } catch (error) {
       setProcessError(error instanceof Error ? error.message : "Erreur de suppression du fond.");
     } finally {
       setIsProcessing(false);
       setProgress(null);
     }
-  }, [rawFiles, dataUrls]);
+  }, [dataUrls, rawFiles]);
 
-  const toggleRemoveBackground = useCallback(() => {
-    setRemoveBackground((current) => {
-      const next = !current;
-      if (next && processedUrls.length === 0 && !isProcessing) {
-        void processImages();
+  const toggleRemoveBackgroundForImage = useCallback((index: number) => {
+    setRemoveBackgroundMap((current) => {
+      const next = { ...current, [index]: !current[index] };
+      if (next[index] && !processedUrls[index] && !isProcessing) {
+        void processSingleImage(index);
       }
       return next;
     });
-  }, [processedUrls.length, isProcessing, processImages]);
+  }, [processedUrls, isProcessing, processSingleImage]);
+
+  const removeImage = useCallback((index: number) => {
+    setDataUrls((current) => current.filter((_, i) => i !== index));
+    setRawFiles((current) => current.filter((_, i) => i !== index));
+    setProcessedUrls((current) => {
+      const next: Record<number, string> = {};
+      Object.entries(current).forEach(([key, value]) => {
+        const k = Number(key);
+        if (k < index) next[k] = value;
+        else if (k > index) next[k - 1] = value;
+      });
+      return next;
+    });
+    setRemoveBackgroundMap((current) => {
+      const next: Record<number, boolean> = {};
+      Object.entries(current).forEach(([key, value]) => {
+        const k = Number(key);
+        if (k < index) next[k] = value;
+        else if (k > index) next[k - 1] = value;
+      });
+      return next;
+    });
+  }, []);
 
   const clearImages = useCallback(() => {
     setRawFiles([]);
     setDataUrls([]);
-    setProcessedUrls([]);
+    setProcessedUrls({});
+    setRemoveBackgroundMap({});
     setProcessError(null);
   }, []);
 
@@ -147,12 +165,13 @@ export function useAdminProductImages({
     rawFiles,
     displayedUrls,
     primaryPreview,
-    removeBackground,
+    removeBackgroundMap,
     isProcessing,
     processError,
     progress,
     addFiles,
     clearImages,
-    toggleRemoveBackground,
+    toggleRemoveBackgroundForImage,
+    removeImage,
   };
 }

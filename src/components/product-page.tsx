@@ -23,7 +23,7 @@ import {
   ThemeLogo,
 } from "@/components/homepage-sections";
 import { type CatalogProduct, catalogProducts } from "@/components/catalog-data";
-import { fetchCatalogProductBySlugWithFallback } from "@/lib/products/storefront";
+import { fetchCatalogProductBySlugWithFallback, fetchCatalogProductsWithFallback } from "@/lib/products/storefront";
 import { useCart } from "@/components/cart-context";
 
 function cn(...classes: Array<string | false | null | undefined>) {
@@ -174,7 +174,7 @@ export function ProductPage({ product, slug }: ProductPageProps) {
   const { addToCart } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [fetchedProduct, setFetchedProduct] = useState<CatalogProduct | null>(product ?? null);
-  const [isLoadingProduct, setIsLoadingProduct] = useState(true);
+  const [isLoadingProduct, setIsLoadingProduct] = useState(!product);
   const [selectedSize, setSelectedSize] = useState(product?.sizes[0] ?? "");
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -192,6 +192,11 @@ export function ProductPage({ product, slug }: ProductPageProps) {
     }
 
     const loadProduct = async () => {
+      // Skip Firebase fetch if product already loaded from props/catalog
+      if (product) {
+        setIsLoadingProduct(false);
+        return;
+      }
       setIsLoadingProduct(true);
       const nextProduct = await fetchCatalogProductBySlugWithFallback(slug);
 
@@ -241,12 +246,31 @@ export function ProductPage({ product, slug }: ProductPageProps) {
     [compareValue, priceValue],
   );
 
+  const [allProducts, setAllProducts] = useState<CatalogProduct[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadAllProducts = async () => {
+      const products = await fetchCatalogProductsWithFallback();
+      if (isMounted) {
+        setAllProducts(products);
+      }
+    };
+
+    void loadAllProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const recommendedProducts = useMemo(() => {
     if (!activeProduct) return [];
-    return catalogProducts
+    return allProducts
       .filter((item) => item.slug !== activeProduct.slug)
       .slice(0, 4);
-  }, [activeProduct]);
+  }, [activeProduct, allProducts]);
 
   const handleAddToCart = (options?: { redirectToCart?: boolean }) => {
     if (!activeProduct) return;

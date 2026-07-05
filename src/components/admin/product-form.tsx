@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, type ChangeEvent, type DragEvent } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ImagePlus, Info, Sparkles, Truck } from "lucide-react";
+import { ImagePlus, Info, Sparkles, Truck, ArrowUp, ArrowDown, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
@@ -46,6 +46,7 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
         stockBySize: initialProduct.stockBySize,
         badge: initialProduct.badge,
         soldOut: initialProduct.soldOut,
+        hidden: initialProduct.hidden,
         authenticityLabel: initialProduct.authenticityLabel,
         deliveryLabel: initialProduct.deliveryLabel,
         deliveryRegion: initialProduct.deliveryRegion,
@@ -81,6 +82,7 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
 
   const category = useWatch({ control, name: "category" });
   const soldOut = useWatch({ control, name: "soldOut" });
+  const hidden = useWatch({ control, name: "hidden" });
   const badge = useWatch({ control, name: "badge" });
   const sizeStock = useWatch({ control, name: "stockBySize" }) ?? {};
   const status = badge ? getStatusFromProduct({ soldOut: soldOut ?? false, badge }) : "Aucun";
@@ -93,12 +95,13 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
   const {
     displayedUrls,
     primaryPreview,
-    removeBackground,
+    removeBackgroundMap,
     isProcessing,
     processError,
     progress,
     addFiles,
-    toggleRemoveBackground,
+    toggleRemoveBackgroundForImage,
+    removeImage,
   } = useAdminProductImages({
     initialImageUrls,
     defaultRemoveBackground: false,
@@ -172,6 +175,31 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
     }
   };
 
+  const moveGalleryImage = (index: number, direction: "up" | "down") => {
+    const currentGallery = getValues("gallery");
+    if (currentGallery.length < 2) return;
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= currentGallery.length) return;
+    const newGallery = [...currentGallery];
+    [newGallery[index], newGallery[newIndex]] = [newGallery[newIndex], newGallery[index]];
+    setValue("gallery", newGallery, { shouldValidate: true });
+    if (newGallery.length > 0) {
+      setValue("image", newGallery[0].src, { shouldValidate: true });
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    removeImage(index);
+    const currentGallery = getValues("gallery");
+    const newGallery = currentGallery.filter((_, i) => i !== index);
+    setValue("gallery", newGallery, { shouldValidate: true });
+    if (newGallery.length > 0) {
+      setValue("image", newGallery[0].src, { shouldValidate: true });
+    } else {
+      setValue("image", "", { shouldValidate: true });
+    }
+  };
+
   const onFormSubmit = (data: ProductFormData) => {
     const payload: ProductFormData = {
       ...data,
@@ -233,14 +261,14 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
-                toggleRemoveBackground();
+                toggleRemoveBackgroundForImage(0);
               }}
               className={`absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center border transition-all ${
-                removeBackground
+                removeBackgroundMap[0]
                   ? "border-[#ffb59e] bg-[#ffb59e] text-[#521300]"
                   : "border-[#ffb59e]/60 bg-[#0f0f0f]/70 text-[#ffb59e]"
               }`}
-              title={removeBackground ? "Fond supprime (actif)" : "Fond conserve (inactif)"}
+              title={removeBackgroundMap[0] ? "Fond supprime (actif)" : "Fond conserve (inactif)"}
             >
               <Sparkles size={16} />
             </button>
@@ -258,24 +286,6 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
           <p className="text-xs text-red-400">{errors.image.message}</p>
         ) : null}
 
-        {primaryPreview ? (
-          <div className="flex items-center justify-between border border-[#353534] bg-[#1A1A1A] px-3 py-2">
-            <span className="font-mono text-xs uppercase text-[#e6beb2]">Fond automatique</span>
-            <button
-              type="button"
-              onClick={() => toggleRemoveBackground()}
-              className={`flex items-center gap-2 px-3 py-1 font-mono text-[10px] uppercase transition-all ${
-                removeBackground
-                  ? "bg-[#ffb59e] text-[#521300]"
-                  : "border border-[#ffb59e]/60 text-[#ffb59e]"
-              }`}
-            >
-              <Sparkles size={12} />
-              {removeBackground ? "Actif" : "Inactif"}
-            </button>
-          </div>
-        ) : null}
-
         {processError ? (
           <div className="border border-red-500 bg-red-900/30 px-3 py-2 text-xs text-red-200">
             {processError}
@@ -283,39 +293,90 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
         ) : null}
 
         <div className="grid grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <button
-              key={index}
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className={`relative aspect-square overflow-hidden border-2 border-dashed border-[#353534] transition-all hover:border-[#ffb59e] ${
-                displayedUrls[index + 1]
-                  ? "bg-[repeating-linear-gradient(45deg,#111_0,#111_14px,#1A1A1A_14px,#1A1A1A_28px)]"
-                  : "bg-[#1A1A1A]"
-              }`}
-            >
-              {displayedUrls[index + 1] ? (
-                <>
-                  <Image
-                    key={displayedUrls[index + 1]}
-                    src={displayedUrls[index + 1]}
-                    alt={`Apercu supplementaire ${index + 1}`}
-                    fill
-                    sizes="120px"
-                    className="object-contain"
-                  />
-                  <div className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center border border-[#ffb59e]/60 bg-[#0f0f0f]/70 text-[#ffb59e]">
-                    <Sparkles size={14} />
+          {Array.from({ length: 4 }).map((_, index) => {
+            const imageIndex = index + 1;
+            const hasImage = displayedUrls[imageIndex];
+            return (
+              <div key={index} className="relative">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`relative aspect-square w-full overflow-hidden border-2 border-dashed border-[#353534] transition-all hover:border-[#ffb59e] ${
+                    hasImage
+                      ? "bg-[repeating-linear-gradient(45deg,#111_0,#111_14px,#1A1A1A_14px,#1A1A1A_28px)]"
+                      : "bg-[#1A1A1A]"
+                  }`}
+                >
+                  {hasImage ? (
+                    <>
+                      <Image
+                        key={displayedUrls[imageIndex]}
+                        src={displayedUrls[imageIndex]}
+                        alt={`Apercu supplementaire ${imageIndex}`}
+                        fill
+                        sizes="120px"
+                        className="object-contain"
+                      />
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleRemoveImage(imageIndex);
+                        }}
+                        className="absolute left-1 top-1 z-30 flex h-5 w-5 items-center justify-center border border-red-500/60 bg-red-900/70 text-red-400 transition-colors hover:bg-red-500 hover:text-white"
+                        title="Supprimer l'image"
+                      >
+                        <X size={10} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          toggleRemoveBackgroundForImage(imageIndex);
+                        }}
+                        className={`absolute right-1 top-1 z-20 flex h-5 w-5 items-center justify-center border transition-all ${
+                          removeBackgroundMap[imageIndex]
+                            ? "border-[#ffb59e] bg-[#ffb59e] text-[#521300]"
+                            : "border-[#ffb59e]/60 bg-[#0f0f0f]/70 text-[#ffb59e]"
+                        }`}
+                        title={removeBackgroundMap[imageIndex] ? "Fond supprime" : "Fond conserve"}
+                      >
+                        <Sparkles size={10} />
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-[#e6beb2]">
+                      <ImagePlus size={22} />
+                    </div>
+                  )}
+                </button>
+                {hasImage && displayedUrls.length > 2 ? (
+                  <div className="absolute -bottom-7 left-0 right-0 flex justify-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => moveGalleryImage(imageIndex, "up")}
+                      disabled={index === 0}
+                      className="flex h-5 w-5 items-center justify-center border border-[#353534] bg-[#1A1A1A] text-[#e6beb2] transition-colors hover:border-[#ffb59e] hover:text-[#ffb59e] disabled:opacity-30"
+                      title="Deplacer avant"
+                    >
+                      <ArrowUp size={10} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveGalleryImage(imageIndex, "down")}
+                      disabled={index >= displayedUrls.length - 2}
+                      className="flex h-5 w-5 items-center justify-center border border-[#353534] bg-[#1A1A1A] text-[#e6beb2] transition-colors hover:border-[#ffb59e] hover:text-[#ffb59e] disabled:opacity-30"
+                      title="Deplacer apres"
+                    >
+                      <ArrowDown size={10} />
+                    </button>
                   </div>
-                </>
-              ) : (
-                <div className="flex h-full items-center justify-center text-[#e6beb2]">
-                  <ImagePlus size={22} />
-                </div>
-              )}
-            </button>
-          ))}
+                ) : null}
+              </div>
+            );
+          })}
         </div>
+        <div className="mt-6" />
 
         <div className="border-l-4 border-[#ffba20] bg-[#1A1A1A] p-6">
           <div className="flex items-start gap-4">
@@ -415,8 +476,25 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
             </div>
           </div>
 
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <label className="font-mono text-xs uppercase text-[#e6beb2]">Visibilite</label>
+              <button
+                type="button"
+                onClick={() => setValue("hidden", !(hidden ?? false), { shouldValidate: true })}
+                className={`border-2 px-3 py-3 text-center font-mono text-xs uppercase transition-all ${
+                  hidden
+                    ? "border-red-500 bg-red-900/30 text-red-400"
+                    : "border-[#ffb59e] bg-[#ffb59e] text-[#5e1700]"
+                }`}
+              >
+                {hidden ? "Produit Masque" : "Produit Visible"}
+              </button>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-2">
-            <label className="font-mono text-xs uppercase text-[#e6beb2]">Description du Produit</label>
+            <label className="font-mono text-xs uppercase text-[#e6beb2]">Description du Produit (optionnel)</label>
             <textarea
               rows={4}
               {...register("description")}

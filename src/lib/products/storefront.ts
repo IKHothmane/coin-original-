@@ -6,14 +6,15 @@ import { isFirebaseConfigured } from "@/lib/firebase/client";
 
 export async function fetchCatalogProductsWithFallback(): Promise<CatalogProduct[]> {
   if (!isFirebaseConfigured()) {
-    return catalogProducts;
+    return catalogProducts.filter((p) => !p.hidden);
   }
 
   try {
     const products = await fetchCatalogProductsFromFirebase();
-    return products.length > 0 ? products : catalogProducts;
+    const result = products.length > 0 ? products : catalogProducts;
+    return result.filter((p) => !p.hidden);
   } catch {
-    return catalogProducts;
+    return catalogProducts.filter((p) => !p.hidden);
   }
 }
 

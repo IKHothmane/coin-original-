@@ -18,7 +18,7 @@ export const productSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caracteres."),
   priceValue: coerceNumber(1, "Le prix doit etre superieur a 0."),
   compareAtPriceValue: coerceNumber().optional(),
-  description: z.string().min(10, "La description doit contenir au moins 10 caracteres."),
+  description: z.string().optional(),
   image: z.string().min(1, "Une image principale est requise."),
   gallery: z.array(z.object({ src: z.string(), alt: z.string() })).min(1, "Au moins une image est requise."),
   stockBySize: z
@@ -34,6 +34,7 @@ export const productSchema = z.object({
     })
     .optional(),
   soldOut: z.boolean().optional(),
+  hidden: z.boolean().optional(),
   authenticityLabel: z.string().optional(),
   deliveryLabel: z.string().optional(),
   deliveryRegion: z.string().optional(),

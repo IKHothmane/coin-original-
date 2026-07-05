@@ -13,6 +13,7 @@ export type OrderItem = {
 
 export type CustomerInfo = {
   fullName: string;
+  email?: string;
   phone: string;
   city: string;
   address: string;

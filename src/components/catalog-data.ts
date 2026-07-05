@@ -18,6 +18,7 @@ export type CatalogProduct = {
   gallery: ProductGalleryItem[];
   sizes: string[];
   soldOut?: boolean;
+  hidden?: boolean;
   authenticityLabel?: string;
   deliveryLabel?: string;
   deliveryRegion?: string;

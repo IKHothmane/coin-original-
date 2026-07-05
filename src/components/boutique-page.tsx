@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
@@ -18,7 +19,6 @@ import {
   ThemeLogo,
 } from "@/components/homepage-sections";
 import {
-  boutiqueProducts,
   PRODUCTS_PER_PAGE,
   sortOptions,
   type BoutiqueProduct,
@@ -61,7 +61,7 @@ import { useTranslation } from "@/lib/i18n/use-translation";
 function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
   const { t } = useTranslation();
   return (
-    <article className="group border border-[var(--border-soft)] bg-[var(--surface)] transition-all hover:border-[var(--primary-strong)]">
+    <Link href={`/produit/${product.slug}`} className="group block border border-[var(--border-soft)] bg-[var(--surface)] transition-all hover:border-[var(--primary-strong)]">
       <div className="product-image-frame aspect-[3/4]">
         <Image
           alt={product.name}
@@ -81,13 +81,12 @@ function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
           </div>
         ) : null}
         <div className="absolute bottom-2 right-2 translate-y-12 transition-transform duration-300 group-hover:translate-y-0 sm:bottom-4 sm:right-4">
-          <Link
-            href={`/produit/${product.slug}`}
+          <span
             className="inline-flex border-2 border-[var(--primary)] bg-[var(--surface)] p-2 text-[var(--primary)] transition-all hover:bg-[var(--primary-strong)] hover:text-[var(--background)] sm:p-3"
             aria-label={`${t("product.voir")} ${product.name}`}
           >
             <ShoppingCart size={16} className="sm:h-5 sm:w-5" />
-          </Link>
+          </span>
         </div>
       </div>
       <div className={`space-y-1.5 p-2.5 sm:space-y-2 sm:p-4 ${product.soldOut ? "opacity-60" : ""}`}>
@@ -104,6 +103,7 @@ function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
             type="button"
             className="text-[var(--muted)] transition-colors hover:text-red-500"
             aria-label={`Ajouter ${product.name} aux favoris`}
+            onClick={(e) => e.preventDefault()}
           >
             <Heart size={14} className="sm:h-[18px] sm:w-[18px]" />
           </button>
@@ -135,28 +135,41 @@ function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
           ))}
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
 
 function BoutiqueHeader({
   searchQuery,
   onSearchChange,
+  categoryFilter,
+  onClearCategory,
 }: {
   searchQuery: string;
   onSearchChange: (value: string) => void;
+  categoryFilter: string | null;
+  onClearCategory: () => void;
 }) {
   const { t } = useTranslation();
   return (
     <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 className="font-[var(--font-display)] text-3xl uppercase text-[var(--primary)] sm:text-4xl md:text-5xl">
-          {t("boutique.title")}
+          {categoryFilter ? categoryFilter : t("boutique.title")}
         </h1>
         <p className="mt-1.5 max-w-2xl text-xs text-[var(--muted)] sm:mt-2 sm:text-sm md:text-base">
-          La selection streetwear premium de Coin Original, inspiree de ton
-          design boutique.
+          {categoryFilter
+            ? `Découvrez notre sélection de ${categoryFilter.toLowerCase()}.`
+            : "La selection streetwear premium de Coin Original, inspiree de ton design boutique."}
         </p>
+        {categoryFilter && (
+          <button
+            onClick={onClearCategory}
+            className="mt-2 inline-flex items-center gap-1 text-xs text-[var(--primary)] hover:underline"
+          >
+            ← Voir tous les produits
+          </button>
+        )}
       </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="relative">
@@ -172,12 +185,6 @@ function BoutiqueHeader({
             className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] sm:h-[18px] sm:w-[18px]"
           />
         </div>
-        <Link
-          href={`/produit/${boutiqueProducts[0]?.slug ?? "speed-volt-runner"}`}
-          className="inline-flex items-center justify-center border border-[var(--border-soft)] px-3 py-2.5 font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--foreground)] transition-colors hover:border-[var(--primary-strong)] hover:text-[var(--primary)] sm:px-4 sm:py-3 sm:text-[10px]"
-        >
-          {t("boutique.voir_produit")}
-        </Link>
       </div>
     </div>
   );
@@ -288,6 +295,9 @@ function Pagination({
 
 export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiqueProduct[] }) {
   const { t, lang } = useTranslation();
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category");
+  const badgeParam = searchParams.get("badge");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [products, setProducts] = useState<BoutiqueProduct[]>(initialProducts ?? []);
   const [loading, setLoading] = useState(initialProducts === undefined);
@@ -329,19 +339,38 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
   }, [initialProducts]);
 
   const filteredProducts = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
+    let result = products;
 
-    if (!normalizedQuery) {
-      return products;
+    // Filter by category from URL param
+    if (categoryParam) {
+      result = result.filter((product) =>
+        product.category?.toLowerCase() === categoryParam.toLowerCase(),
+      );
     }
 
-    return products.filter((product) =>
-      [product.brand, product.name, product.price, product.sizes.join(" ")]
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedQuery),
-    );
-  }, [products, searchQuery]);
+    // Filter by badge from URL param
+    if (badgeParam) {
+      result = result.filter((product) =>
+        product.badge?.label?.toLowerCase() === badgeParam.toLowerCase(),
+      );
+    }
+
+    // Filter out hidden products
+    result = result.filter((product) => !product.hidden);
+
+    // Filter by search query
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    if (normalizedQuery) {
+      result = result.filter((product) =>
+        [product.brand, product.name, product.price, product.sizes.join(" ")]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedQuery),
+      );
+    }
+
+    return result;
+  }, [products, searchQuery, categoryParam]);
 
   const sortedProducts = useMemo(
     () => sortProducts(filteredProducts, sortBy),
@@ -386,7 +415,14 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
 
       <main className="min-h-screen w-full px-3 pb-24 pt-20 md:px-5" dir={lang === "ar" ? "rtl" : "ltr"}>
         <div className="py-6 sm:py-10">
-          <BoutiqueHeader searchQuery={searchQuery} onSearchChange={handleSearchChange} />
+          <BoutiqueHeader
+            searchQuery={searchQuery}
+            onSearchChange={handleSearchChange}
+            categoryFilter={categoryParam ?? badgeParam}
+            onClearCategory={() => {
+              window.location.href = "/boutique";
+            }}
+          />
 
           <BoutiqueToolbar
             shownCount={visibleProducts.length}

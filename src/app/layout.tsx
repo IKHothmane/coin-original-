@@ -5,6 +5,7 @@ import { InstagramFloatingButton } from "@/components/instagram-floating-button"
 import type { Metadata } from "next";
 import { Anton, Archivo_Narrow, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import { CartProvider } from "@/components/cart-context";
+import { AuthProvider } from "@/components/auth-context";
 import { JsonLd } from "@/components/json-ld";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
@@ -156,13 +157,15 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <GoogleAnalytics />
-        <CartProvider>
-          <I18nProvider>
-            {children}
-            <FooterWrapper />
-            <InstagramFloatingButton />
-          </I18nProvider>
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <I18nProvider>
+              {children}
+              <FooterWrapper />
+              <InstagramFloatingButton />
+            </I18nProvider>
+          </CartProvider>
+        </AuthProvider>
         <JsonLd data={[organizationJsonLd, websiteJsonLd]} />
       </body>
     </html>

@@ -24,8 +24,8 @@ export function Footer() {
         />
       </div>
 
-      {/* Contenu texte avec fond #E6E6E6 — pleine largeur */}
-      <div className="bg-[#E6E6E6] px-6 py-12">
+      {/* Contenu texte avec fond gris clair — pleine largeur */}
+      <div className="bg-gray-100 px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="md:col-span-1">

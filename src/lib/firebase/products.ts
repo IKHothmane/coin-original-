@@ -9,7 +9,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import type { CatalogProduct } from "@/components/catalog-data";
-import { getCloudinaryBackgroundRemovedUrl } from "@/lib/cloudinary";
+import { getCloudinaryOriginalUrl } from "@/lib/cloudinary";
 import type {
   AdminProductRecord,
   ProductBadgeTone,
@@ -44,6 +44,7 @@ type FirebaseProductDocument = {
   sizes: string[];
   stockBySize: Record<string, number>;
   soldOut: boolean;
+  hidden: boolean;
   badge?: {
     label: string;
     tone: ProductBadgeTone;
@@ -75,12 +76,13 @@ function mapInputToFirebaseDocument(
     category: input.category,
     name: input.name,
     priceValue: input.priceValue,
-    description: input.description,
+    description: input.description ?? "",
     image: input.image,
     gallery: input.gallery,
     sizes,
     stockBySize: input.stockBySize,
     soldOut: input.soldOut ?? totalStock <= 0,
+    hidden: input.hidden ?? false,
     createdAt: existingCreatedAt ?? now,
     updatedAt: now,
     ...(input.compareAtPriceValue !== undefined
@@ -103,13 +105,13 @@ function mapFirebaseDocumentToAdminProduct(
     : Object.keys(stockBySize).filter((size) => (stockBySize[size] ?? 0) > 0);
   const computedStock = Object.values(stockBySize).reduce((sum, quantity) => sum + quantity, 0);
   const stock = product.soldOut ? 0 : computedStock;
-  const productImage = getCloudinaryBackgroundRemovedUrl(product.image);
+  const productImage = getCloudinaryOriginalUrl(product.image);
   const productGallery = (product.gallery?.length
     ? product.gallery
     : [{ src: product.image, alt: `${product.name} vue principale` }]
   ).map((galleryItem) => ({
     ...galleryItem,
-    src: getCloudinaryBackgroundRemovedUrl(galleryItem.src),
+    src: getCloudinaryOriginalUrl(galleryItem.src),
   }));
 
   return {
@@ -132,6 +134,7 @@ function mapFirebaseDocumentToAdminProduct(
     stockStatus: getStockStatus(stock),
     collectionLabel: getCollectionLabel(product),
     soldOut: product.soldOut,
+    hidden: product.hidden ?? false,
     authenticityLabel: product.authenticityLabel,
     deliveryLabel: product.deliveryLabel,
     deliveryRegion: product.deliveryRegion,
@@ -152,6 +155,7 @@ export function mapAdminProductToCatalogProduct(product: AdminProductRecord): Ca
     gallery: product.gallery,
     sizes: product.sizes,
     soldOut: product.soldOut,
+    hidden: product.hidden ?? false,
     authenticityLabel: product.authenticityLabel,
     deliveryLabel: product.deliveryLabel,
     deliveryRegion: product.deliveryRegion,

@@ -30,6 +30,7 @@ export type AdminProductRecord = {
   stockStatus: StockStatus;
   collectionLabel: string;
   soldOut: boolean;
+  hidden: boolean;
   authenticityLabel?: string;
   deliveryLabel?: string;
   deliveryRegion?: string;
@@ -42,7 +43,7 @@ export type ProductMutationInput = {
   name: string;
   priceValue: number;
   compareAtPriceValue?: number;
-  description: string;
+  description?: string;
   image: string;
   gallery: ProductGalleryItem[];
   stockBySize: Record<string, number>;
@@ -51,6 +52,7 @@ export type ProductMutationInput = {
     tone: ProductBadgeTone;
   };
   soldOut?: boolean;
+  hidden?: boolean;
   authenticityLabel?: string;
   deliveryLabel?: string;
   deliveryRegion?: string;

@@ -1,14 +1,10 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import {
-  Package2,
-  ShoppingCart,
-  TrendingUp,
-  Truck,
-  Users,
-} from "lucide-react";
+import { ArrowUpRight, Package2, ShoppingCart, TrendingUp, Truck, Users } from "lucide-react";
+import Link from "next/link";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { AdminMetricCard, AdminPageIntro, AdminPanel } from "@/components/admin/admin-ui";
 
 type StatCard = {
   title: string;
@@ -62,120 +58,157 @@ function StatusBadge({ status, tone }: { status: string; tone: RecentOrder["stat
 
 export default function AdminPage() {
   return (
-    <AdminShell pageTitle="Tableau De Bord" pageSubtitle="Vue d&apos;ensemble / Statistiques">
-      <div className="py-6 lg:py-10">
-        <div className="mb-6 flex flex-col gap-4 md:mb-10 md:flex-row md:items-end md:justify-between">
-          <div>
-            <h2 className="font-[var(--font-display)] text-3xl uppercase leading-none md:text-6xl">
-              Tableau De Bord
-            </h2>
-            <div className="mt-2 flex items-center gap-2">
-              <span className="h-1 w-12 bg-[#ff571a]" />
-              <p className="font-mono text-[10px] uppercase text-[#e6beb2]">
-                Bienvenue Chez Coin Original
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 border border-[#2A2A2A] bg-[#1c1b1b] p-3 md:p-4">
-            <Truck size={18} className="text-[#ffba20]" />
-            <div>
-              <p className="font-mono text-[10px] uppercase">Paiement a la livraison</p>
-              <p className="font-mono text-xs font-bold">Actif : Maroc</p>
-            </div>
-          </div>
+    <AdminShell pageTitle="Tableau de bord" pageSubtitle="Pilotage / Vue d&apos;ensemble">
+      <div className="space-y-6 py-6 lg:space-y-8 lg:py-10">
+        <AdminPageIntro
+          eyebrow="Pilotage quotidien"
+          title="Vue globale de la boutique"
+          description="Suivi des ventes, du flux commandes et des signaux catalogue dans une interface admin plus nette, plus dense et plus premium."
+          badge="COD Maroc actif"
+          action={
+            <Link
+              href="/admin/orders"
+              className="inline-flex items-center gap-3 border border-[#ff8f68] bg-[linear-gradient(135deg,#ffb59e_0%,#ff6a33_100%)] px-5 py-4 font-[var(--font-display)] text-lg uppercase text-[#381103] transition-transform hover:-translate-y-0.5"
+            >
+              Ouvrir les commandes
+              <ArrowUpRight size={18} />
+            </Link>
+          }
+        />
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <AdminMetricCard
+            label={stats[0].title}
+            value={stats[0].value}
+            detail={stats[0].change}
+            icon={TrendingUp}
+            accent="orange"
+          />
+          <AdminMetricCard
+            label={stats[1].title}
+            value={stats[1].value}
+            detail="Trafic commandes en hausse"
+            icon={ShoppingCart}
+            accent="sand"
+          />
+          <AdminMetricCard
+            label={stats[2].title}
+            value={stats[2].value}
+            detail="2 references a surveiller"
+            icon={Package2}
+            accent="gold"
+          />
+          <AdminMetricCard
+            label={stats[3].title}
+            value={stats[3].value}
+            detail="Acquisition locale acceleree"
+            icon={Users}
+            accent="sand"
+          />
         </div>
 
-        <div className="mb-8 grid grid-cols-12 gap-3 md:mb-10 md:gap-4">
-          <div className="col-span-12 overflow-hidden border-2 border-[#2A2A2A] bg-[#1c1b1b] p-5 sm:p-6 lg:col-span-8 lg:p-8">
-            <div className="relative z-10">
-              <div className="mb-10 flex items-start justify-between gap-4 sm:mb-12">
-                <p className="font-mono text-[10px] uppercase tracking-tight text-[#ffb59e]">
-                  Ventes Totales (30 Jours)
-                </p>
-                <span className="bg-[#e60000] px-3 py-1 font-mono text-[10px] text-white">
-                  +14.2%
-                </span>
-              </div>
-              <div className="flex flex-wrap items-baseline gap-2 sm:gap-4">
-                <h3 className="font-[var(--font-display)] text-4xl text-[#e5e2e1] sm:text-6xl lg:text-7xl">
-                  128,450.00
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
+          <AdminPanel
+            eyebrow="Performance"
+            title="Ventes 30 jours"
+            action={
+              <span className="border border-[#5a2c22] bg-[#261716] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#ffb59e]">
+                +14.2%
+              </span>
+            }
+          >
+            <div className="space-y-8">
+              <div className="flex flex-wrap items-baseline gap-3">
+                <h3 className="font-[var(--font-display)] text-5xl text-[#f5f1ef] sm:text-6xl lg:text-7xl">
+                  128,450
                 </h3>
                 <span className="font-[var(--font-display)] text-2xl text-[#ffb59e] sm:text-4xl">
                   MAD
                 </span>
               </div>
-              <div className="mt-8 flex gap-2">
-                <div className="relative h-16 w-full overflow-hidden bg-[#2A2A2A]">
-                  {revenueBars.map((bar) => (
-                    <div
-                      key={bar.offset}
-                      className={`absolute bottom-0 ${bar.offset} w-1/4 ${bar.height} ${bar.tone}`}
-                    />
-                  ))}
+              <div className="grid grid-cols-4 gap-3">
+                {revenueBars.map((bar) => (
+                  <div key={bar.offset} className="flex h-44 items-end bg-[#1d1b1a] p-2">
+                    <div className={`w-full ${bar.height} ${bar.tone}`} />
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                <div className="border border-[#2f2b29] bg-[#191817] p-4">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#a68d86]">Conversion</p>
+                  <p className="mt-3 font-[var(--font-display)] text-3xl text-[#fff4ef]">4.8%</p>
+                </div>
+                <div className="border border-[#2f2b29] bg-[#191817] p-4">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#a68d86]">Panier moyen</p>
+                  <p className="mt-3 font-[var(--font-display)] text-3xl text-[#fff4ef]">620</p>
+                </div>
+                <div className="border border-[#2f2b29] bg-[#191817] p-4">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#a68d86]">Retours</p>
+                  <p className="mt-3 font-[var(--font-display)] text-3xl text-[#fff4ef]">1.2%</p>
+                </div>
+                <div className="border border-[#2f2b29] bg-[#191817] p-4">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#a68d86]">Upsell</p>
+                  <p className="mt-3 font-[var(--font-display)] text-3xl text-[#fff4ef]">18%</p>
                 </div>
               </div>
             </div>
-          </div>
+          </AdminPanel>
 
-          <div className="col-span-6 flex min-h-[180px] flex-col justify-between border-2 border-[#2A2A2A] bg-[#1c1b1b] p-4 transition-colors hover:bg-[#2A2A2A] sm:p-6 lg:col-span-4 lg:p-8">
-            <div>
-              <ShoppingCart size={32} className="mb-4 text-[#ff571a]" />
-              <p className="font-mono text-[10px] uppercase text-[#e6beb2]">{stats[1].title}</p>
+          <AdminPanel eyebrow="Operations" title="Signals live">
+            <div className="space-y-4">
+              <div className="border border-[#2f2b29] bg-[#191817] p-4">
+                <div className="flex items-center gap-3">
+                  <Truck size={18} className="text-[#ffba20]" />
+                  <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#ffba20]">
+                    Paiement a la livraison
+                  </p>
+                </div>
+                <p className="mt-4 font-[var(--font-display)] text-3xl text-[#fff4ef]">Actif</p>
+                <p className="mt-2 text-sm text-[#bea8a1]">Couverture prioritaire sur Casablanca, Rabat et Marrakech.</p>
+              </div>
+              <div className="border border-[#2f2b29] bg-[#191817] p-4">
+                <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#ffb59e]">
+                  Nouveaux clients
+                </p>
+                <div className="mt-4 flex h-28 items-end gap-2">
+                  {customerBars.map((height, index) => (
+                    <div
+                      key={`${height}-${index}`}
+                      className={`w-full ${height} ${
+                        index === customerBars.length - 1 ? "bg-[#ffb59e]" : "bg-[#6c5b56]"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className="mt-4 font-[var(--font-display)] text-3xl text-[#fff4ef]">324</p>
+              </div>
+              <div className="border border-[#2f2b29] bg-[#191817] p-4">
+                <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#a68d86]">Objectif semaine</p>
+                <p className="mt-3 font-[var(--font-display)] text-3xl text-[#fff4ef]">72%</p>
+                <div className="mt-4 h-2 bg-[#252220]">
+                  <div className="h-full w-[72%] bg-[linear-gradient(90deg,#ffb59e_0%,#ff6a33_100%)]" />
+                </div>
+              </div>
             </div>
-            <p className="font-[var(--font-display)] text-4xl text-[#e5e2e1] sm:text-5xl">
-              {stats[1].value}
-            </p>
-          </div>
-
-          <div className="col-span-6 flex min-h-[180px] cursor-pointer flex-col justify-between overflow-hidden border-2 border-[#ff571a] bg-[#ff571a] p-4 text-[#521300] sm:p-6 lg:col-span-4 lg:p-8">
-            <div className="transition-transform hover:-translate-y-1">
-              <Package2 size={32} className="mb-4 text-[#521300]" />
-              <p className="font-mono text-[10px] uppercase text-[#521300]">{stats[2].title}</p>
-            </div>
-            <div className="flex items-end justify-between gap-4">
-              <p className="font-[var(--font-display)] text-4xl sm:text-5xl">{stats[2].value}</p>
-              <span className="font-mono text-xs uppercase">{stats[2].change}</span>
-            </div>
-          </div>
-
-          <div className="col-span-12 flex flex-col justify-between border-2 border-[#2A2A2A] bg-[#1c1b1b] p-5 sm:p-6 lg:col-span-8 lg:flex-row lg:items-center lg:p-8">
-            <div className="lg:w-1/2">
-              <p className="mb-2 font-mono text-[10px] uppercase text-[#e6beb2]">
-                Nouveaux Clients
-              </p>
-              <h4 className="font-[var(--font-display)] text-3xl uppercase text-[#e5e2e1] sm:text-4xl">
-                324 Membres
-              </h4>
-              <p className="mt-4 max-w-md text-sm text-[#e6beb2] sm:text-base">
-                Fidelite locale en hausse a Casablanca et Marrakech.
-              </p>
-            </div>
-            <div className="mt-6 flex h-32 items-end justify-end gap-2 lg:mt-0 lg:w-1/2">
-              {customerBars.map((height, index) => (
-                <div
-                  key={`${height}-${index}`}
-                  className={`w-7 sm:w-8 ${height} ${
-                    index === customerBars.length - 1 ? "bg-[#ffb59e]" : "bg-[#e6beb2]"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
+          </AdminPanel>
         </div>
 
-        <div className="mt-8 border-2 border-[#2A2A2A] bg-[#131313] p-4 md:mt-10 md:p-8">
-          <div className="mb-6 flex items-center justify-between gap-4">
-            <h3 className="font-[var(--font-display)] text-2xl uppercase md:text-3xl">
-              Commandes Recentes
-            </h3>
-            <button className="border-b-2 border-[#ff571a] font-mono text-[10px] uppercase text-[#ff571a] transition-colors hover:text-white">
-              Voir Tout
-            </button>
-          </div>
+        <AdminPanel
+          eyebrow="Dernieres activites"
+          title="Commandes recentes"
+          action={
+            <Link
+              href="/admin/orders"
+              className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#ffb59e] transition-colors hover:text-white"
+            >
+              Voir tout
+            </Link>
+          }
+        >
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px] text-left font-mono text-xs">
+            <table className="w-full min-w-[640px] text-left">
               <thead>
-                <tr className="border-b-2 border-[#2A2A2A] uppercase text-[#e6beb2]">
+                <tr className="border-b border-[#2f2b29] font-mono text-[10px] uppercase tracking-[0.22em] text-[#aa8e86]">
                   <th className="py-3">ID</th>
                   <th className="py-3">Client</th>
                   <th className="py-3">Ville</th>
@@ -183,22 +216,24 @@ export default function AdminPage() {
                   <th className="py-3 text-right">Montant</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#2A2A2A]">
+              <tbody className="divide-y divide-[#252322]">
                 {recentOrders.map((order) => (
-                  <tr key={order.id} className="transition-colors hover:bg-[#1c1b1b]">
-                    <td className="py-4 font-bold">{order.id}</td>
-                    <td className="py-4">{order.client}</td>
-                    <td className="py-4">{order.city}</td>
+                  <tr key={order.id} className="transition-colors hover:bg-[#1a1918]">
+                    <td className="py-4 font-mono text-sm text-[#f2ece9]">{order.id}</td>
+                    <td className="py-4 text-sm text-[#f2ece9]">{order.client}</td>
+                    <td className="py-4 text-sm text-[#c9b4ad]">{order.city}</td>
                     <td className="py-4">
                       <StatusBadge status={order.status} tone={order.statusTone} />
                     </td>
-                    <td className="py-4 text-right font-bold text-[#ff571a]">{order.amount}</td>
+                    <td className="py-4 text-right font-[var(--font-display)] text-xl text-[#ffb59e]">
+                      {order.amount}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </AdminPanel>
       </div>
     </AdminShell>
   );
