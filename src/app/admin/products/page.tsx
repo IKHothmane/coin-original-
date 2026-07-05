@@ -121,7 +121,7 @@ export default function AdminProductsPage() {
           eyebrow="Inventaire"
           title="Catalogue complet"
           action={
-            <div className="relative w-full min-w-[260px] sm:w-72">
+            <div className="relative w-full sm:w-72">
               <input
                 type="text"
                 value={searchQuery}
@@ -134,7 +134,93 @@ export default function AdminProductsPage() {
           }
         >
         <div className="overflow-hidden border border-[#2f2b29] bg-[#161514]">
-          <div className="overflow-x-auto">
+          <div className="grid gap-4 p-4 lg:hidden">
+            {isLoading ? (
+              <div className="border border-[#2f2b29] bg-[#1b1a19] p-6 text-center font-mono text-xs uppercase text-[#e6beb2]">
+                Chargement des produits...
+              </div>
+            ) : null}
+
+            {!isLoading && filteredProducts.length === 0 ? (
+              <div className="border border-[#2f2b29] bg-[#1b1a19] p-6 text-center font-mono text-xs uppercase text-[#e6beb2]">
+                {getActiveProductBackendLabel() === "Catalogue statique"
+                  ? "Aucun backend produit configure"
+                  : `Aucun produit dans ${getActiveProductBackendLabel()}`}
+              </div>
+            ) : null}
+
+            {!isLoading
+              ? filteredProducts.map((product) => (
+                  <article key={product.slug} className="border border-[#2f2b29] bg-[#1b1a19] p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden border border-[#5c4037] bg-[#353534]">
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          sizes="80px"
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-[var(--font-display)] text-xl uppercase tracking-tight text-[#e5e2e1]">
+                          {product.name}
+                        </p>
+                        <p className="mt-1 break-all font-mono text-[10px] uppercase text-[#e6beb2]">
+                          {product.slug}
+                        </p>
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          <span className="inline-flex border border-[#5c4037] bg-[#353534] px-3 py-1 font-mono text-[10px] uppercase text-[#e5e2e1]">
+                            {product.category}
+                          </span>
+                          <ProductStatus stockStatus={product.stockStatus} />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex items-end justify-between gap-3 border-t border-[#2f2b29] pt-4">
+                      <div>
+                        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#a68d86]">Prix</p>
+                        <span className="mt-1 block font-[var(--font-display)] text-2xl text-[#ffb59e]">
+                          {product.priceLabel}
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <Link
+                          href={`/admin/products/edit?slug=${product.slug}`}
+                          className="border border-[#353534] p-2 text-[#e5e2e1] transition-all hover:border-[#ff571a] hover:text-[#ff571a]"
+                          aria-label={`Modifier ${product.name}`}
+                        >
+                          <Pencil size={18} />
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (window.confirm(`Supprimer "${product.name}" ? Cette action est irreversible.`)) {
+                              const result = await getProductRepository().delete(product.slug);
+                              if (result.error) {
+                                alert(result.error);
+                              } else {
+                                setInventoryProducts((current) =>
+                                  current.filter((item) => item.slug !== product.slug),
+                                );
+                              }
+                            }
+                          }}
+                          className="relative z-10 cursor-pointer border border-[#353534] bg-[#201f1f] p-2 text-[#e5e2e1] transition-all hover:border-[#ffb4ab] hover:text-[#ffb4ab]"
+                          aria-label={`Supprimer ${product.name}`}
+                          title={`Supprimer ${product.name}`}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))
+              : null}
+          </div>
+
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full min-w-[980px] border-collapse text-left">
               <thead>
                 <tr className="border-b border-[#2f2b29] bg-[#1d1b1a]">
@@ -237,11 +323,11 @@ export default function AdminProductsPage() {
             </table>
           </div>
 
-          <div className="flex flex-col gap-4 border-t border-[#2f2b29] bg-[#1d1b1a] p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 border-t border-[#2f2b29] bg-[#1d1b1a] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <p className="font-mono text-xs text-[#e6beb2]">
               Affichage de 1-{visibleCount} sur {totalProducts} produits
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 disabled

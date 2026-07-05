@@ -25,6 +25,7 @@ import {
   type BoutiqueSortValue,
 } from "@/components/boutique-page-data";
 import { fetchCatalogProductsWithFallback } from "@/lib/products/storefront";
+import { getProductHref } from "@/lib/products/links";
 
 function badgeToneClasses(tone: NonNullable<BoutiqueProduct["badge"]>["tone"]) {
   if (tone === "tertiary") {
@@ -61,7 +62,7 @@ import { useTranslation } from "@/lib/i18n/use-translation";
 function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
   const { t } = useTranslation();
   return (
-    <Link href={`/produit/${product.slug}`} className="group block border border-[var(--border-soft)] bg-[var(--surface)] transition-all hover:border-[var(--primary-strong)]">
+    <Link href={getProductHref(product.slug)} className="group block border border-[var(--border-soft)] bg-[var(--surface)] transition-all hover:border-[var(--primary-strong)]">
       <div className="product-image-frame aspect-[3/4]">
         <Image
           alt={product.name}

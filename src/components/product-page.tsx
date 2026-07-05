@@ -25,6 +25,7 @@ import {
 import { type CatalogProduct, catalogProducts } from "@/components/catalog-data";
 import { fetchCatalogProductBySlugWithFallback, fetchCatalogProductsWithFallback } from "@/lib/products/storefront";
 import { useCart } from "@/components/cart-context";
+import { getProductHref } from "@/lib/products/links";
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -140,7 +141,7 @@ function Accordion({
 function ProductCardSmall({ product }: { product: CatalogProduct }) {
   return (
     <article className="group border border-[var(--border-soft)] bg-[var(--surface)] transition-all hover:border-[var(--primary-strong)]">
-      <Link href={`/produit/${product.slug}`} className="block">
+      <Link href={getProductHref(product.slug)} className="block">
         <div className="product-image-frame aspect-[3/4]">
           <Image
             alt={product.name}

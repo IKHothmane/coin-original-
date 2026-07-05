@@ -205,7 +205,25 @@ export default function AdminPage() {
             </Link>
           }
         >
-          <div className="overflow-x-auto">
+          <div className="grid gap-4 lg:hidden">
+            {recentOrders.map((order) => (
+              <article key={order.id} className="border border-[#252322] bg-[#1a1918] p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#aa8e86]">{order.id}</p>
+                    <p className="mt-2 text-base text-[#f2ece9]">{order.client}</p>
+                    <p className="mt-1 text-sm text-[#c9b4ad]">{order.city}</p>
+                  </div>
+                  <StatusBadge status={order.status} tone={order.statusTone} />
+                </div>
+                <div className="mt-4 border-t border-[#252322] pt-4">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#aa8e86]">Montant</p>
+                  <p className="mt-1 font-[var(--font-display)] text-2xl text-[#ffb59e]">{order.amount}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full min-w-[640px] text-left">
               <thead>
                 <tr className="border-b border-[#2f2b29] font-mono text-[10px] uppercase tracking-[0.22em] text-[#aa8e86]">

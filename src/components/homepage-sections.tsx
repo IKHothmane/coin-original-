@@ -21,6 +21,7 @@ import {
 } from "@/components/homepage-data";
 import { fetchFeaturedProductsWithFallback } from "@/lib/products/storefront";
 import { useTranslation } from "@/lib/i18n/use-translation";
+import { getProductHref } from "@/lib/products/links";
 
 type MenuActionProps = {
   mobileMenuOpen: boolean;
@@ -497,7 +498,7 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
 
   return (
     <article className="surface-panel flex h-full flex-col overflow-hidden">
-      <Link href={`/produit/${product.slug}`} className="group flex h-full flex-col">
+      <Link href={getProductHref(product.slug)} className="group flex h-full flex-col">
         <div className="product-image-frame aspect-square">
           <Image
             src={product.image}
