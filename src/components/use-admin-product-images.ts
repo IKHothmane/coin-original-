@@ -225,6 +225,70 @@ export function useAdminProductImages({
     });
   }, [processedUrls, isProcessing, processSingleImage]);
 
+  const moveImage = useCallback((index: number, direction: "up" | "down") => {
+    const nextIndex = direction === "up" ? index - 1 : index + 1;
+
+    setDataUrls((current) => {
+      if (index < 0 || nextIndex < 0 || index >= current.length || nextIndex >= current.length) {
+        return current;
+      }
+
+      const next = [...current];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
+    });
+
+    setRawFiles((current) => {
+      if (index < 0 || nextIndex < 0 || index >= current.length || nextIndex >= current.length) {
+        return current;
+      }
+
+      const next = [...current];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
+    });
+
+    setProcessedUrls((current) => {
+      const next = { ...current };
+      const currentValue = current[index];
+      const targetValue = current[nextIndex];
+
+      if (targetValue === undefined) {
+        delete next[index];
+      } else {
+        next[index] = targetValue;
+      }
+
+      if (currentValue === undefined) {
+        delete next[nextIndex];
+      } else {
+        next[nextIndex] = currentValue;
+      }
+
+      return next;
+    });
+
+    setRemoveBackgroundMap((current) => {
+      const next = { ...current };
+      const currentValue = current[index];
+      const targetValue = current[nextIndex];
+
+      if (targetValue === undefined) {
+        delete next[index];
+      } else {
+        next[index] = targetValue;
+      }
+
+      if (currentValue === undefined) {
+        delete next[nextIndex];
+      } else {
+        next[nextIndex] = currentValue;
+      }
+
+      return next;
+    });
+  }, []);
+
   const removeImage = useCallback((index: number) => {
     setDataUrls((current) => current.filter((_, i) => i !== index));
     setRawFiles((current) => current.filter((_, i) => i !== index));
@@ -267,6 +331,7 @@ export function useAdminProductImages({
     addFiles,
     clearImages,
     toggleRemoveBackgroundForImage,
+    moveImage,
     removeImage,
   };
 }

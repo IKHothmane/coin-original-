@@ -100,6 +100,7 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
     progress,
     addFiles,
     toggleRemoveBackgroundForImage,
+    moveImage,
     removeImage,
   } = useAdminProductImages({
     initialImageUrls,
@@ -162,16 +163,7 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
   };
 
   const moveGalleryImage = (index: number, direction: "up" | "down") => {
-    const currentGallery = getValues("gallery");
-    if (currentGallery.length < 2) return;
-    const newIndex = direction === "up" ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= currentGallery.length) return;
-    const newGallery = [...currentGallery];
-    [newGallery[index], newGallery[newIndex]] = [newGallery[newIndex], newGallery[index]];
-    setValue("gallery", newGallery, { shouldValidate: true });
-    if (newGallery.length > 0) {
-      setValue("image", newGallery[0].src, { shouldValidate: true });
-    }
+    moveImage(index, direction);
   };
 
   const handleRemoveImage = (index: number) => {

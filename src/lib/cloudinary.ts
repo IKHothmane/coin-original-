@@ -125,7 +125,7 @@ export async function uploadProductImageUrlsToCloudinary(
   urls: string[],
 ): Promise<{ urls: string[]; error: string | null }> {
   if (!isCloudinaryConfigured()) {
-    return { urls: [], error: getCloudinaryConfigErrorMessage() };
+    return { urls, error: null };
   }
 
   try {
