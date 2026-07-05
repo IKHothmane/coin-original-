@@ -11,6 +11,7 @@ import { productSchema, type ProductFormData } from "@/lib/products/schema";
 import {
   createInitialSizeStock,
   getBadgeConfig,
+  getSizeLabelsByCategory,
   getStatusFromProduct,
   normalizeCategory,
   PRODUCT_CATEGORIES,
@@ -33,17 +34,28 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
 
   const defaultValues: ProductFormData = useMemo(() => {
     if (initialProduct) {
+      const normalizedCategory = normalizeCategory(initialProduct.category);
+      const baseStock = createInitialSizeStock(normalizedCategory);
+      const selectedSizes = initialProduct.sizes ?? [];
+
       return {
         slug: initialProduct.slug,
         brand: initialProduct.brand,
-        category: normalizeCategory(initialProduct.category),
+        category: normalizedCategory,
         name: initialProduct.name,
         priceValue: initialProduct.priceValue,
         compareAtPriceValue: initialProduct.compareAtPriceValue,
         description: initialProduct.description,
         image: initialProduct.image,
         gallery: initialProduct.gallery,
-        stockBySize: initialProduct.stockBySize,
+        stockBySize: {
+          ...baseStock,
+          ...initialProduct.stockBySize,
+          ...selectedSizes.reduce<Record<string, number>>((accumulator, size) => {
+            accumulator[size] = Math.max(initialProduct.stockBySize[size] ?? 0, 1);
+            return accumulator;
+          }, {}),
+        },
         badge: initialProduct.badge,
         soldOut: initialProduct.soldOut,
         hidden: initialProduct.hidden,
@@ -81,10 +93,12 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
   });
 
   const category = useWatch({ control, name: "category" });
+  const stockBySize = useWatch({ control, name: "stockBySize" });
   const soldOut = useWatch({ control, name: "soldOut" });
   const hidden = useWatch({ control, name: "hidden" });
   const badge = useWatch({ control, name: "badge" });
   const status = badge ? getStatusFromProduct({ soldOut: soldOut ?? false, badge }) : "Aucun";
+  const sizeLabels = useMemo(() => getSizeLabelsByCategory(category ?? "Vetements"), [category]);
 
   const initialImageUrls = useMemo(
     () => (initialProduct?.gallery.length ? initialProduct.gallery.map((item) => item.src) : [initialProduct?.image ?? ""].filter(Boolean)),
@@ -131,6 +145,30 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
       );
     }
   }, [watchedName, setValue, getValues]);
+
+  useEffect(() => {
+    const nextStock = createInitialSizeStock(category ?? "Vetements");
+    let hasChanged = false;
+
+    Object.entries(stockBySize ?? {}).forEach(([size, quantity]) => {
+      if (size in nextStock) {
+        nextStock[size] = quantity;
+      }
+    });
+
+    const currentKeys = Object.keys(stockBySize ?? {});
+    const nextKeys = Object.keys(nextStock);
+
+    if (currentKeys.length !== nextKeys.length) {
+      hasChanged = true;
+    } else {
+      hasChanged = nextKeys.some((size) => (stockBySize?.[size] ?? 0) !== nextStock[size]);
+    }
+
+    if (hasChanged) {
+      setValue("stockBySize", nextStock, { shouldValidate: true });
+    }
+  }, [category, setValue, stockBySize]);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
@@ -492,6 +530,43 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
               className="border-2 border-[#2A2A2A] bg-transparent px-3 py-3 text-base text-[#e5e2e1] outline-none transition-all focus:border-[#ffb59e]"
             />
             {errors.description ? <p className="text-xs text-red-400">{errors.description.message}</p> : null}
+          </div>
+
+          <div className="relative z-10 flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <span className="h-[2px] w-8 bg-[#ffb59e]" />
+              <h3 className="font-mono text-xs uppercase text-[#ffb59e]">Tailles</h3>
+            </div>
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-6">
+              {sizeLabels.map((size) => {
+                const isActive = (stockBySize?.[size] ?? 0) > 0;
+
+                return (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() =>
+                      setValue(
+                        "stockBySize",
+                        {
+                          ...(stockBySize ?? {}),
+                          [size]: isActive ? 0 : 1,
+                        },
+                        { shouldValidate: true },
+                      )
+                    }
+                    className={`border px-3 py-3 text-center font-mono text-xs uppercase transition-all ${
+                      isActive
+                        ? "border-[#ff8a62] bg-[linear-gradient(135deg,#ffcfbf_0%,#ff6a33_100%)] text-[#3b1205] shadow-[6px_6px_0_0_rgba(63,19,6,0.22)]"
+                        : "border-[#2A2A2A] bg-[#201f1f] text-[#e5e2e1] hover:border-[#ffb59e] hover:text-[#ffb59e]"
+                    }`}
+                    aria-pressed={isActive}
+                  >
+                    {size}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </section>
 

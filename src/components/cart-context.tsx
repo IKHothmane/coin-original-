@@ -89,7 +89,12 @@ const cartStore = createCartStore();
 type CartContextValue = {
   items: CartItem[];
   isReady: boolean;
-  addToCart: (product: CatalogProduct, size: string, quantity?: number) => void;
+  addToCart: (
+    product: CatalogProduct,
+    size: string,
+    quantity?: number,
+    options?: { replaceExisting?: boolean },
+  ) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, delta: number) => void;
   setQuantity: (itemId: string, quantity: number) => void;
@@ -121,9 +126,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addToCart = useCallback(
-    (product: CatalogProduct, size: string, quantity = 1) => {
+    (product: CatalogProduct, size: string, quantity = 1, options?: { replaceExisting?: boolean }) => {
       const id = makeCartItemId(product.slug, size);
       const price = parsePrice(product.price);
+      const safeQuantity = Math.max(1, Math.min(10, quantity));
 
       setItems((current) => {
         const existing = current.find((item) => item.id === id);
@@ -131,7 +137,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (existing) {
           return current.map((item) =>
             item.id === id
-              ? { ...item, quantity: Math.min(10, item.quantity + quantity) }
+              ? {
+                  ...item,
+                  quantity: options?.replaceExisting
+                    ? safeQuantity
+                    : Math.min(10, item.quantity + safeQuantity),
+                }
               : item,
           );
         }
@@ -145,7 +156,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             brand: product.brand,
             size,
             price,
-            quantity,
+            quantity: safeQuantity,
             image: product.image,
           },
         ];

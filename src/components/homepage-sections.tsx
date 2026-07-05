@@ -358,16 +358,6 @@ export function BottomDock({
   return (
     <div className="mobile-dock">
       <div className="mobile-dock__shell">
-        <Image
-          src="/sole-navbar.png"
-          alt=""
-          width={797}
-          height={271}
-          priority
-          sizes="(max-width: 768px) 82vw, (max-width: 1200px) 60vw, 620px"
-          className="mobile-dock__image"
-        />
-
         <nav className="mobile-dock__nav" aria-label="Navigation principale">
           <Link href="/" className="mobile-dock__item" aria-label={t("nav.accueil")}>
             <House size={14} strokeWidth={2.15} />

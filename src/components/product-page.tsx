@@ -176,7 +176,9 @@ export function ProductPage({ product, slug }: ProductPageProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [fetchedProduct, setFetchedProduct] = useState<CatalogProduct | null>(product ?? null);
   const [isLoadingProduct, setIsLoadingProduct] = useState(!product);
-  const [selectedSize, setSelectedSize] = useState(product?.sizes[0] ?? "");
+  const [selectedSize, setSelectedSize] = useState(
+    product?.sizes.length === 1 ? (product.sizes[0] ?? "") : "",
+  );
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [sizeError, setSizeError] = useState(false);
@@ -232,6 +234,17 @@ export function ProductPage({ product, slug }: ProductPageProps) {
 
   const activeProduct = fetchedProduct;
 
+  useEffect(() => {
+    if (!activeProduct) {
+      return;
+    }
+
+    const onlySize = activeProduct.sizes.length === 1 ? activeProduct.sizes[0] ?? "" : "";
+    setSelectedSize((current) => (activeProduct.sizes.includes(current) ? current : onlySize));
+    setQuantity(1);
+    setSizeError(false);
+  }, [activeProduct]);
+
   const priceValue = useMemo(
     () => (activeProduct ? parsePrice(activeProduct.price) : 0),
     [activeProduct],
@@ -275,14 +288,19 @@ export function ProductPage({ product, slug }: ProductPageProps) {
 
   const handleAddToCart = (options?: { redirectToCart?: boolean }) => {
     if (!activeProduct) return;
+    const cartSize = effectiveSelectedSize;
+    const needsExplicitSizeSelection = activeProduct.sizes.length > 1 && !cartSize;
 
-    if (!selectedSize) {
+    if (needsExplicitSizeSelection) {
       setSizeError(true);
       return;
     }
 
-    addToCart(activeProduct, selectedSize, quantity);
+    addToCart(activeProduct, cartSize, quantity, {
+      replaceExisting: options?.redirectToCart,
+    });
     setAddedToCart(true);
+    setQuantity(1);
 
     if (options?.redirectToCart) {
       router.push("/panier");
@@ -332,7 +350,9 @@ export function ProductPage({ product, slug }: ProductPageProps) {
 
   const effectiveSelectedSize = activeProduct.sizes.includes(selectedSize)
     ? selectedSize
-    : (activeProduct.sizes[0] ?? "");
+    : activeProduct.sizes.length === 1
+      ? (activeProduct.sizes[0] ?? "")
+      : "";
 
   const mainImage = activeProduct.gallery[selectedImageIndex] ?? activeProduct.gallery[0];
   const hasMultipleImages = activeProduct.gallery.length > 1;

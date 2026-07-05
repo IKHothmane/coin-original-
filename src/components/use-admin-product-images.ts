@@ -157,29 +157,42 @@ export function useAdminProductImages({
     setProcessError(null);
 
     if (typeof replaceIndex === "number") {
-      const replacementFile = nextFiles[0];
-      if (!replacementFile || replaceIndex < 0 || replaceIndex > 4) return;
+      if (replaceIndex < 0 || replaceIndex > 4) return;
 
-      const preview = await readFileAsDataUrl(replacementFile);
-      if (!preview) return;
+      const previews = await Promise.all(nextFiles.map((file) => readFileAsDataUrl(file)));
+      const validEntries = nextFiles
+        .map((file, index) => ({ file, preview: previews[index] }))
+        .filter((entry) => Boolean(entry.preview))
+        .slice(0, 5 - replaceIndex);
+
+      if (validEntries.length === 0) return;
 
       setRawFiles((current) => {
         const next = [...current];
-        next[replaceIndex] = replacementFile;
-        return next;
+        validEntries.forEach((entry, offset) => {
+          next[replaceIndex + offset] = entry.file;
+        });
+        return next.slice(0, 5);
       });
       setProcessedUrls((current) => {
         const next = { ...current };
-        delete next[replaceIndex];
+        validEntries.forEach((_, offset) => {
+          delete next[replaceIndex + offset];
+        });
         return next;
       });
-      setRemoveBackgroundMap((current) => ({
-        ...current,
-        [replaceIndex]: false,
-      }));
+      setRemoveBackgroundMap((current) => {
+        const next = { ...current };
+        validEntries.forEach((_, offset) => {
+          next[replaceIndex + offset] = false;
+        });
+        return next;
+      });
       setDataUrls((current) => {
         const next = [...current];
-        next[replaceIndex] = preview;
+        validEntries.forEach((entry, offset) => {
+          next[replaceIndex + offset] = entry.preview;
+        });
         return next.slice(0, 5);
       });
       return;
