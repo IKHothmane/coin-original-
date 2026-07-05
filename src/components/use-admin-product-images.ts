@@ -30,10 +30,76 @@ async function urlToFile(url: string, filename: string): Promise<File> {
 }
 
 const modelConfig = { model: "isnet_quint8" as const, output: { format: "image/png" as const } };
+const MAX_BACKGROUND_REMOVAL_DIMENSION = 1400;
+
+let backgroundRemovalModulePromise: Promise<typeof import("@imgly/background-removal")> | null = null;
+let backgroundRemovalPreloadPromise: Promise<void> | null = null;
+
+function getBackgroundRemovalModule() {
+  if (!backgroundRemovalModulePromise) {
+    backgroundRemovalModulePromise = import("@imgly/background-removal");
+  }
+
+  return backgroundRemovalModulePromise;
+}
+
+async function ensureBackgroundRemovalReady() {
+  if (!backgroundRemovalPreloadPromise) {
+    backgroundRemovalPreloadPromise = getBackgroundRemovalModule().then(({ preload }) => preload(modelConfig));
+  }
+
+  return backgroundRemovalPreloadPromise;
+}
+
+function loadImageElement(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Impossible de preparer l'image."));
+    image.src = url;
+  });
+}
+
+async function resizeFileIfNeeded(file: File): Promise<File> {
+  const dataUrl = await readFileAsDataUrl(file);
+  const image = await loadImageElement(dataUrl);
+  const longestSide = Math.max(image.width, image.height);
+
+  if (longestSide <= MAX_BACKGROUND_REMOVAL_DIMENSION) {
+    return file;
+  }
+
+  const scale = MAX_BACKGROUND_REMOVAL_DIMENSION / longestSide;
+  const targetWidth = Math.max(1, Math.round(image.width * scale));
+  const targetHeight = Math.max(1, Math.round(image.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return file;
+  }
+
+  context.drawImage(image, 0, 0, targetWidth, targetHeight);
+
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, "image/png");
+  });
+
+  if (!blob) {
+    return file;
+  }
+
+  const baseName = file.name.replace(/\.[^.]+$/, "") || "image";
+  return new File([blob], `${baseName}-optimized.png`, { type: "image/png" });
+}
 
 async function removeImageBackground(file: File, onProgress?: (key: string, current: number, total: number) => void): Promise<string> {
-  const { removeBackground } = await import("@imgly/background-removal");
-  const blob = await removeBackground(file, {
+  await ensureBackgroundRemovalReady();
+  const optimizedFile = await resizeFileIfNeeded(file);
+  const { removeBackground } = await getBackgroundRemovalModule();
+  const blob = await removeBackground(optimizedFile, {
     ...modelConfig,
     progress: onProgress,
   });
@@ -61,9 +127,8 @@ export function useAdminProductImages({
     let mounted = true;
     void (async () => {
       try {
-        const { preload } = await import("@imgly/background-removal");
         if (mounted) {
-          await preload(modelConfig);
+          await ensureBackgroundRemovalReady();
         }
       } catch {
         // Preload failure is not fatal; it will retry on demand.
@@ -85,14 +150,44 @@ export function useAdminProductImages({
 
   const primaryPreview = displayedUrls[0];
 
-  const addFiles = useCallback(async (files: FileList | File[]) => {
+  const addFiles = useCallback(async (files: FileList | File[], replaceIndex?: number) => {
     const nextFiles = Array.from(files).slice(0, 5);
     if (nextFiles.length === 0) return;
+
+    setProcessError(null);
+
+    if (typeof replaceIndex === "number") {
+      const replacementFile = nextFiles[0];
+      if (!replacementFile || replaceIndex < 0 || replaceIndex > 4) return;
+
+      const preview = await readFileAsDataUrl(replacementFile);
+      if (!preview) return;
+
+      setRawFiles((current) => {
+        const next = [...current];
+        next[replaceIndex] = replacementFile;
+        return next;
+      });
+      setProcessedUrls((current) => {
+        const next = { ...current };
+        delete next[replaceIndex];
+        return next;
+      });
+      setRemoveBackgroundMap((current) => ({
+        ...current,
+        [replaceIndex]: false,
+      }));
+      setDataUrls((current) => {
+        const next = [...current];
+        next[replaceIndex] = preview;
+        return next.slice(0, 5);
+      });
+      return;
+    }
 
     setRawFiles(nextFiles);
     setProcessedUrls({});
     setRemoveBackgroundMap({});
-    setProcessError(null);
 
     const previews = await Promise.all(nextFiles.map((file) => readFileAsDataUrl(file)));
     const filtered = previews.filter(Boolean);

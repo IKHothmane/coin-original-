@@ -1,32 +1,31 @@
 import { z } from "zod";
 import type { ProductMutationInput } from "./types";
+import { DEFAULT_PRODUCT_CATEGORY } from "./utils";
 
-function coerceNumber(minValue = 0, message?: string) {
+function coerceNumber(defaultValue = 0) {
   return z
     .preprocess((value) => {
       if (typeof value === "number") return value;
-      if (typeof value === "string" && value !== "") return Number(value);
-      return 0;
+      if (typeof value === "string" && value !== "") {
+        const parsedValue = Number(value);
+        return Number.isFinite(parsedValue) ? parsedValue : defaultValue;
+      }
+      return defaultValue;
     }, z.number())
-    .pipe(z.number().min(minValue, message));
+    .catch(defaultValue);
 }
 
 export const productSchema = z.object({
   slug: z.string().optional(),
-  brand: z.string().min(1, "La marque est requise."),
-  category: z.string().min(1, "La categorie est requise."),
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caracteres."),
-  priceValue: coerceNumber(1, "Le prix doit etre superieur a 0."),
-  compareAtPriceValue: coerceNumber().optional(),
-  description: z.string().optional(),
-  image: z.string().min(1, "Une image principale est requise."),
-  gallery: z.array(z.object({ src: z.string(), alt: z.string() })).min(1, "Au moins une image est requise."),
-  stockBySize: z
-    .record(z.string(), coerceNumber())
-    .refine(
-      (stock) => Object.values(stock).some((quantity) => quantity > 0),
-      "Au moins une taille doit avoir du stock.",
-    ),
+  brand: z.string().optional().transform((value) => value?.trim() || "Coin Original"),
+  category: z.string().optional().transform((value) => value?.trim() || DEFAULT_PRODUCT_CATEGORY),
+  name: z.string().optional().transform((value) => value?.trim() || "Produit sans nom"),
+  priceValue: coerceNumber(0),
+  compareAtPriceValue: coerceNumber(0).optional(),
+  description: z.string().optional().transform((value) => value?.trim() || ""),
+  image: z.string().optional().transform((value) => value?.trim() || ""),
+  gallery: z.array(z.object({ src: z.string(), alt: z.string() })).optional().default([]),
+  stockBySize: z.record(z.string(), coerceNumber(0)).optional().default({}),
   badge: z
     .object({
       label: z.string(),

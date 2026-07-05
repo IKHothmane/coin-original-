@@ -141,7 +141,7 @@ export default function AdminProductsPage() {
                   <th className="p-6 font-mono text-[10px] uppercase text-[#e6beb2]">Produit</th>
                   <th className="p-6 font-mono text-[10px] uppercase text-[#e6beb2]">SKU</th>
                   <th className="p-6 font-mono text-[10px] uppercase text-[#e6beb2]">Prix</th>
-                  <th className="p-6 font-mono text-[10px] uppercase text-[#e6beb2]">Stock</th>
+                  <th className="p-6 font-mono text-[10px] uppercase text-[#e6beb2]">Categorie</th>
                   <th className="p-6 font-mono text-[10px] uppercase text-[#e6beb2]">Status</th>
                   <th className="p-6 text-right font-mono text-[10px] uppercase text-[#e6beb2]">Actions</th>
                 </tr>
@@ -193,16 +193,8 @@ export default function AdminProductsPage() {
                       </span>
                     </td>
                     <td className="p-6">
-                      <span
-                        className={`inline-flex border px-3 py-1 font-mono text-[10px] uppercase ${
-                          product.stockStatus === "Stock faible"
-                            ? "border-[#ffb4ab] bg-[#93000a] text-[#ffdad6]"
-                            : product.stockStatus === "Hors stock"
-                              ? "border-[#ffb4ab] bg-[#690005] text-[#ffdad6]"
-                              : "border-[#5c4037] bg-[#353534] text-[#e5e2e1]"
-                        }`}
-                      >
-                        {product.stock} unites
+                      <span className="inline-flex border border-[#5c4037] bg-[#353534] px-3 py-1 font-mono text-[10px] uppercase text-[#e5e2e1]">
+                        {product.category}
                       </span>
                     </td>
                     <td className="p-6">

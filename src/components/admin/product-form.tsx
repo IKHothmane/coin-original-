@@ -11,7 +11,6 @@ import { productSchema, type ProductFormData } from "@/lib/products/schema";
 import {
   createInitialSizeStock,
   getBadgeConfig,
-  getSizeLabelsByCategory,
   getStatusFromProduct,
   normalizeCategory,
   PRODUCT_CATEGORIES,
@@ -30,6 +29,7 @@ export type ProductFormProps = {
 export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabel }: ProductFormProps) {
   const isEditMode = Boolean(initialProduct);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const targetImageIndexRef = useRef<number | null>(null);
 
   const defaultValues: ProductFormData = useMemo(() => {
     if (initialProduct) {
@@ -84,7 +84,6 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
   const soldOut = useWatch({ control, name: "soldOut" });
   const hidden = useWatch({ control, name: "hidden" });
   const badge = useWatch({ control, name: "badge" });
-  const sizeStock = useWatch({ control, name: "stockBySize" }) ?? {};
   const status = badge ? getStatusFromProduct({ soldOut: soldOut ?? false, badge }) : "Aucun";
 
   const initialImageUrls = useMemo(
@@ -108,14 +107,12 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
   });
 
   useEffect(() => {
-    if (displayedUrls.length > 0) {
-      setValue("image", displayedUrls[0], { shouldValidate: true });
-      setValue(
-        "gallery",
-        displayedUrls.map((src, index) => ({ src, alt: `Produit image ${index + 1}` })),
-        { shouldValidate: true },
-      );
-    }
+    setValue("image", displayedUrls[0] ?? "", { shouldValidate: true });
+    setValue(
+      "gallery",
+      displayedUrls.map((src, index) => ({ src, alt: `Produit image ${index + 1}` })),
+      { shouldValidate: true },
+    );
   }, [displayedUrls, setValue]);
 
   const watchedName = useWatch({ control, name: "name" });
@@ -134,34 +131,23 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
     }
   }, [watchedName, setValue, getValues]);
 
-  const sizeLabels = useMemo(() => getSizeLabelsByCategory(category), [category]);
-
-  useEffect(() => {
-    const currentStock = getValues("stockBySize");
-    const nextStock = sizeLabels.reduce<Record<string, number>>((acc, size) => {
-      acc[size] = currentStock[size] ?? 0;
-      return acc;
-    }, {});
-    setValue("stockBySize", nextStock, { shouldValidate: false });
-  }, [category, sizeLabels, setValue, getValues]);
-
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) return;
-    void addFiles(event.target.files);
+    void addFiles(event.target.files, targetImageIndexRef.current ?? undefined);
+    targetImageIndexRef.current = null;
     event.target.value = "";
   };
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     if (event.dataTransfer.files.length > 0) {
-      void addFiles(event.dataTransfer.files);
+      void addFiles(event.dataTransfer.files, displayedUrls.length > 0 ? 0 : undefined);
     }
   };
 
-  const toggleSize = (size: string) => {
-    const currentStock = getValues("stockBySize");
-    const current = currentStock[size] ?? 0;
-    setValue("stockBySize", { ...currentStock, [size]: current > 0 ? 0 : 1 }, { shouldValidate: true });
+  const openFilePickerForIndex = (index?: number) => {
+    targetImageIndexRef.current = typeof index === "number" ? index : null;
+    fileInputRef.current?.click();
   };
 
   const handleStatusChange = (nextStatus: string) => {
@@ -223,13 +209,13 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
         <div
           role="button"
           tabIndex={0}
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => openFilePickerForIndex(displayedUrls.length > 0 ? 0 : undefined)}
           onDragOver={(event) => event.preventDefault()}
           onDrop={handleDrop}
           onKeyDown={(event) => {
             if (event.key === "Enter" || event.key === " ") {
               event.preventDefault();
-              fileInputRef.current?.click();
+              openFilePickerForIndex(displayedUrls.length > 0 ? 0 : undefined);
             }
           }}
           className={`relative aspect-square w-full cursor-pointer overflow-hidden border-2 border-dashed border-[#353534] bg-[#1A1A1A] transition-colors hover:border-[#ffb59e] ${
@@ -300,7 +286,7 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
               <div key={index} className="relative">
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => openFilePickerForIndex(imageIndex)}
                   className={`relative aspect-square w-full overflow-hidden border-2 border-dashed border-[#353534] transition-all hover:border-[#ffb59e] ${
                     hasImage
                       ? "bg-[repeating-linear-gradient(45deg,#111_0,#111_14px,#1A1A1A_14px,#1A1A1A_28px)]"
@@ -416,16 +402,27 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
             </div>
             <div className="flex flex-col gap-2">
               <label className="font-mono text-xs uppercase text-[#e6beb2]">Categorie</label>
-              <select
-                {...register("category")}
-                className="border-2 border-[#2A2A2A] bg-[#201f1f] px-3 py-3 text-base text-[#e5e2e1] outline-none transition-all focus:border-[#ffb59e]"
-              >
-                {PRODUCT_CATEGORIES.map((productCategory) => (
-                  <option key={productCategory} value={productCategory}>
-                    {productCategory}
-                  </option>
-                ))}
-              </select>
+              <input type="hidden" {...register("category")} />
+              <div className="grid grid-cols-2 gap-2">
+                {PRODUCT_CATEGORIES.map((productCategory) => {
+                  const isActive = category === productCategory;
+
+                  return (
+                    <button
+                      key={productCategory}
+                      type="button"
+                      onClick={() => setValue("category", productCategory, { shouldValidate: true })}
+                      className={`border px-3 py-3 text-left font-mono text-xs uppercase transition-all ${
+                        isActive
+                          ? "border-[#ff8a62] bg-[linear-gradient(135deg,#ffcfbf_0%,#ff6a33_100%)] text-[#3b1205] shadow-[6px_6px_0_0_rgba(63,19,6,0.22)]"
+                          : "border-[#2A2A2A] bg-[#201f1f] text-[#e5e2e1] hover:border-[#ffb59e] hover:text-[#ffb59e]"
+                      }`}
+                    >
+                      {productCategory}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -504,32 +501,6 @@ export function ProductForm({ initialProduct, onSubmit, isSubmitting, submitLabe
             />
             {errors.description ? <p className="text-xs text-red-400">{errors.description.message}</p> : null}
           </div>
-        </section>
-
-        <section className="relative overflow-hidden space-y-6 border border-[#342f2d] bg-[linear-gradient(180deg,#151414_0%,#101010_100%)] p-6 shadow-[12px_12px_0_0_rgba(0,0,0,0.16)]">
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:26px_26px]" />
-          <div className="relative z-10 flex items-center gap-2">
-            <span className="h-[2px] w-8 bg-[#ffb59e]" />
-            <h3 className="font-mono text-xs uppercase text-[#ffb59e]">Gestion des Tailles</h3>
-          </div>
-
-          <div className="relative z-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
-            {sizeLabels.map((size) => (
-              <button
-                key={size}
-                type="button"
-                onClick={() => toggleSize(size)}
-                className={`border-2 p-4 text-center transition-all ${
-                  (sizeStock[size] ?? 0) > 0
-                    ? "border-[#ffb59e] bg-[#ffb59e] text-[#5e1700]"
-                    : "border-[#2A2A2A] bg-transparent text-[#e5e2e1]"
-                }`}
-              >
-                <div className="font-mono text-xs uppercase">{size}</div>
-              </button>
-            ))}
-          </div>
-          {errors.stockBySize ? <p className="text-xs text-red-400">{String(errors.stockBySize.message)}</p> : null}
         </section>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
