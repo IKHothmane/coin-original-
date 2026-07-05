@@ -9,7 +9,6 @@ import {
   DesktopTopBar,
   MobileDrawer,
   MobileTopBar,
-  SiteFooter,
   ThemeLogo,
 } from "@/components/homepage-sections";
 import { useCart } from "@/components/cart-context";
@@ -290,7 +289,6 @@ export function CartPage() {
         </div>
       </main>
 
-      <SiteFooter />
     </div>
   );
 }

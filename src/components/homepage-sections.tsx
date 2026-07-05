@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCart } from "@/components/cart-context";
-import { House, Menu, ShoppingBag, ShoppingCart, Store, Instagram, User, LogIn } from "lucide-react";
+import { Menu, ShoppingBag, ShoppingCart, Instagram, User, LogIn } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -350,45 +350,10 @@ function DrawerLink({
 }
 
 export function BottomDock({
-  mobileMenuOpen,
-  onOpenMobileMenu,
+  mobileMenuOpen: _mobileMenuOpen,
+  onOpenMobileMenu: _onOpenMobileMenu,
 }: Pick<MenuActionProps, "mobileMenuOpen" | "onOpenMobileMenu">) {
-  const { t } = useTranslation();
-  
-  return (
-    <div className="mobile-dock">
-      <div className="mobile-dock__shell">
-        <nav className="mobile-dock__nav" aria-label="Navigation principale">
-          <Link href="/" className="mobile-dock__item" aria-label={t("nav.accueil")}>
-            <House size={14} strokeWidth={2.15} />
-            <span>{t("nav.accueil")}</span>
-          </Link>
-          <Link href="/boutique" className="mobile-dock__item" aria-label={t("nav.boutique")}>
-            <Store size={14} strokeWidth={2.15} />
-            <span>{t("nav.boutique")}</span>
-          </Link>
-          <Link href="/panier" className="mobile-dock__item relative" aria-label={t("nav.panier")}>
-            <span className="relative inline-flex">
-              <ShoppingBag size={14} strokeWidth={2.15} />
-              <CartCountDot />
-            </span>
-            <span>{t("nav.panier")}</span>
-          </Link>
-          <button
-            type="button"
-            className="mobile-dock__item"
-            aria-label={t("nav.ouvrir_menu")}
-            aria-expanded={mobileMenuOpen}
-            aria-controls="mobile-menu"
-            onClick={onOpenMobileMenu}
-          >
-            <Menu size={14} strokeWidth={2.15} />
-            <span>{t("nav.menu")}</span>
-          </button>
-        </nav>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 export function HeroSection() {

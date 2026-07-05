@@ -313,7 +313,6 @@ export function ProductPage({ product, slug }: ProductPageProps) {
         <DesktopTopBar mobileMenuOpen={mobileMenuOpen} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
         <MobileTopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
         <MobileDrawer mobileMenuOpen={mobileMenuOpen} onCloseMobileMenu={() => setMobileMenuOpen(false)} />
-        <BottomDock mobileMenuOpen={mobileMenuOpen} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
         <main className="flex min-h-screen items-center justify-center pb-24 pt-18 md:pt-20">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
             Chargement du produit...
@@ -329,7 +328,6 @@ export function ProductPage({ product, slug }: ProductPageProps) {
         <DesktopTopBar mobileMenuOpen={mobileMenuOpen} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
         <MobileTopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
         <MobileDrawer mobileMenuOpen={mobileMenuOpen} onCloseMobileMenu={() => setMobileMenuOpen(false)} />
-        <BottomDock mobileMenuOpen={mobileMenuOpen} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
         <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-3 pb-24 pt-18 text-center md:px-5 md:pt-20">
           <h1 className="font-[var(--font-display)] text-3xl uppercase text-[var(--foreground)]">
             Produit introuvable
@@ -368,12 +366,7 @@ export function ProductPage({ product, slug }: ProductPageProps) {
         mobileMenuOpen={mobileMenuOpen}
         onCloseMobileMenu={() => setMobileMenuOpen(false)}
       />
-      <BottomDock
-        mobileMenuOpen={mobileMenuOpen}
-        onOpenMobileMenu={() => setMobileMenuOpen(true)}
-      />
-
-      <main id="top" className="pb-24 pt-18 md:pt-20">
+      <main id="top" className="pb-28 pt-18 md:pt-20">
         <section className="w-full px-3 py-4 md:px-5 md:py-8">
           {/* Breadcrumb */}
           <nav className="mb-4 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)] md:mb-6">
@@ -760,10 +753,10 @@ export function ProductPage({ product, slug }: ProductPageProps) {
         ) : null}
 
         {/* Spacer for mobile sticky bar */}
-        <div className="h-20 md:hidden" aria-hidden="true" />
+        <div className="h-24 md:hidden" aria-hidden="true" />
 
         {/* Mobile sticky add-to-cart bar */}
-        <div className="fixed inset-x-0 bottom-24 z-[130] border-t border-[var(--border-soft)] bg-[var(--surface)] p-3 shadow-[0_-8px_30px_rgba(0,0,0,0.25)] md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-[130] border-t border-[var(--border-soft)] bg-[var(--surface)] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_30px_rgba(0,0,0,0.25)] md:hidden">
           {sizeError ? (
             <p className="mb-2 text-center text-xs text-red-500">
               Sélectionne une taille avant d&apos;ajouter
