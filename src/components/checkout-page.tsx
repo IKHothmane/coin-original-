@@ -8,7 +8,6 @@ import {
   CreditCard,
   Info,
   MessageCircle,
-  ShieldCheck,
   ShoppingBag,
 } from "lucide-react";
 import {
@@ -16,31 +15,27 @@ import {
   DesktopTopBar,
   MobileDrawer,
   MobileTopBar,
-  SiteFooter,
 } from "@/components/homepage-sections";
 import { useCart } from "@/components/cart-context";
 import { useAuth } from "@/components/auth-context";
 import { createOrder } from "@/lib/orders/store";
+import { SITE_URL } from "@/lib/site";
 
 function formatPrice(value: number) {
   return `${value.toLocaleString("fr-FR")} DH`;
 }
+
+const LAST_CITY_STORAGE_KEY = "coin-original-last-city";
 
 export function CheckoutPage() {
   const { items, cartTotal, clearCart } = useCart();
   const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     fullName: user?.displayName || "",
-    email: user?.email || "",
-    phone: "",
     city: "",
-    address: "",
-    notes: "",
   });
 
   useEffect(() => {
@@ -50,7 +45,40 @@ export function CheckoutPage() {
     };
   }, [mobileMenuOpen]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const savedCity = window.localStorage.getItem(LAST_CITY_STORAGE_KEY);
+    if (!savedCity) return;
+
+    setFormData((current) => (current.city ? current : { ...current, city: savedCity }));
+  }, []);
+
   const total = cartTotal;
+  const whatsappNumber = "212691567246";
+
+  const buildWhatsappMessage = (reference?: string | null) => {
+    const lines = [
+      "Bonjour Coin Original, je veux confirmer ma commande.",
+      "",
+      `Reference: ${reference ?? "Nouvelle commande"}`,
+      `Nom: ${formData.fullName.trim() || user?.displayName || "Non renseigne"}`,
+      `Ville: ${formData.city.trim() || "Non renseignee"}`,
+      `Telephone: ${user?.phoneNumber ?? "Non renseigne"}`,
+      `Lien du panier: ${SITE_URL}/panier`,
+      "",
+      "Panier:",
+      ...items.map(
+        (item, index) =>
+          `${index + 1}. ${item.name} | ${item.brand} | Taille ${item.size} | Qte ${item.quantity} | ${formatPrice(item.price * item.quantity)}`,
+      ),
+      "",
+      `Total: ${formatPrice(total)}`,
+      "Paiement: A la livraison",
+    ];
+
+    return lines.join("\n");
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -61,11 +89,11 @@ export function CheckoutPage() {
     const result = await createOrder({
       customer: {
         fullName: formData.fullName.trim(),
-        email: formData.email.trim() || user?.email || undefined,
-        phone: formData.phone.trim(),
+        email: undefined,
+        phone: user?.phoneNumber || "",
         city: formData.city.trim(),
-        address: formData.address.trim(),
-        notes: formData.notes.trim() || undefined,
+        address: "",
+        notes: undefined,
       },
       items: items.map((item) => ({
         id: item.id,
@@ -80,13 +108,20 @@ export function CheckoutPage() {
       total,
     });
 
+    if (typeof window !== "undefined" && formData.city.trim()) {
+      window.localStorage.setItem(LAST_CITY_STORAGE_KEY, formData.city.trim());
+    }
+
     setIsSubmitting(false);
 
+    const whatsappMessage = buildWhatsappMessage(result.data?.id ?? null);
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+
     if (result.data) {
-      setOrderId(result.data.id);
-      setIsSubmitted(true);
       clearCart();
     }
+
+    window.location.href = whatsappUrl;
   };
 
   const updateField = (field: keyof typeof formData, value: string) => {
@@ -117,7 +152,7 @@ export function CheckoutPage() {
                 Votre Panier
               </h2>
 
-              {items.length === 0 && !isSubmitted ? (
+              {items.length === 0 ? (
                 <div className="py-6 text-center">
                   <p className="text-sm text-[var(--muted)]">
                     Ton panier est vide. Ajoute des articles avant de commander.
@@ -203,32 +238,7 @@ export function CheckoutPage() {
                   Veuillez remplir vos informations réelles pour la livraison.
                 </p>
 
-                {isSubmitted ? (
-                  <div className="border border-[var(--accent)] bg-[var(--surface-soft)] px-4 py-6 text-center md:px-5 md:py-8">
-                    <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full border border-[var(--accent)] text-[var(--accent)] md:mb-4 md:h-14 md:w-14">
-                      <ShieldCheck size={24} />
-                    </div>
-                    <h2 className="font-[var(--font-display)] text-xl uppercase text-[var(--foreground)] md:text-2xl">
-                      Commande Enregistrée
-                    </h2>
-                    {orderId ? (
-                      <p className="mt-2 font-mono text-xs uppercase text-[var(--primary)]">
-                        Reference: {orderId}
-                      </p>
-                    ) : null}
-                    <p className="mx-auto mt-2 max-w-xl text-xs text-[var(--muted)] md:mt-3 md:text-sm">
-                      Merci. Un agent Coin Original vous appellera bientôt sur WhatsApp ou par
-                      téléphone pour confirmer votre commande.
-                    </p>
-                    <Link
-                      href="/boutique"
-                      className="impact-button impact-button--primary mt-6 inline-flex px-6 py-3 text-sm"
-                    >
-                      Continuer mes achats
-                    </Link>
-                  </div>
-                ) : (
-                  <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
+                <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
                     <div>
                       <label className="mb-1.5 block text-[10px] uppercase tracking-[0.16em] text-[var(--primary)]">
                         Nom et Prénom Complet
@@ -243,38 +253,6 @@ export function CheckoutPage() {
                       />
                     </div>
 
-                    <div>
-                      <label className="mb-1.5 block text-[10px] uppercase tracking-[0.16em] text-[var(--primary)]">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(event) => updateField("email", event.target.value)}
-                        placeholder="EX: email@example.com"
-                        className="w-full border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-1.5 block text-[10px] uppercase tracking-[0.16em] text-[var(--primary)]">
-                        Numéro WhatsApp
-                      </label>
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <div className="border-b-2 border-[var(--border-soft)] bg-[var(--surface)] px-3 py-2.5 text-sm md:px-4 md:py-3 md:text-base">
-                          +212
-                        </div>
-                        <input
-                          type="tel"
-                          required
-                          value={formData.phone}
-                          onChange={(event) => updateField("phone", event.target.value)}
-                          placeholder="06 12 34 56 78"
-                          className="min-w-0 flex-1 border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
-                        />
-                      </div>
-                    </div>
-
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
                         <label className="mb-1.5 block text-[10px] uppercase tracking-[0.16em] text-[var(--primary)]">
@@ -283,45 +261,21 @@ export function CheckoutPage() {
                         <input
                           type="text"
                           required
+                          name="city"
+                          autoComplete="address-level2"
                           value={formData.city}
                           onChange={(event) => updateField("city", event.target.value)}
                           placeholder="EX: CASABLANCA"
                           className="w-full border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
                         />
                       </div>
-                      <div>
-                        <label className="mb-1.5 block text-[10px] uppercase tracking-[0.16em] text-[var(--primary)]">
-                          Adresse de livraison
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={formData.address}
-                          onChange={(event) => updateField("address", event.target.value)}
-                          placeholder="QUARTIER, RUE, N°"
-                          className="w-full border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="mb-1.5 block text-[10px] uppercase tracking-[0.16em] text-[var(--primary)]">
-                        Notes spéciales (Optionnel)
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={formData.notes}
-                        onChange={(event) => updateField("notes", event.target.value)}
-                        placeholder="Instructions pour le livreur..."
-                        className="w-full resize-none border-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
-                      />
                     </div>
 
                     <div className="flex items-start gap-2 text-[var(--muted)]">
                       <Info size={16} className="mt-0.5 flex-none text-[var(--primary)]" />
                       <p className="text-xs italic md:text-sm">
-                        Un spécialiste vous appellera sur WhatsApp ou par téléphone dans les 24h
-                        pour confirmer votre taille et l&apos;adresse avant l&apos;expédition.
+                        En cliquant sur confirmer, WhatsApp s&apos;ouvre avec votre panier et vos
+                        informations pour envoyer directement la commande.
                       </p>
                     </div>
 
@@ -344,14 +298,11 @@ export function CheckoutPage() {
                       )}
                     </button>
                   </form>
-                )}
               </div>
             </div>
           </section>
         </div>
       </main>
-
-      <SiteFooter />
     </div>
   );
 }

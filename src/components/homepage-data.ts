@@ -20,7 +20,35 @@ export type CategoryItem = {
   span: string;
 };
 
-export const partners = ["NIKE", "ADIDAS", "STUSSY", "JORDAN", "SUPREME"];
+export type PartnerBrand = {
+  slug: string;
+  name: string;
+  wordmark: string;
+  logoUrl?: string;
+  tone: "light" | "box" | "accent";
+  style:
+    | "sport"
+    | "wide"
+    | "script"
+    | "tight"
+    | "box"
+    | "mono"
+    | "heritage"
+    | "trail";
+};
+
+export const partners: PartnerBrand[] = [
+  { slug: "nike", name: "Nike", wordmark: "NIKE", logoUrl: "https://cdn.simpleicons.org/nike/000000", tone: "light", style: "sport" },
+  { slug: "adidas", name: "Adidas", wordmark: "ADIDAS", logoUrl: "https://cdn.simpleicons.org/adidas/000000", tone: "light", style: "wide" },
+  { slug: "new-balance", name: "New Balance", wordmark: "NEW BALANCE", logoUrl: "https://cdn.simpleicons.org/newbalance/000000", tone: "light", style: "tight" },
+  { slug: "puma", name: "Puma", wordmark: "PUMA", logoUrl: "https://cdn.simpleicons.org/puma/000000", tone: "light", style: "sport" },
+  { slug: "converse", name: "Converse", wordmark: "CONVERSE", logoUrl: "https://cdn.simpleicons.org/converse/000000", tone: "light", style: "heritage" },
+  { slug: "vans", name: "Vans", wordmark: "VANS", logoUrl: "https://cdn.simpleicons.org/vans/000000", tone: "light", style: "wide" },
+  { slug: "carhartt-wip", name: "Carhartt WIP", wordmark: "CARHARTT WIP", logoUrl: "https://cdn.simpleicons.org/carhartt/000000", tone: "light", style: "heritage" },
+  { slug: "north-face", name: "The North Face", wordmark: "THE NORTH FACE", logoUrl: "https://cdn.simpleicons.org/thenorthface/000000", tone: "light", style: "trail" },
+  { slug: "asics", name: "Asics", wordmark: "ASICS", logoUrl: "https://cdn.simpleicons.org/asics/000000", tone: "light", style: "sport" },
+  { slug: "salomon", name: "Salomon", wordmark: "SALOMON", logoUrl: "https://cdn.simpleicons.org/salomon/000000", tone: "light", style: "trail" },
+];
 
 export const partnersLoop = [...partners, ...partners];
 

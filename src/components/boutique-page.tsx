@@ -299,6 +299,7 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
   const badgeParam = searchParams.get("badge");
+  const searchParam = searchParams.get("search") ?? "";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [products, setProducts] = useState<BoutiqueProduct[]>(initialProducts ?? []);
   const [loading, setLoading] = useState(initialProducts === undefined);
@@ -339,6 +340,11 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
     };
   }, [initialProducts]);
 
+  useEffect(() => {
+    setSearchQuery(searchParam);
+    setCurrentPage(1);
+  }, [searchParam]);
+
   const filteredProducts = useMemo(() => {
     let result = products;
 
@@ -371,7 +377,7 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
     }
 
     return result;
-  }, [products, searchQuery, categoryParam]);
+  }, [products, searchQuery, categoryParam, badgeParam]);
 
   const sortedProducts = useMemo(
     () => sortProducts(filteredProducts, sortBy),

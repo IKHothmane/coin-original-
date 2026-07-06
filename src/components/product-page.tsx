@@ -385,104 +385,106 @@ export function ProductPage({ product, slug }: ProductPageProps) {
             </span>
           </nav>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-10">
+          <div className="grid grid-cols-1 gap-5 md:gap-6 lg:grid-cols-12 lg:gap-8 xl:gap-10">
             {/* Gallery */}
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-6">
               <div className="sticky top-20 space-y-3 md:space-y-4">
-                <div className="group relative aspect-[4/5] border-2 border-[var(--border-soft)] product-image-frame md:aspect-square lg:aspect-[4/5]">
-                  <Image
-                    src={mainImage.src}
-                    alt={mainImage.alt}
-                    fill
-                    priority
-                    sizes="(max-width: 1023px) 100vw, 58vw"
-                    className="object-contain p-3 transition-transform duration-700 group-hover:scale-[1.03] md:p-6"
-                  />
-                  <div className="absolute left-3 top-3 z-20 flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-[var(--border-soft)] bg-black/30 md:left-5 md:top-5 md:h-14 md:w-14">
-                    <ThemeLogo width={56} height={56} className="h-full w-full object-cover" />
-                  </div>
-
-                  {activeProduct.badge ? (
-                    <div
-                      className={cn(
-                        "absolute right-3 top-3 px-3 py-1.5 md:right-5 md:top-5",
-                        badgeToneClasses(activeProduct.badge.tone),
-                      )}
-                    >
-                      <span className="font-[var(--font-display)] text-xs uppercase tracking-tight md:text-sm">
-                        {activeProduct.badge.label}
-                      </span>
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-3 lg:gap-4">
+                  <div className="group relative mx-auto aspect-[4/5] w-full max-w-[340px] border-2 border-[var(--border-soft)] product-image-frame sm:max-w-[380px] md:mx-0 md:max-w-[440px] md:flex-1 md:aspect-square lg:max-w-[500px] lg:aspect-[4/5] xl:max-w-[560px]">
+                    <Image
+                      src={mainImage.src}
+                      alt={mainImage.alt}
+                      fill
+                      priority
+                      sizes="(max-width: 1023px) 100vw, 58vw"
+                      className="object-contain p-3 transition-transform duration-700 group-hover:scale-[1.03] md:p-6"
+                    />
+                    <div className="absolute left-3 top-3 z-20 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[var(--border-soft)] bg-black/30 sm:h-12 sm:w-12 md:left-5 md:top-5 md:h-14 md:w-14">
+                      <ThemeLogo width={56} height={56} className="h-full w-full object-cover" />
                     </div>
-                  ) : null}
+
+                    {activeProduct.badge ? (
+                      <div
+                        className={cn(
+                          "absolute right-3 top-3 px-3 py-1.5 md:right-5 md:top-5",
+                          badgeToneClasses(activeProduct.badge.tone),
+                        )}
+                      >
+                        <span className="font-[var(--font-display)] text-xs uppercase tracking-tight md:text-sm">
+                          {activeProduct.badge.label}
+                        </span>
+                      </div>
+                    ) : null}
+
+                    {hasMultipleImages ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedImageIndex((index) =>
+                              index === 0 ? activeProduct.gallery.length - 1 : index - 1,
+                            )
+                          }
+                          className="absolute left-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center border border-[var(--border-soft)] bg-[var(--surface)]/90 text-[var(--foreground)] backdrop-blur transition-colors hover:bg-[var(--primary-strong)] hover:text-[var(--background)] md:left-4 md:flex md:h-10 md:w-10"
+                          aria-label="Image précédente"
+                        >
+                          <ChevronLeft size={18} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedImageIndex((index) =>
+                              index === activeProduct.gallery.length - 1 ? 0 : index + 1,
+                            )
+                          }
+                          className="absolute right-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center border border-[var(--border-soft)] bg-[var(--surface)]/90 text-[var(--foreground)] backdrop-blur transition-colors hover:bg-[var(--primary-strong)] hover:text-[var(--background)] md:right-4 md:flex md:h-10 md:w-10"
+                          aria-label="Image suivante"
+                        >
+                          <ChevronRight size={18} />
+                        </button>
+                      </>
+                    ) : null}
+                  </div>
 
                   {hasMultipleImages ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSelectedImageIndex((index) =>
-                            index === 0 ? activeProduct.gallery.length - 1 : index - 1,
-                          )
-                        }
-                        className="absolute left-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center border border-[var(--border-soft)] bg-[var(--surface)]/90 text-[var(--foreground)] backdrop-blur transition-colors hover:bg-[var(--primary-strong)] hover:text-[var(--background)] md:left-4 md:flex"
-                        aria-label="Image précédente"
-                      >
-                        <ChevronLeft size={18} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSelectedImageIndex((index) =>
-                            index === activeProduct.gallery.length - 1 ? 0 : index + 1,
-                          )
-                        }
-                        className="absolute right-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center border border-[var(--border-soft)] bg-[var(--surface)]/90 text-[var(--foreground)] backdrop-blur transition-colors hover:bg-[var(--primary-strong)] hover:text-[var(--background)] md:right-4 md:flex"
-                        aria-label="Image suivante"
-                      >
-                        <ChevronRight size={18} />
-                      </button>
-                    </>
+                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 sm:gap-2.5 md:flex md:w-20 md:flex-col md:gap-2.5 lg:w-24 lg:gap-3">
+                      {activeProduct.gallery.map((image, index) => {
+                        const isSelected = selectedImageIndex === index;
+
+                        return (
+                          <button
+                            key={`${image.src}-${index}`}
+                            type="button"
+                            onClick={() => setSelectedImageIndex(index)}
+                            className={cn(
+                              "relative aspect-square overflow-hidden border-2 bg-[var(--surface)] text-left transition-all md:w-full",
+                              isSelected
+                                ? "border-[var(--primary-strong)] ring-1 ring-[var(--primary-strong)]"
+                                : "border-[var(--border-soft)] hover:border-[var(--primary)]",
+                            )}
+                            aria-label={`Afficher ${image.alt.toLowerCase()}`}
+                            aria-pressed={isSelected}
+                          >
+                            <Image
+                              src={image.src}
+                              alt={image.alt}
+                              fill
+                              sizes="(max-width: 640px) 22vw, (max-width: 1024px) 80px, 96px"
+                              className="object-cover"
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
                   ) : null}
                 </div>
-
-                {hasMultipleImages ? (
-                  <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 md:gap-3">
-                    {activeProduct.gallery.map((image, index) => {
-                      const isSelected = selectedImageIndex === index;
-
-                      return (
-                        <button
-                          key={`${image.src}-${index}`}
-                          type="button"
-                          onClick={() => setSelectedImageIndex(index)}
-                          className={cn(
-                            "relative aspect-square overflow-hidden border-2 bg-[var(--surface)] text-left transition-all",
-                            isSelected
-                              ? "border-[var(--primary-strong)] ring-1 ring-[var(--primary-strong)]"
-                              : "border-[var(--border-soft)] hover:border-[var(--primary)]",
-                          )}
-                          aria-label={`Afficher ${image.alt.toLowerCase()}`}
-                          aria-pressed={isSelected}
-                        >
-                          <Image
-                            src={image.src}
-                            alt={image.alt}
-                            fill
-                            sizes="(max-width: 640px) 25vw, 12vw"
-                            className="object-cover"
-                          />
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : null}
               </div>
             </div>
 
             {/* Product info */}
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-6">
               <div className="lg:sticky lg:top-24">
-                <div className="space-y-4 md:space-y-5">
+                <div className="space-y-4 md:space-y-5 lg:space-y-6">
                   {/* Brand & Title */}
                   <div>
                     <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -494,7 +496,7 @@ export function ProductPage({ product, slug }: ProductPageProps) {
                         {activeProduct.category}
                       </span>
                     </div>
-                    <h1 className="font-[var(--font-display)] text-2xl uppercase leading-none tracking-tight text-[var(--foreground)] sm:text-3xl md:text-4xl">
+                    <h1 className="font-[var(--font-display)] text-[1.65rem] uppercase leading-none tracking-tight text-[var(--foreground)] sm:text-3xl md:text-[2.25rem] xl:text-4xl">
                       {activeProduct.name}
                     </h1>
                   </div>
@@ -523,7 +525,7 @@ export function ProductPage({ product, slug }: ProductPageProps) {
                         {activeProduct.compareAtPrice}
                       </span>
                     ) : null}
-                    <span className="font-[var(--font-display)] text-3xl text-[var(--primary-strong)] md:text-4xl">
+                    <span className="font-[var(--font-display)] text-[1.9rem] text-[var(--primary-strong)] sm:text-3xl md:text-[2.2rem] xl:text-4xl">
                       {activeProduct.price}
                     </span>
                     {savings > 0 ? (
@@ -627,7 +629,7 @@ export function ProductPage({ product, slug }: ProductPageProps) {
                         disabled={activeProduct.soldOut}
                         onClick={() => handleAddToCart()}
                         className={cn(
-                          "group relative flex w-full items-center justify-center gap-2 overflow-hidden border-2 px-5 py-3.5 font-[var(--font-display)] text-base uppercase transition-all active:scale-95 sm:py-4 sm:text-lg",
+                          "group relative flex w-full items-center justify-center gap-2 overflow-hidden border-2 px-4 py-3.5 font-[var(--font-display)] text-sm uppercase transition-all active:scale-95 sm:px-5 sm:text-base md:py-4 md:text-lg",
                           activeProduct.soldOut
                             ? "cursor-not-allowed border-[var(--border-soft)] bg-[var(--surface-soft)] text-[var(--muted)]"
                             : addedToCart
@@ -655,7 +657,7 @@ export function ProductPage({ product, slug }: ProductPageProps) {
                         disabled={activeProduct.soldOut}
                         onClick={() => handleAddToCart({ redirectToCart: true })}
                         className={cn(
-                          "flex w-full items-center justify-center gap-2 border-2 px-5 py-3.5 font-[var(--font-display)] text-base uppercase transition-all active:scale-95 sm:py-4 sm:text-lg",
+                          "flex w-full items-center justify-center gap-2 border-2 px-4 py-3.5 font-[var(--font-display)] text-sm uppercase transition-all active:scale-95 sm:px-5 sm:text-base md:py-4 md:text-lg",
                           activeProduct.soldOut
                             ? "hidden"
                             : "border-[var(--foreground)] bg-transparent text-[var(--foreground)] hover:bg-[var(--foreground)] hover:text-[var(--background)]",

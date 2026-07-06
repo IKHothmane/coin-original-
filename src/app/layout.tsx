@@ -3,7 +3,7 @@ import { GoogleAnalytics } from "@/components/google-analytics";
 import { I18nProvider } from "@/components/i18n-provider";
 import { InstagramFloatingButton } from "@/components/instagram-floating-button";
 import type { Metadata } from "next";
-import { Anton, Archivo_Narrow, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Anton, Archivo_Narrow, Hanken_Grotesk, JetBrains_Mono, Lilita_One } from "next/font/google";
 import { CartProvider } from "@/components/cart-context";
 import { AuthProvider } from "@/components/auth-context";
 import { JsonLd } from "@/components/json-ld";
@@ -29,6 +29,12 @@ const hankenGrotesk = Hanken_Grotesk({
 const jetBrainsMono = JetBrains_Mono({
   variable: "--font-mono-ui",
   subsets: ["latin"],
+});
+
+const lilitaOne = Lilita_One({
+  variable: "--font-roca-like",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 const siteUrl = SITE_URL;
@@ -153,7 +159,7 @@ export default function RootLayout({
       lang="fr"
       data-theme="light"
       suppressHydrationWarning
-      className={`${anton.variable} ${archivoNarrow.variable} ${hankenGrotesk.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      className={`${anton.variable} ${archivoNarrow.variable} ${hankenGrotesk.variable} ${jetBrainsMono.variable} ${lilitaOne.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <GoogleAnalytics />

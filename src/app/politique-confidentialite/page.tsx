@@ -1,5 +1,6 @@
 import { SITE_URL } from "@/lib/site";
 import { JsonLd } from "@/components/json-ld";
+import { LegalContentPage } from "@/components/legal-content-page";
 
 export const metadata = {
   title: "Politique de confidentialité | Coin Original",
@@ -24,115 +25,113 @@ export default function PolitiqueConfidentialitePage() {
 
   return (
     <>
-      <main className="max-w-3xl mx-auto px-6 py-12">
-        <h1 className="text-3xl font-bold mb-8">Politique de confidentialité</h1>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">1. Introduction</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Coin Original s'engage à protéger la vie privée de ses utilisateurs. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos données personnelles lorsque vous utilisez notre site {siteUrl}.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">2. Données collectées</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Nous collectons les données suivantes :
-          </p>
-          <ul className="list-disc list-inside text-gray-700 leading-relaxed mt-2">
-            <li><strong>Données de commande</strong> : nom, adresse, numéro de téléphone, WhatsApp</li>
-            <li><strong>Données de navigation</strong> : pages visitées, temps passé, via Google Analytics</li>
-            <li><strong>Données techniques</strong> : adresse IP, type de navigateur, appareil utilisé</li>
-          </ul>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">3. Finalité de la collecte</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Vos données sont utilisées pour :
-          </p>
-          <ul className="list-disc list-inside text-gray-700 leading-relaxed mt-2">
-            <li>Traiter et livrer vos commandes</li>
-            <li>Vous contacter concernant votre commande</li>
-            <li>Améliorer notre site et nos services</li>
-            <li>Respecter nos obligations légales</li>
-          </ul>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">4. Conservation des données</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Les données de commande sont conservées pendant <strong>3 ans</strong> à compter de la dernière commande. Les données de navigation (Google Analytics) sont conservées pendant <strong>14 mois</strong>.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">5. Partage des données</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Vos données ne sont pas vendues à des tiers. Elles peuvent être partagées avec :
-          </p>
-          <ul className="list-disc list-inside text-gray-700 leading-relaxed mt-2">
-            <li>Notre service de livraison (pour la livraison de vos commandes)</li>
-            <li>Google Analytics (données de navigation anonymisées)</li>
-            <li>Les autorités compétentes en cas d'obligation légale</li>
-          </ul>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">6. Vos droits</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Conformément à la loi 09-08 relative à la protection des données personnelles au Maroc, vous disposez des droits suivants :
-          </p>
-          <ul className="list-disc list-inside text-gray-700 leading-relaxed mt-2">
-            <li><strong>Droit d'accès</strong> : obtenir une copie de vos données</li>
-            <li><strong>Droit de rectification</strong> : corriger vos données</li>
-            <li><strong>Droit de suppression</strong> : demander l'effacement de vos données</li>
-            <li><strong>Droit d'opposition</strong> : vous opposer au traitement de vos données</li>
-          </ul>
-          <p className="text-gray-700 leading-relaxed mt-2">
-            Pour exercer ces droits, contactez-nous à : <strong>contact@coinoriginal.shop</strong>
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">7. Cookies</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Le site utilise des cookies pour :
-          </p>
-          <ul className="list-disc list-inside text-gray-700 leading-relaxed mt-2">
-            <li><strong>Cookies fonctionnels</strong> : panier, préférences</li>
-            <li><strong>Cookies analytiques</strong> : Google Analytics (pages vues, comportement)</li>
-          </ul>
-          <p className="text-gray-700 leading-relaxed mt-2">
-            Vous pouvez désactiver les cookies dans les paramètres de votre navigateur. Cela peut affecter certaines fonctionnalités du site.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">8. Sécurité</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données : connexion sécurisée (HTTPS), hébergement chez Cloudflare, accès restreint aux données.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">9. Modifications</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Cette politique peut être modifiée à tout moment. Les modifications sont publiées sur cette page avec la date de mise à jour.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">10. Contact</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Pour toute question concernant cette politique :<br />
-            Email : contact@coinoriginal.shop<br />
-            Adresse : Casablanca, Maroc
-          </p>
-        </section>
-
-        <p className="text-sm text-gray-500 mt-12">Dernière mise à jour : juillet 2026</p>
-      </main>
+      <LegalContentPage
+        eyebrow="Protection des donnees"
+        title="Politique de confidentialite"
+        intro={`Cette page explique comment Coin Original collecte, utilise, conserve et protege vos donnees personnelles lorsque vous naviguez sur ${siteUrl} ou passez une commande.`}
+        updateLabel="Juillet 2026"
+        badges={["Loi 09-08", "Donnees clients", "Cookies & analytics"]}
+        sections={[
+          {
+            id: "01",
+            title: "Introduction",
+            description:
+              "Coin Original s'engage a proteger la vie privee de ses utilisateurs et a traiter les donnees personnelles avec transparence.",
+            icon: "shield",
+          },
+          {
+            id: "02",
+            title: "Donnees collectees",
+            description:
+              "Nous pouvons collecter les donnees necessaires au traitement des commandes, a la navigation et a la securite technique du site.",
+            icon: "blocks",
+            highlights: [
+              "Nom, ville, telephone et informations utiles a la commande",
+              "Pages consultees et interactions analytiques",
+              "Adresse IP, navigateur et appareil utilise",
+            ],
+          },
+          {
+            id: "03",
+            title: "Finalite de la collecte",
+            description:
+              "Les donnees servent a assurer le service client, confirmer les commandes, livrer les produits et ameliorer la boutique.",
+            icon: "user",
+            highlights: [
+              "Traiter et suivre vos commandes",
+              "Communiquer avec vous au sujet de votre achat",
+              "Ameliorer le site et repondre aux obligations legales",
+            ],
+          },
+          {
+            id: "04",
+            title: "Conservation",
+            description:
+              "Les donnees de commande sont conservees pendant 3 ans a compter de la derniere commande. Les donnees analytiques sont conservees pendant 14 mois.",
+            icon: "clock",
+          },
+          {
+            id: "05",
+            title: "Partage des donnees",
+            description:
+              "Vos donnees ne sont pas revendues. Elles peuvent etre partagees uniquement avec les partenaires strictement necessaires ou en cas d'obligation legale.",
+            icon: "building",
+            highlights: [
+              "Services de livraison",
+              "Outils analytiques comme Google Analytics",
+              "Autorites competentes si la loi l'exige",
+            ],
+          },
+          {
+            id: "06",
+            title: "Vos droits",
+            description:
+              "Conformement a la loi marocaine 09-08, vous disposez notamment d'un droit d'acces, de rectification, de suppression et d'opposition.",
+            icon: "scale",
+            highlights: [
+              "Demander une copie de vos donnees",
+              "Faire corriger une information inexacte",
+              "Demander la suppression ou vous opposer a certains traitements",
+            ],
+          },
+          {
+            id: "07",
+            title: "Cookies",
+            description:
+              "Le site utilise des cookies fonctionnels pour le panier et les preferences, ainsi que des cookies analytiques pour mesurer l'audience.",
+            icon: "bot",
+          },
+          {
+            id: "08",
+            title: "Securite",
+            description:
+              "Nous mettons en place des mesures techniques et organisationnelles raisonnables pour proteger vos informations et limiter les acces non autorises.",
+            icon: "lock",
+          },
+          {
+            id: "09",
+            title: "Modifications",
+            description:
+              "Cette politique peut evoluer a tout moment. La version a jour est toujours publiee sur cette page avec sa date de mise a jour.",
+            icon: "bell",
+          },
+          {
+            id: "10",
+            title: "Contact",
+            description:
+              "Pour exercer vos droits ou poser une question sur vos donnees, contactez-nous directement par email.",
+            icon: "file",
+            highlights: [
+              "Email : contact@coinoriginal.shop",
+              "Ville : Casablanca, Maroc",
+            ],
+          },
+        ]}
+        calloutTitle="Une question sur vos donnees ?"
+        calloutText="Notre equipe peut vous repondre concernant la collecte, la conservation ou la suppression de vos donnees personnelles."
+        calloutHref="mailto:contact@coinoriginal.shop"
+        calloutLabel="Contacter par email"
+      />
       <JsonLd data={webPageJsonLd} />
     </>
   );

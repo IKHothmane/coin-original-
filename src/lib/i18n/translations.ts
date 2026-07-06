@@ -90,10 +90,10 @@ export const translations: Record<Lang, Record<string, string>> = {
 
     // Homepage
     "homepage.nouveau_drop": "Nouveau drop : Ete 24",
-    "homepage.hero_title": "Le Coffre est Ouvert.",
+    "homepage.hero_title": "Voir La Collection",
     "homepage.hero_desc": "Arrivages exclusifs de chaussures et hoodies heavy-weight. Le style urbain premium livre partout au Maroc.",
-    "homepage.voir_collection": "Voir La Collection",
-    "homepage.voir_hoodies": "Voir Les Hoodies",
+    "homepage.voir_collection": "Voir La Boutique",
+    "homepage.voir_hoodies": "Voir Categorie",
     "homepage.partenaires": "Partenaires Urbains Globaux",
     "homepage.derniers_drops": "Derniers Drops",
     "homepage.authentifies": "Authentifies et prets pour expedition.",

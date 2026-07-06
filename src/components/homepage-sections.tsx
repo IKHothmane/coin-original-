@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCart } from "@/components/cart-context";
-import { Menu, ShoppingBag, ShoppingCart, Instagram, User, LogIn } from "lucide-react";
+import { ShoppingBag, ShoppingCart, Instagram, User, LogIn } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/components/auth-context";
+import type { CatalogProduct } from "@/components/catalog-data";
 import {
   categories,
   featuredProducts,
@@ -17,9 +18,10 @@ import {
   trustItems,
   type CategoryItem,
   type FeaturedProduct,
+  type PartnerBrand,
   type TrustItem,
 } from "@/components/homepage-data";
-import { fetchFeaturedProductsWithFallback } from "@/lib/products/storefront";
+import { fetchCatalogProductsWithFallback, fetchFeaturedProductsWithFallback } from "@/lib/products/storefront";
 import { useTranslation } from "@/lib/i18n/use-translation";
 import { getProductHref } from "@/lib/products/links";
 
@@ -28,6 +30,105 @@ type MenuActionProps = {
   onOpenMobileMenu: () => void;
   onCloseMobileMenu: () => void;
 };
+
+function DrawerToggleIcon({
+  open = false,
+  className,
+}: {
+  open?: boolean;
+  className?: string;
+}) {
+  return (
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 120 120"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      className={className}
+    >
+      <defs>
+        <linearGradient id="coinDrawerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#FF6A00" />
+          <stop offset="100%" stopColor="#FFC300" />
+        </linearGradient>
+      </defs>
+
+      <g transform="translate(0 2)">
+        <rect
+          x="10"
+          y="30"
+          width="100"
+          height="70"
+          rx="8"
+          fill="#1A1A1A"
+          stroke="#000"
+          strokeWidth="4"
+        />
+
+        <g
+          style={{
+            opacity: open ? 1 : 0,
+            transition: "opacity 0.3s ease 0.18s",
+          }}
+        >
+          <path
+            d="M35 45 L35 75 Q35 80 40 80 L50 80 Q55 80 55 75 L55 60 L50 55 L40 55 L35 60 Z"
+            fill="#FF2D2D"
+            stroke="#000"
+            strokeWidth="2.5"
+          />
+          <circle cx="45" cy="50" r="3" fill="#000" />
+
+          <path
+            d="M65 65 L85 65 Q90 65 90 70 L90 75 Q90 80 85 80 L70 80 Q65 80 65 75 Z"
+            fill="#FFFFFF"
+            stroke="#000"
+            strokeWidth="2.5"
+          />
+          <path d="M65 70 L80 70" stroke="#FF2D2D" strokeWidth="3" />
+          <path
+            d="M82 68 L88 68 Q90 68 90 70"
+            fill="#FF2D2D"
+            stroke="#000"
+            strokeWidth="2"
+          />
+        </g>
+
+        <g
+          style={{
+            transform: open ? "translateX(25px)" : "translateX(0px)",
+            transformOrigin: "center",
+            transition: "transform 0.4s ease",
+          }}
+        >
+          <rect
+            x="15"
+            y="35"
+            width="90"
+            height="60"
+            rx="6"
+            fill="url(#coinDrawerGradient)"
+            stroke="#000"
+            strokeWidth="4"
+          />
+          <circle cx="85" cy="65" r="4" fill="#000" />
+          <text
+            x="45"
+            y="68"
+            textAnchor="middle"
+            fill="#000"
+            fontSize="12"
+            fontWeight="900"
+            style={{ fontFamily: "Impact, Arial Black, sans-serif" }}
+          >
+            COIN
+          </text>
+        </g>
+      </g>
+    </svg>
+  );
+}
 
 function BrandLogo({
   imageSize,
@@ -44,7 +145,7 @@ function BrandLogo({
         className="border border-[var(--border-soft)] object-cover"
         priority
       />
-      <span className={textClassName}>Coin Original</span>
+      <span className={`roca-display ${textClassName}`}>Coin Original</span>
     </Link>
   );
 }
@@ -121,7 +222,127 @@ function CartCountDot() {
   );
 }
 
+function SearchAutocomplete({
+  placeholder,
+  buttonLabel,
+  containerClassName,
+  formClassName,
+  inputClassName,
+  buttonClassName,
+  suggestionsClassName,
+  onNavigate,
+}: {
+  placeholder: string;
+  buttonLabel: string;
+  containerClassName?: string;
+  formClassName: string;
+  inputClassName: string;
+  buttonClassName: string;
+  suggestionsClassName?: string;
+  onNavigate?: () => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [products, setProducts] = useState<CatalogProduct[]>([]);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      const nextProducts = await fetchCatalogProductsWithFallback();
+      if (isMounted) {
+        setProducts(nextProducts);
+      }
+    };
+
+    void loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const normalizedQuery = query.trim().toLowerCase();
+  const suggestions = useMemo(() => {
+    if (!normalizedQuery) return [];
+
+    return products
+      .filter((product) =>
+        [product.name, product.brand, product.category].join(" ").toLowerCase().includes(normalizedQuery),
+      )
+      .slice(0, 6);
+  }, [products, normalizedQuery]);
+
+  const resultsHref = normalizedQuery ? `/boutique?search=${encodeURIComponent(query.trim())}` : "/boutique";
+
+  return (
+    <div className={`relative ${containerClassName ?? ""}`}>
+      <form action="/boutique" method="get" className={formClassName} onSubmit={onNavigate}>
+        <input
+          type="text"
+          name="search"
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => {
+            window.setTimeout(() => setOpen(false), 150);
+          }}
+          placeholder={placeholder}
+          className={inputClassName}
+          autoComplete="off"
+        />
+        <button type="submit" className={buttonClassName} aria-label={buttonLabel}>
+          ⌕
+        </button>
+      </form>
+
+      {open && suggestions.length > 0 ? (
+        <div
+          className={`absolute left-0 right-0 top-[calc(100%+0.35rem)] z-[170] border border-[var(--border-soft)] bg-[var(--surface)] shadow-[0_18px_50px_rgba(0,0,0,0.28)] ${suggestionsClassName ?? ""}`}
+        >
+          {suggestions.map((product) => (
+            <Link
+              key={product.slug}
+              href={getProductHref(product.slug)}
+              className="flex items-center gap-3 border-b border-[var(--border-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] transition-colors hover:bg-[var(--surface-soft)]"
+              onClick={onNavigate}
+            >
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden border border-[var(--border-soft)] bg-[var(--surface-soft)]">
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm text-[var(--foreground)]">{product.name}</p>
+                <p className="truncate text-[10px] uppercase tracking-[0.14em] text-[var(--muted)]">
+                  {product.brand}
+                </p>
+              </div>
+            </Link>
+          ))}
+          <Link
+            href={resultsHref}
+            className="block px-3 py-2.5 text-xs uppercase tracking-[0.14em] text-[var(--primary)] transition-colors hover:bg-[var(--surface-soft)]"
+            onClick={onNavigate}
+          >
+            Voir tous les resultats
+          </Link>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function DesktopTopBar({
+  mobileMenuOpen,
+  onOpenMobileMenu,
 }: Pick<MenuActionProps, "mobileMenuOpen" | "onOpenMobileMenu">) {
   const { t } = useTranslation();
   const { user, loading } = useAuth();
@@ -130,6 +351,20 @@ export function DesktopTopBar({
     <nav className="fixed inset-x-0 top-0 z-50 hidden border-b border-[var(--border-soft)] bg-[color:color-mix(in_srgb,var(--surface)_92%,transparent)] backdrop-blur md:block">
       <div className="flex h-20 w-full items-center justify-between gap-4 px-3 md:px-5">
         <div className="flex items-center gap-6">
+          <button
+            type="button"
+            onClick={onOpenMobileMenu}
+            className={`inline-flex h-11 w-11 items-center justify-center border text-[var(--foreground)] transition-colors ${
+              mobileMenuOpen
+                ? "border-[var(--primary)] bg-[color:color-mix(in_srgb,var(--primary)_18%,transparent)]"
+                : "border-[var(--border-soft)] bg-[var(--surface-soft)] hover:border-[var(--primary)]"
+            }`}
+            aria-label={t("nav.ouvrir_menu")}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu"
+          >
+            <DrawerToggleIcon open={mobileMenuOpen} />
+          </button>
           <BrandLogo
             imageSize={56}
             textClassName="hidden font-[var(--font-display)] text-2xl uppercase tracking-tight text-[var(--primary-strong)] sm:inline"
@@ -137,10 +372,13 @@ export function DesktopTopBar({
         </div>
 
         <div className="flex items-center gap-3">
-          <input
-            type="text"
+          <SearchAutocomplete
             placeholder={t("nav.rechercher")}
-            className="hidden border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-2 text-sm text-[var(--foreground)] outline-none md:block"
+            buttonLabel={t("nav.rechercher")}
+            containerClassName="hidden w-[22rem] md:block"
+            formClassName="flex items-center gap-2"
+            inputClassName="w-full border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-2 text-sm text-[var(--foreground)] outline-none"
+            buttonClassName="inline-flex h-10 items-center justify-center border border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 text-[var(--foreground)] transition-colors hover:border-[var(--primary)]"
           />
           {loading ? null : user ? (
             <Link
@@ -151,16 +389,7 @@ export function DesktopTopBar({
               <User size={18} />
               <span className="text-xs font-mono uppercase tracking-widest hidden lg:inline">{user.displayName || "Mon compte"}</span>
             </Link>
-          ) : (
-            <Link
-              href="/login"
-              className="inline-flex h-11 items-center gap-2 border border-[var(--border-soft)] px-3 text-[var(--foreground)] transition-colors hover:border-[var(--primary)]"
-              aria-label="Se connecter"
-            >
-              <LogIn size={18} />
-              <span className="text-xs font-mono uppercase tracking-widest hidden lg:inline">Connexion</span>
-            </Link>
-          )}
+          ) : null}
           <Link
             href="/panier"
             className="inline-flex h-11 w-11 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
@@ -196,7 +425,7 @@ export function MobileTopBar({
             className="inline-flex h-10 w-10 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
             aria-label={t("nav.ouvrir_menu")}
           >
-            <Menu size={22} />
+            <DrawerToggleIcon />
           </button>
           <BrandLogo
             imageSize={44}
@@ -212,15 +441,7 @@ export function MobileTopBar({
             >
               <User size={20} />
             </Link>
-          ) : (
-            <Link
-              href="/login"
-              className="inline-flex h-10 w-10 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
-              aria-label="Se connecter"
-            >
-              <LogIn size={20} />
-            </Link>
-          )}
+          ) : null}
           <Link
             href="/panier"
             className="inline-flex h-10 w-10 items-center justify-center border border-[var(--border-soft)] text-[var(--foreground)]"
@@ -276,31 +497,35 @@ export function MobileDrawer({
         </div>
 
         <div className="flex flex-1 flex-col gap-4 px-4 py-5">
-          <div className="flex items-center gap-2.5 border border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5">
-            <span className="text-[var(--muted)]">⌕</span>
-            <input
-              className="w-full bg-transparent text-xs outline-none"
-              placeholder={t("nav.chercher")}
-              type="text"
-            />
-          </div>
+          <SearchAutocomplete
+            placeholder={t("nav.chercher")}
+            buttonLabel={t("nav.rechercher")}
+            formClassName="flex items-center gap-2.5 border border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5"
+            inputClassName="w-full bg-transparent text-xs outline-none"
+            buttonClassName="text-[var(--muted)]"
+            suggestionsClassName="max-h-72 overflow-y-auto"
+            onNavigate={onCloseMobileMenu}
+          />
 
           <nav className="flex flex-col gap-2.5">
+            <DrawerLink href="/" onClick={onCloseMobileMenu}>
+              {t("nav.accueil")}
+            </DrawerLink>
             <DrawerLink href="/boutique" active onClick={onCloseMobileMenu}>
               {t("nav.boutique")}
             </DrawerLink>
             <DrawerLink href="/panier" onClick={onCloseMobileMenu}>
               {t("nav.panier")}
             </DrawerLink>
-            {!loading && (
-              <DrawerLink href={user ? "/mon-compte" : "/login"} onClick={onCloseMobileMenu}>
-                {user ? "Mon compte" : "Connexion"}
+            {!loading && user ? (
+              <DrawerLink href="/mon-compte" onClick={onCloseMobileMenu}>
+                Mon compte
               </DrawerLink>
-            )}
+            ) : null}
             <DrawerLink href="/#trust" onClick={onCloseMobileMenu}>
               {t("nav.a_propos")}
             </DrawerLink>
-            <DrawerLink href="/#footer" onClick={onCloseMobileMenu}>
+            <DrawerLink href="/contact" onClick={onCloseMobileMenu}>
               {t("nav.contact")}
             </DrawerLink>
           </nav>
@@ -362,23 +587,18 @@ export function HeroSection() {
   return (
     <section className="relative flex min-h-[500px] items-end overflow-hidden sm:min-h-[600px]">
       <div className="absolute inset-0 z-0">
-        <Image
-          src="/hero-home.jpg"
-          alt="Warehouse streetwear premium"
-          fill
-          priority
-          sizes="100vw"
-          className="hero-image-light object-cover object-center"
+        <iframe
+          src="https://my.spline.design/radialglass-fUljRbilheIbNuNuY9PPdRRq/"
+          title="Coin Original hero experience"
+          className="h-full w-full border-0"
+          loading="eager"
         />
-        <div className="hero-overlay-light absolute inset-0" />
+        <div className="hero-overlay-light absolute inset-0 bg-black/28" />
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/70 to-transparent" />
       </div>
 
       <div className="relative z-10 flex w-full flex-col gap-4 px-3 pb-8 sm:gap-6 sm:pb-12 md:px-5 md:pb-20">
         <div className="max-w-2xl">
-          <span className="mb-3 inline-flex bg-[var(--primary-strong)] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--background)] sm:mb-4 sm:px-4 sm:text-xs">
-            {t("homepage.nouveau_drop")}
-          </span>
           <h1 className="mb-4 font-[var(--font-display)] text-3xl leading-none text-white uppercase sm:mb-6 sm:text-5xl md:text-[clamp(4.5rem,8vw,7rem)]">
             {t("homepage.hero_title")}
           </h1>
@@ -387,7 +607,7 @@ export function HeroSection() {
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
             <a
-              href="#shop"
+              href="/boutique"
               className="impact-button impact-button--primary !h-11 w-full !px-5 !py-3 !text-sm sm:!h-14 sm:w-auto sm:!px-10 sm:!py-4 sm:!text-lg"
             >
               {t("homepage.voir_collection")}
@@ -409,35 +629,108 @@ export function PartnersSection() {
   const { t } = useTranslation();
   
   return (
-    <section className="border-b border-[var(--border-soft)] bg-[var(--surface)]/80 py-12">
-      <div className="flex w-full flex-col gap-8 px-3 md:px-5">
-        <p className="meta-label text-center text-xs text-[var(--muted)]">
+    <section className="w-full overflow-hidden py-12 md:py-16">
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 md:px-6">
+        <p className="text-center text-xl font-semibold text-[var(--foreground)] md:text-2xl">
           {t("homepage.partenaires")}
         </p>
-        <div className="partners-marquee sm:hidden">
-          <div className="partners-track">
+        <div className="partners-marquee relative">
+          <div className="animate-marquee flex items-center gap-12 md:gap-16">
             {partnersLoop.map((partner, index) => (
-              <span
-                key={`${partner}-${index}`}
-                className="partners-pill text-center font-[var(--font-display)] text-2xl uppercase"
-              >
-                {partner}
-              </span>
+              <BrandWordmark key={`${partner.slug}-${index}`} brand={partner} compact />
             ))}
           </div>
-        </div>
-        <div className="hidden grid-cols-3 items-center gap-x-4 gap-y-5 opacity-60 sm:grid lg:flex lg:flex-wrap lg:justify-center lg:gap-8">
-          {partners.map((partner) => (
-            <span
-              key={partner}
-              className="text-center font-[var(--font-display)] text-3xl uppercase"
-            >
-              {partner}
-            </span>
-          ))}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[var(--background)] to-transparent md:w-24" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[var(--background)] to-transparent md:w-24" />
         </div>
       </div>
     </section>
+  );
+}
+
+function BrandWordmark({
+  brand,
+  compact = false,
+}: {
+  brand: PartnerBrand;
+  compact?: boolean;
+}) {
+  const [logoFailed, setLogoFailed] = useState(false);
+  const shellClassName = "text-black";
+
+  const sizeClassName = compact
+    ? "h-12 w-32 md:h-16 md:w-40"
+    : "h-12 w-32 md:h-16 md:w-40";
+
+  const logoClassName = compact ? "h-full w-full max-w-full" : "h-full w-full max-w-full";
+
+  const wordmarkClassName =
+    brand.style === "sport"
+      ? "font-black italic tracking-[0.16em] skew-x-[-10deg]"
+      : brand.style === "wide"
+        ? "font-black tracking-[0.42em]"
+        : brand.style === "script"
+          ? "font-black normal-case italic tracking-[0.08em]"
+          : brand.style === "tight"
+            ? "font-black tracking-[0.14em]"
+            : brand.style === "box"
+              ? "font-black tracking-[0.18em]"
+              : brand.style === "mono"
+                ? "font-mono font-bold tracking-[0.22em]"
+                : brand.style === "heritage"
+                  ? "font-semibold tracking-[0.28em]"
+                  : "font-semibold tracking-[0.24em]";
+
+  return (
+    <span
+      className={`partners-pill inline-flex flex-shrink-0 items-center justify-center text-center uppercase grayscale opacity-60 transition-all duration-300 hover:grayscale-0 hover:opacity-100 ${shellClassName} ${sizeClassName}`}
+      aria-label={brand.name}
+      title={brand.name}
+    >
+      {!brand.logoUrl || logoFailed ? (
+        <svg
+          viewBox="0 0 320 64"
+          className={`${logoClassName} w-auto`}
+          role="img"
+          aria-label={brand.name}
+        >
+          <text
+            x="160"
+            y="39"
+            textAnchor="middle"
+            fill="currentColor"
+            fontSize={brand.style === "script" ? "28" : "24"}
+            fontWeight={brand.style === "heritage" || brand.style === "trail" ? "600" : "800"}
+            letterSpacing={
+              brand.style === "wide"
+                ? "7"
+                : brand.style === "mono"
+                  ? "4"
+                  : brand.style === "heritage"
+                    ? "5"
+                    : "2"
+            }
+            style={{
+              fontFamily:
+                brand.style === "mono"
+                  ? "ui-monospace, SFMono-Regular, monospace"
+                  : "Arial, Helvetica, sans-serif",
+              fontStyle: brand.style === "script" || brand.style === "sport" ? "italic" : "normal",
+            }}
+          >
+            {brand.wordmark}
+          </text>
+        </svg>
+      ) : (
+        <img
+          src={brand.logoUrl}
+          alt={brand.name}
+          className={`${logoClassName} w-auto object-contain`}
+          loading="lazy"
+          onError={() => setLogoFailed(true)}
+        />
+      )}
+    </span>
   );
 }
 
@@ -556,14 +849,14 @@ function TrustCard({ item }: { item: TrustItem }) {
   const { t } = useTranslation();
   
   return (
-    <article className="surface-panel p-4 text-left sm:p-5 md:p-6">
-      <p className="meta-label mb-3 text-[10px] text-[var(--primary)] sm:mb-4 sm:text-xs">
+    <article className="surface-panel h-full min-w-0 p-2.5 text-left sm:p-5 md:p-6">
+      <p className="meta-label mb-2 text-[9px] text-[var(--primary)] sm:mb-4 sm:text-xs">
         {t("homepage.service")}
       </p>
-      <h3 className="font-[var(--font-display)] text-lg uppercase sm:text-xl md:text-2xl">
+      <h3 className="font-[var(--font-display)] text-[0.88rem] uppercase leading-tight sm:text-xl md:text-2xl">
         {item.title}
       </h3>
-      <p className="mt-2 text-xs leading-5 text-[var(--muted)] sm:mt-3 sm:text-sm sm:leading-6">
+      <p className="mt-2 text-[11px] leading-4 text-[var(--muted)] sm:mt-3 sm:text-sm sm:leading-6">
         {item.text}
       </p>
     </article>
@@ -588,7 +881,7 @@ export function TrustSection() {
         <p className="mx-auto mb-8 max-w-2xl text-sm leading-6 text-[var(--muted)] sm:mb-10 sm:text-base md:text-lg">
           {t("homepage.commandez")}
         </p>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-5 lg:grid-cols-3">
+        <div className="grid grid-cols-3 items-stretch gap-2 sm:gap-3 md:gap-5">
           {trustItems.map((item) => (
             <TrustCard key={item.title} item={item} />
           ))}

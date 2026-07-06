@@ -1,5 +1,6 @@
 import { SITE_URL } from "@/lib/site";
 import { JsonLd } from "@/components/json-ld";
+import { LegalContentPage } from "@/components/legal-content-page";
 
 export const metadata = {
   title: "Conditions générales de vente | Coin Original",
@@ -24,91 +25,122 @@ export default function CGVPage() {
 
   return (
     <>
-      <main className="max-w-3xl mx-auto px-6 py-12">
-        <h1 className="text-3xl font-bold mb-8">Conditions générales de vente</h1>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">1. Préambule</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Les présentes conditions générales de vente (CGV) régissent les relations entre la boutique <strong>Coin Original</strong> et ses clients pour tout achat effectué sur le site {siteUrl}.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">2. Produits</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Les produits proposés sont des articles de streetwear, sneakers, vêtements et accessoires. Les descriptions, photos et prix sont indiqués pour chaque produit. Coin Original s'efforce de garantir l'exactitude des informations, mais des variations de couleur peuvent exister selon les écrans.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">3. Prix</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Les prix sont indiqués en <strong>Dirhams marocains (MAD)</strong> et sont susceptibles de modification sans préavis. Le prix payé est celui en vigueur au moment de la commande. La livraison est gratuite à partir de 500 MAD d'achat.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">4. Commande</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Le client passe commande en ajoutant les produits au panier et en validant le checkout. La commande est confirmée par un message de succès à l'écran. Coin Original se réserve le droit d'annuler une commande en cas de problème de stock ou de suspicion de fraude.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">5. Paiement</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Le paiement se fait exclusivement <strong>à la livraison</strong> (paiement en espèces au livreur). Aucun paiement en ligne n'est accepté pour le moment. Des frais de livraison de 15 MAD peuvent s'appliquer pour les commandes inférieures à 500 MAD.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">6. Livraison</h2>
-          <p className="text-gray-700 leading-relaxed">
-            La livraison est effectuée au Maroc uniquement. Le délai de livraison estimé est de <strong>3 à 5 jours ouvrés</strong> selon la ville. Le client est contacté par téléphone avant la livraison pour confirmer l'adresse et le créneau horaire.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">7. Retours et échanges</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Le client dispose d'un délai de <strong>7 jours</strong> après réception pour demander un retour ou un échange. Le produit doit être dans son état d'origine, non porté, avec les étiquettes intactes. Les frais de retour sont à la charge du client sauf en cas de produit défectueux.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">8. Remboursements</h2>
-          <p className="text-gray-700 leading-relaxed">
-            En cas de retour accepté, le remboursement est effectué sous <strong>14 jours</strong> par virement bancaire ou en espèces selon le choix du client. Les frais de livraison initiaux ne sont pas remboursés.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">9. Droit de rétractation</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Conformément à la législation marocaine, le client dispose d'un droit de rétractation de 7 jours. Pour l'exercer, le client doit contacter Coin Original par email ou WhatsApp avec sa référence de commande.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">10. Service client</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Pour toute question, réclamation ou demande de retour :<br />
-            Email : contact@coinoriginal.shop<br />
-            WhatsApp : +212 6XX XX XX XX<br />
-            Horaires : du lundi au samedi, 9h à 18h
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">11. Droit applicable</h2>
-          <p className="text-gray-700 leading-relaxed">
-            Les présentes CGV sont soumises au droit marocain. En cas de litige, une solution amiable sera recherchée avant toute action judiciaire. À défaut, les tribunaux de Casablanca seront compétents.
-          </p>
-        </section>
-
-        <p className="text-sm text-gray-500 mt-12">Dernière mise à jour : juillet 2026</p>
-      </main>
+      <LegalContentPage
+        eyebrow="Conditions de vente"
+        title="Conditions generales de vente"
+        intro={`Les presentes CGV encadrent les achats effectues sur ${siteUrl}, notamment les produits proposes, les prix, le paiement a la livraison, la livraison au Maroc et les retours.`}
+        updateLabel="Juillet 2026"
+        badges={["Paiement a la livraison", "Livraison Maroc", "Retours encadres"]}
+        sections={[
+          {
+            id: "01",
+            title: "Preambule",
+            description:
+              "Les presentes conditions generales de vente regissent la relation entre Coin Original et ses clients pour toute commande passee sur le site.",
+            icon: "file",
+          },
+          {
+            id: "02",
+            title: "Produits",
+            description:
+              "Les articles proposes comprennent notamment sneakers, vetements et accessoires. Les visuels et descriptions sont presentes avec le plus grand soin.",
+            icon: "blocks",
+          },
+          {
+            id: "03",
+            title: "Prix",
+            description:
+              "Les prix sont exprimes en dirhams marocains. Le montant facture est celui affiche au moment de la commande.",
+            icon: "wallet",
+            highlights: [
+              "Prix susceptibles d'evoluer sans preavis",
+              "Livraison gratuite a partir de 500 MAD",
+            ],
+          },
+          {
+            id: "04",
+            title: "Commande",
+            description:
+              "La commande est passee depuis le panier puis confirmee via le parcours de checkout et le canal de confirmation defini par la boutique.",
+            icon: "user",
+            highlights: [
+              "Validation apres ajout au panier",
+              "Annulation possible en cas de stock indisponible ou fraude suspectee",
+            ],
+          },
+          {
+            id: "05",
+            title: "Paiement",
+            description:
+              "Le paiement se fait exclusivement a la livraison. Aucun paiement en ligne n'est exige pour finaliser l'achat.",
+            icon: "wallet",
+            highlights: [
+              "Paiement en especes au livreur",
+              "Frais eventuels de 15 MAD sous 500 MAD",
+            ],
+          },
+          {
+            id: "06",
+            title: "Livraison",
+            description:
+              "La livraison est disponible au Maroc uniquement. Le client peut etre contacte avant expedition ou livraison pour confirmer les informations utiles.",
+            icon: "truck",
+            highlights: [
+              "Delai estimatif de 3 a 5 jours ouvres",
+              "Confirmation avant livraison si necessaire",
+            ],
+          },
+          {
+            id: "07",
+            title: "Retours et echanges",
+            description:
+              "Un retour ou un echange peut etre demande dans un delai de 7 jours apres reception, sous reserve du respect des conditions du produit.",
+            icon: "shield",
+            highlights: [
+              "Produit non porte avec etiquettes intactes",
+              "Retour a la charge du client sauf produit defectueux",
+            ],
+          },
+          {
+            id: "08",
+            title: "Remboursements",
+            description:
+              "En cas de retour accepte, le remboursement intervient sous 14 jours selon la solution retenue avec le client.",
+            icon: "clock",
+          },
+          {
+            id: "09",
+            title: "Retractation",
+            description:
+              "Le client dispose d'un droit de retractation de 7 jours conformement a la legislation applicable, en contactant Coin Original avec sa reference.",
+            icon: "badge",
+          },
+          {
+            id: "10",
+            title: "Service client",
+            description:
+              "Pour toute demande, notre service client reste joignable par email ou WhatsApp.",
+            icon: "bell",
+            highlights: [
+              "Email : contact@coinoriginal.shop",
+              "WhatsApp : +212 6XX XX XX XX",
+              "Horaires : lundi au samedi, 9h a 18h",
+            ],
+          },
+          {
+            id: "11",
+            title: "Droit applicable",
+            description:
+              "Les presentes CGV sont soumises au droit marocain. En cas de litige, une resolution amiable est privilegiee avant toute procedure.",
+            icon: "scale",
+            highlights: ["Tribunaux competents : Casablanca"],
+          },
+        ]}
+        calloutTitle="Une question sur une commande ?"
+        calloutText="Pour le suivi, les retours, les echanges ou une reclamation, le plus rapide reste WhatsApp ou l'email du support."
+        calloutHref="/contact"
+        calloutLabel="Voir la page contact"
+      />
       <JsonLd data={webPageJsonLd} />
     </>
   );
