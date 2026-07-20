@@ -64,10 +64,15 @@ function mapInputToFirebaseDocument(
   input: ProductMutationInput,
   existingCreatedAt?: number,
 ): FirebaseProductDocument {
-  const sizes = Object.entries(input.stockBySize)
+  // Ne garder que les tailles avec un stock positif
+  const stockBySize = Object.entries(input.stockBySize)
     .filter(([, quantity]) => quantity > 0)
-    .map(([size]) => size);
-  const totalStock = Object.values(input.stockBySize).reduce((sum, quantity) => sum + quantity, 0);
+    .reduce<Record<string, number>>((accumulator, [size, quantity]) => {
+      accumulator[size] = quantity;
+      return accumulator;
+    }, {});
+  const sizes = Object.keys(stockBySize);
+  const totalStock = Object.values(stockBySize).reduce((sum, quantity) => sum + quantity, 0);
   const now = Date.now();
 
   return {
@@ -80,12 +85,12 @@ function mapInputToFirebaseDocument(
     image: input.image,
     gallery: input.gallery,
     sizes,
-    stockBySize: input.stockBySize,
+    stockBySize,
     soldOut: input.soldOut ?? totalStock <= 0,
     hidden: input.hidden ?? false,
     createdAt: existingCreatedAt ?? now,
     updatedAt: now,
-    ...(input.compareAtPriceValue !== undefined
+    ...(input.compareAtPriceValue !== undefined && input.compareAtPriceValue > 0
       ? { compareAtPriceValue: input.compareAtPriceValue }
       : {}),
     ...(input.badge ? { badge: input.badge } : {}),

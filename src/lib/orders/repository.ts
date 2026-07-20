@@ -28,6 +28,22 @@ function createOrderFromInput(input: OrderInput): Order {
   };
 }
 
+function removeUndefinedFields<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => removeUndefinedFields(item)) as T;
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([, fieldValue]) => fieldValue !== undefined)
+        .map(([fieldKey, fieldValue]) => [fieldKey, removeUndefinedFields(fieldValue)]),
+    ) as T;
+  }
+
+  return value;
+}
+
 function readOrdersFromStorage(): Order[] {
   if (typeof window === "undefined" || !window.localStorage) return [];
 
@@ -87,14 +103,26 @@ function createFirebaseOrderRepository(): OrderRepository {
     create: async (input) => {
       try {
         const order = createOrderFromInput(input);
-        const docRef = await addDoc(getOrdersCollection(), {
-          ...order,
-          createdAt: Timestamp.fromDate(new Date(order.createdAt)),
-          updatedAt: Timestamp.fromDate(new Date(order.updatedAt)),
-        });
+        // #region debug-point B:firebase-order-create-start
+        fetch("http://127.0.0.1:7777/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:"checkout-order-error",runId:"post-fix",hypothesisId:"B",location:"src/lib/orders/repository.ts:create:start",msg:"[DEBUG] firebase order create start",data:{projectConfigured:isFirebaseConfigured(),customerPhone:input.customer.phone,city:input.customer.city,itemCount:input.items.length,total:input.total},ts:Date.now()})}).catch(()=>{});
+        // #endregion
+        const docRef = await addDoc(
+          getOrdersCollection(),
+          removeUndefinedFields({
+            ...order,
+            createdAt: Timestamp.fromDate(new Date(order.createdAt)),
+            updatedAt: Timestamp.fromDate(new Date(order.updatedAt)),
+          }),
+        );
+        // #region debug-point B:firebase-order-create-success
+        fetch("http://127.0.0.1:7777/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:"checkout-order-error",runId:"post-fix",hypothesisId:"B",location:"src/lib/orders/repository.ts:create:success",msg:"[DEBUG] firebase order create success",data:{docId:docRef.id,generatedOrderId:order.id},ts:Date.now()})}).catch(()=>{});
+        // #endregion
 
         return { data: { ...order, id: docRef.id }, error: null };
       } catch (error) {
+        // #region debug-point B:firebase-order-create-error
+        fetch("http://127.0.0.1:7777/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:"checkout-order-error",runId:"post-fix",hypothesisId:"B",location:"src/lib/orders/repository.ts:create:error",msg:"[DEBUG] firebase order create error",data:{errorMessage:error instanceof Error ? error.message : "unknown",errorName:error instanceof Error ? error.name : typeof error},ts:Date.now()})}).catch(()=>{});
+        // #endregion
         return {
           data: null,
           error: error instanceof Error ? error.message : "Impossible de creer la commande.",

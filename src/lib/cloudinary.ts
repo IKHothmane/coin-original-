@@ -124,7 +124,17 @@ export async function uploadProductImageUrlsToCloudinary(
   productSlug: string,
   urls: string[],
 ): Promise<{ urls: string[]; error: string | null }> {
+  const containsLocalImages = urls.some(isDataUrl);
+
   if (!isCloudinaryConfigured()) {
+    if (containsLocalImages) {
+      return {
+        urls: [],
+        error:
+          "Cloudinary n'est pas configure. Impossible d'enregistrer des images locales dans Firebase car le document depasse la taille autorisee. Configure NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME et NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET.",
+      };
+    }
+
     return { urls, error: null };
   }
 

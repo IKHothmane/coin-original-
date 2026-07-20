@@ -47,7 +47,7 @@ export const partners: PartnerBrand[] = [
   { slug: "carhartt-wip", name: "Carhartt WIP", wordmark: "CARHARTT WIP", logoUrl: "https://cdn.simpleicons.org/carhartt/000000", tone: "light", style: "heritage" },
   { slug: "north-face", name: "The North Face", wordmark: "THE NORTH FACE", logoUrl: "https://cdn.simpleicons.org/thenorthface/000000", tone: "light", style: "trail" },
   { slug: "asics", name: "Asics", wordmark: "ASICS", logoUrl: "https://cdn.simpleicons.org/asics/000000", tone: "light", style: "sport" },
-  { slug: "salomon", name: "Salomon", wordmark: "SALOMON", logoUrl: "https://cdn.simpleicons.org/salomon/000000", tone: "light", style: "trail" },
+  { slug: "salomon", name: "Salomon", wordmark: "SALOMON", tone: "light", style: "trail" },
 ];
 
 export const partnersLoop = [...partners, ...partners];

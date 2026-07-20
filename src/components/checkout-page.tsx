@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   CreditCard,
   Info,
-  MessageCircle,
   ShoppingBag,
 } from "lucide-react";
 import {
@@ -19,7 +19,6 @@ import {
 import { useCart } from "@/components/cart-context";
 import { useAuth } from "@/components/auth-context";
 import { createOrder } from "@/lib/orders/store";
-import { SITE_URL } from "@/lib/site";
 
 function formatPrice(value: number) {
   return `${value.toLocaleString("fr-FR")} DH`;
@@ -28,14 +27,19 @@ function formatPrice(value: number) {
 const LAST_CITY_STORAGE_KEY = "coin-original-last-city";
 
 export function CheckoutPage() {
-  const { items, cartTotal, clearCart } = useCart();
+  const { items, cartTotal, clearCart, isReady } = useCart();
   const { user } = useAuth();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const initialSavedCity =
+    typeof window !== "undefined" ? window.localStorage.getItem(LAST_CITY_STORAGE_KEY) ?? "" : "";
 
   const [formData, setFormData] = useState({
     fullName: user?.displayName || "",
-    city: "",
+    city: initialSavedCity,
+    phone: user?.phoneNumber || "",
   });
 
   useEffect(() => {
@@ -45,52 +49,29 @@ export function CheckoutPage() {
     };
   }, [mobileMenuOpen]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const savedCity = window.localStorage.getItem(LAST_CITY_STORAGE_KEY);
-    if (!savedCity) return;
-
-    setFormData((current) => (current.city ? current : { ...current, city: savedCity }));
-  }, []);
-
   const total = cartTotal;
-  const whatsappNumber = "212691567246";
-
-  const buildWhatsappMessage = (reference?: string | null) => {
-    const lines = [
-      "Bonjour Coin Original, je veux confirmer ma commande.",
-      "",
-      `Reference: ${reference ?? "Nouvelle commande"}`,
-      `Nom: ${formData.fullName.trim() || user?.displayName || "Non renseigne"}`,
-      `Ville: ${formData.city.trim() || "Non renseignee"}`,
-      `Telephone: ${user?.phoneNumber ?? "Non renseigne"}`,
-      `Lien du panier: ${SITE_URL}/panier`,
-      "",
-      "Panier:",
-      ...items.map(
-        (item, index) =>
-          `${index + 1}. ${item.name} | ${item.brand} | Taille ${item.size} | Qte ${item.quantity} | ${formatPrice(item.price * item.quantity)}`,
-      ),
-      "",
-      `Total: ${formatPrice(total)}`,
-      "Paiement: A la livraison",
-    ];
-
-    return lines.join("\n");
-  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!isReady) return;
     if (items.length === 0) return;
+    setSubmitError(null);
+    if (!formData.phone.trim()) {
+      setSubmitError("Le numero de telephone est obligatoire pour la confirmation.");
+      return;
+    }
 
     setIsSubmitting(true);
+    const traceId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `checkout-${Date.now()}`;
+    // #region debug-point A:checkout-submit-start
+    fetch("http://127.0.0.1:7777/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:"checkout-order-error",runId:"post-fix",hypothesisId:"A",location:"src/components/checkout-page.tsx:handleSubmit:start",msg:"[DEBUG] checkout submit start",data:{traceId,itemCount:items.length,total,customerName:formData.fullName.trim(),city:formData.city.trim(),phone:formData.phone.trim()},ts:Date.now()})}).catch(()=>{});
+    // #endregion
 
     const result = await createOrder({
       customer: {
         fullName: formData.fullName.trim(),
         email: undefined,
-        phone: user?.phoneNumber || "",
+        phone: formData.phone.trim(),
         city: formData.city.trim(),
         address: "",
         notes: undefined,
@@ -107,21 +88,40 @@ export function CheckoutPage() {
       })),
       total,
     });
+    // #region debug-point A:checkout-submit-result
+    fetch("http://127.0.0.1:7777/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:"checkout-order-error",runId:"post-fix",hypothesisId:"A",location:"src/components/checkout-page.tsx:handleSubmit:afterCreateOrder",msg:"[DEBUG] checkout createOrder result",data:{traceId,hasData:Boolean(result.data),error:result.error,orderId:result.data?.id ?? null},ts:Date.now()})}).catch(()=>{});
+    // #endregion
 
     if (typeof window !== "undefined" && formData.city.trim()) {
       window.localStorage.setItem(LAST_CITY_STORAGE_KEY, formData.city.trim());
     }
 
-    setIsSubmitting(false);
-
-    const whatsappMessage = buildWhatsappMessage(result.data?.id ?? null);
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
-
     if (result.data) {
+      try {
+        await fetch("/api/order-push", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderId: result.data.id,
+            customerName: formData.fullName.trim() || user?.displayName || "Client",
+            total,
+            itemsCount: items.reduce((sum, item) => sum + item.quantity, 0),
+          }),
+        });
+      } catch (error) {
+        console.error("[Checkout client] Push notification error:", error);
+      }
+
       clearCart();
+      setIsSubmitting(false);
+      router.push(`/merci?ref=${result.data.id}&status=confirmation`);
+      return;
     }
 
-    window.location.href = whatsappUrl;
+    setIsSubmitting(false);
+    setSubmitError(result.error || "Une erreur inconnue est survenue.");
   };
 
   const updateField = (field: keyof typeof formData, value: string) => {
@@ -152,7 +152,11 @@ export function CheckoutPage() {
                 Votre Panier
               </h2>
 
-              {items.length === 0 ? (
+              {!isReady ? (
+                <div className="py-6 text-center">
+                  <p className="text-sm text-[var(--muted)]">Chargement du panier...</p>
+                </div>
+              ) : items.length === 0 ? (
                 <div className="py-6 text-center">
                   <p className="text-sm text-[var(--muted)]">
                     Ton panier est vide. Ajoute des articles avant de commander.
@@ -269,24 +273,45 @@ export function CheckoutPage() {
                           className="w-full border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
                         />
                       </div>
+                      <div>
+                        <label className="mb-1.5 block text-[10px] uppercase tracking-[0.16em] text-[var(--primary)]">
+                          Telephone
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          name="phone"
+                          autoComplete="tel"
+                          value={formData.phone}
+                          onChange={(event) => updateField("phone", event.target.value)}
+                          placeholder="EX: 06 12 34 56 78"
+                          className="w-full border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
+                        />
+                      </div>
                     </div>
 
                     <div className="flex items-start gap-2 text-[var(--muted)]">
                       <Info size={16} className="mt-0.5 flex-none text-[var(--primary)]" />
                       <p className="text-xs italic md:text-sm">
-                        En cliquant sur confirmer, WhatsApp s&apos;ouvre avec votre panier et vos
-                        informations pour envoyer directement la commande.
+                        En cliquant sur confirmer, votre commande est enregistree et passe
+                        directement a la confirmation.
                       </p>
                     </div>
 
+                    {submitError ? (
+                      <div className="border border-red-300 bg-red-50 px-3 py-3 text-sm text-red-700">
+                        {submitError}
+                      </div>
+                    ) : null}
+
                     <button
                       type="submit"
-                      disabled={isSubmitting || items.length === 0}
+                      disabled={!isReady || isSubmitting || items.length === 0}
                       className="inline-flex w-full items-center justify-center gap-2 bg-[var(--primary-strong)] px-4 py-3.5 font-[var(--font-display)] text-sm uppercase tracking-[0.04em] text-[var(--background)] transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70 active:scale-95 md:gap-3 md:px-5 md:py-4 md:text-lg"
                     >
                       {isSubmitting ? (
                         <>
-                          <MessageCircle size={18} className="animate-pulse" />
+                          <ShoppingBag size={18} className="animate-pulse" />
                           Traitement...
                         </>
                       ) : (

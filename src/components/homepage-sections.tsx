@@ -170,6 +170,7 @@ export function ThemeLogo({
         width={width}
         height={height}
         className={`theme-logo theme-logo--dark ${className}`}
+        style={{ width: "auto", height: `${height}px` }}
         priority={priority}
       />
       <Image
@@ -179,6 +180,7 @@ export function ThemeLogo({
         width={width}
         height={height}
         className={`theme-logo theme-logo--light ${className}`}
+        style={{ width: "auto", height: `${height}px` }}
         priority={priority}
       />
     </>
@@ -366,7 +368,7 @@ export function DesktopTopBar({
             <DrawerToggleIcon open={mobileMenuOpen} />
           </button>
           <BrandLogo
-            imageSize={56}
+            imageSize={38}
             textClassName="hidden font-[var(--font-display)] text-2xl uppercase tracking-tight text-[var(--primary-strong)] sm:inline"
           />
         </div>
@@ -428,7 +430,7 @@ export function MobileTopBar({
             <DrawerToggleIcon />
           </button>
           <BrandLogo
-            imageSize={44}
+            imageSize={30}
             textClassName="hidden font-[var(--font-display)] text-xl uppercase tracking-tight text-[var(--primary-strong)] sm:inline"
           />
         </div>

@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useSyncExternalStore,
   type ReactNode,
@@ -12,6 +13,7 @@ import type { CartItem } from "@/components/cart-types";
 import type { CatalogProduct } from "@/components/catalog-data";
 
 const CART_STORAGE_KEY = "coin-original-cart";
+const EMPTY_CART: CartItem[] = [];
 
 function parsePrice(price: string) {
   return Number(price.replace(/[^\d]/g, ""));
@@ -53,13 +55,14 @@ type CartStore = {
   subscribe: (callback: () => void) => () => void;
   getSnapshot: () => CartItem[];
   getServerSnapshot: () => CartItem[];
+  hydrate: () => void;
   setItems: (updater: (current: CartItem[]) => CartItem[]) => void;
 };
 
 function createCartStore(): CartStore {
-  let items = readCartFromStorage();
+  let items: CartItem[] = [];
   const listeners = new Set<() => void>();
-  let serverSnapshotCache = items;
+  let hydrated = false;
 
   return {
     subscribe(callback) {
@@ -72,12 +75,17 @@ function createCartStore(): CartStore {
       return items;
     },
     getServerSnapshot() {
-      // Return the same snapshot during hydration
-      return serverSnapshotCache;
+      return EMPTY_CART;
+    },
+    hydrate() {
+      if (hydrated) return;
+      hydrated = true;
+      items = readCartFromStorage();
+      listeners.forEach((callback) => callback());
     },
     setItems(updater) {
       items = updater(items);
-      serverSnapshotCache = items;
+      hydrated = true;
       writeCartToStorage(items);
       listeners.forEach((callback) => callback());
     },
@@ -120,6 +128,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     cartStore.getServerSnapshot,
   );
   const isReady = useIsReady();
+
+  useEffect(() => {
+    cartStore.hydrate();
+  }, []);
 
   const setItems = useCallback((updater: (current: CartItem[]) => CartItem[]) => {
     cartStore.setItems(updater);
