@@ -420,7 +420,7 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main className="min-h-screen w-full px-3 pb-24 pt-20 md:px-5" dir={lang === "ar" ? "rtl" : "ltr"}>
+      <main className="page-with-header min-h-screen w-full px-3 pb-24 md:px-5" dir={lang === "ar" ? "rtl" : "ltr"}>
         <div className="py-6 sm:py-10">
           <BoutiqueHeader
             searchQuery={searchQuery}

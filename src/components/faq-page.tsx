@@ -71,7 +71,7 @@ export function FAQPageClient() {
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main className="min-h-screen px-3 pb-24 pt-20 md:px-5 md:pt-28">
+      <main className="page-with-header min-h-screen px-3 pb-24 md:px-5">
         <div className="mx-auto max-w-3xl">
           <h1 className="mb-2 font-[var(--font-display)] text-3xl uppercase text-[var(--primary)] sm:text-4xl md:text-5xl">
             FAQ

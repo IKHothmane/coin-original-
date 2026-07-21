@@ -144,7 +144,7 @@ export function CheckoutPage() {
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main className="w-full px-3 pb-24 pt-20 md:px-5 md:pt-28">
+      <main className="page-with-header w-full px-3 pb-24 md:px-5">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-10">
           <aside className="order-2 lg:order-1 lg:col-span-5">
             <div className="border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 lg:sticky lg:top-24 md:p-6">

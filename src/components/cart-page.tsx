@@ -147,7 +147,7 @@ export function CartPage() {
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main className="min-h-screen w-full px-4 pb-24 pt-20 md:px-8 xl:px-12 md:pt-28 space-y-6">
+      <main className="page-with-header min-h-screen w-full px-4 pb-24 md:px-8 xl:px-12 space-y-6">
         {/* Breadcrumb */}
         <nav className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
           <Link href="/" className="hover:text-[var(--primary)]">

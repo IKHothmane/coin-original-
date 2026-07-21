@@ -63,7 +63,7 @@ export default function LoginPage() {
       <div className="fixed inset-0 grainy-overlay z-0 pointer-events-none" />
 
       {/* Main Content Canvas */}
-      <main className="flex-grow flex items-center justify-center relative z-10 px-5 py-12 md:px-20 pt-24 md:pt-28">
+      <main className="page-with-header relative z-10 flex flex-grow items-center justify-center px-5 pb-12 md:px-20">
         {/* Login Card */}
         <div className="w-full max-w-md bg-surface-container border-2 border-outline-variant p-6 shadow-[10px_10px_0px_0px_rgba(255,77,0,0.5)]">
           {/* Logo Header */}
@@ -198,4 +198,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

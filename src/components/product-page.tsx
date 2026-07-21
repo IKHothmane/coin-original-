@@ -324,7 +324,7 @@ export function ProductPage({ product, slug }: ProductPageProps) {
         <DesktopTopBar mobileMenuOpen={mobileMenuOpen} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
         <MobileTopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
         <MobileDrawer mobileMenuOpen={mobileMenuOpen} onCloseMobileMenu={() => setMobileMenuOpen(false)} />
-        <main className="flex min-h-screen items-center justify-center pb-24 pt-18 md:pt-20">
+        <main className="page-with-header flex min-h-screen items-center justify-center pb-24">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
             Chargement du produit...
           </p>
@@ -339,7 +339,7 @@ export function ProductPage({ product, slug }: ProductPageProps) {
         <DesktopTopBar mobileMenuOpen={mobileMenuOpen} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
         <MobileTopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
         <MobileDrawer mobileMenuOpen={mobileMenuOpen} onCloseMobileMenu={() => setMobileMenuOpen(false)} />
-        <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-3 pb-24 pt-18 text-center md:px-5 md:pt-20">
+        <main className="page-with-header flex min-h-screen flex-col items-center justify-center gap-4 px-3 pb-24 text-center md:px-5">
           <h1 className="font-[var(--font-display)] text-3xl uppercase text-[var(--foreground)]">
             Produit introuvable
           </h1>
@@ -379,7 +379,7 @@ export function ProductPage({ product, slug }: ProductPageProps) {
         mobileMenuOpen={mobileMenuOpen}
         onCloseMobileMenu={() => setMobileMenuOpen(false)}
       />
-      <main id="top" className="pb-28 pt-18 md:pt-20">
+      <main id="top" className="page-with-header pb-28">
         <section className="w-full px-4 py-4 md:px-8 xl:px-12 md:py-8">
           {/* Breadcrumb */}
           <nav className="mb-4 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)] md:mb-6">

@@ -3,14 +3,17 @@
 import { useState } from "react";
 import {
   BottomDock,
-  CategoriesSection,
+  BrandsSection,
   DesktopTopBar,
+  FeaturesStrip,
+  FlashOffersSection,
   HeroSection,
+  HomeCategoriesSection,
   MobileDrawer,
   MobileTopBar,
-  PartnersSection,
-  ShopSection,
-  TrustSection,
+  NewArrivalsSection,
+  PopularProductsSection,
+  RecentlyViewedSection,
 } from "@/components/homepage-sections";
 
 
@@ -18,7 +21,7 @@ export function Homepage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="brand-shell brand-grid min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="brand-shell min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <DesktopTopBar
         mobileMenuOpen={mobileMenuOpen}
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
@@ -35,12 +38,15 @@ export function Homepage() {
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main id="top" className="pt-18 pb-28 md:pt-20 md:pb-0">
+      <main id="top" className="page-with-header">
         <HeroSection />
-        <PartnersSection />
-        <ShopSection />
-        <TrustSection />
-        <CategoriesSection />
+        <FeaturesStrip />
+        <HomeCategoriesSection />
+        <BrandsSection />
+        <FlashOffersSection />
+        <NewArrivalsSection />
+        <PopularProductsSection />
+        <RecentlyViewedSection />
       </main>
     </div>
   );

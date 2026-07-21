@@ -147,7 +147,7 @@ export function ContactPageClient() {
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main className="w-full px-3 pb-24 pt-20 md:px-5 md:pt-28">
+      <main className="page-with-header w-full px-3 pb-24 md:px-5">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
           <section className="overflow-hidden border border-[var(--border-soft)] bg-[var(--surface)]">
             <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">

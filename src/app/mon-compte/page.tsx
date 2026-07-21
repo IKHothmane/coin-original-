@@ -58,7 +58,7 @@ export default function MonComptePage() {
       <DesktopTopBar mobileMenuOpen={mobileMenuOpen} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
       <MobileDrawer mobileMenuOpen={mobileMenuOpen} onCloseMobileMenu={() => setMobileMenuOpen(false)} />
 
-      <main className="px-3 pb-24 pt-4 lg:px-5 lg:pb-10 lg:pt-10">
+      <main className="page-with-header px-3 pb-24 lg:px-5 lg:pb-10">
         <div className="mx-auto max-w-3xl">
           <div className="mb-8 flex items-center justify-between">
             <h1 className="font-[var(--font-display)] text-3xl uppercase tracking-wider">
