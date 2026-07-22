@@ -14,16 +14,15 @@ import {
   ShoppingCart,
   Star,
   Truck,
-  User,
   Wallet,
   X,
   Zap,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useFavorites } from "@/components/favorites-context";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { useAuth } from "@/components/auth-context";
 import type { CatalogProduct } from "@/components/catalog-data";
 import {
   featureItems,
@@ -124,6 +123,7 @@ export const siteNavLinks: NavLink[] = [
   { href: "/boutique?category=Accessoires", labelKey: "nav.accessoires" },
   { href: "/boutique?badge=Nouveaute", labelKey: "nav.nouveautes" },
   { href: "/boutique?promo=1", labelKey: "nav.promotions" },
+  { href: "/favoris", labelKey: "nav.favoris" },
   { href: "/contact", labelKey: "nav.contact" },
 ];
 
@@ -266,7 +266,6 @@ export function DesktopTopBar({
   onOpenMobileMenu,
 }: Pick<MenuActionProps, "mobileMenuOpen" | "onOpenMobileMenu">) {
   const { t } = useTranslation();
-  const { user, loading } = useAuth();
   const { cartCount, cartTotal } = useCart();
   const mounted = useMounted();
   const pathname = usePathname() ?? "/";
@@ -292,7 +291,7 @@ export function DesktopTopBar({
             <Link href="/contact" className="whitespace-nowrap">
               {t("nav.aide")}
             </Link>
-            <Link href="/mon-compte" className="hidden whitespace-nowrap lg:inline">
+            <Link href="/suivi" className="hidden whitespace-nowrap lg:inline">
               {t("nav.suivi")}
             </Link>
             <LanguageSwitcher />
@@ -333,22 +332,7 @@ export function DesktopTopBar({
         />
 
         <div className="ml-auto flex shrink-0 items-center gap-4 lg:gap-5">
-          {loading ? null : (
-            <Link
-              href={user ? "/mon-compte" : "/login"}
-              className="header-icon-btn"
-              aria-label={user ? t("nav.mon_compte") : t("nav.connexion")}
-            >
-              <User size={22} strokeWidth={1.8} aria-hidden="true" />
-              <span className="label hidden lg:flex">
-                <small>{user ? t("nav.mon_compte") : t("nav.connexion")}</small>
-                <span className="font-semibold text-white">
-                  {user ? user.displayName || t("nav.mon_compte") : t("nav.mon_compte")}
-                </span>
-              </span>
-            </Link>
-          )}
-          <Link href="/mon-compte" className="header-icon-btn hidden lg:inline-flex" aria-label={t("nav.favoris")}>
+          <Link href="/favoris" className="header-icon-btn hidden lg:inline-flex" aria-label={t("nav.favoris")}>
             <Heart size={22} strokeWidth={1.8} aria-hidden="true" />
             <span className="label">
               <small>&nbsp;</small>
@@ -396,7 +380,6 @@ export function MobileTopBar({
   onOpenMobileMenu,
 }: Pick<MenuActionProps, "onOpenMobileMenu">) {
   const { t } = useTranslation();
-  const { user, loading } = useAuth();
   const { cartCount } = useCart();
   const mounted = useMounted();
 
@@ -412,23 +395,14 @@ export function MobileTopBar({
           >
             <Menu size={20} aria-hidden="true" />
           </button>
-          <Link href="/" className="flex items-center gap-2" aria-label="Coin Original">
+          <Link href="/" className="flex items-center gap-1.5 sm:gap-2" aria-label="Coin Original">
             <ThemeLogo width={32} height={32} className="rounded-full object-cover" priority />
-            <span className="roca-display text-lg text-white">
+            <span className="roca-display text-sm whitespace-nowrap text-white sm:text-base">
               Coin <span className="text-[var(--primary)]">Original</span>
             </span>
           </Link>
         </div>
         <div className="flex items-center gap-1.5">
-          {loading ? null : (
-            <Link
-              href={user ? "/mon-compte" : "/login"}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-[var(--header-fg)]"
-              aria-label={user ? t("nav.mon_compte") : t("nav.connexion")}
-            >
-              <User size={20} aria-hidden="true" />
-            </Link>
-          )}
           <Link
             href="/panier"
             className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-[var(--header-fg)]"
@@ -463,7 +437,6 @@ export function MobileDrawer({
   onCloseMobileMenu,
 }: Pick<MenuActionProps, "mobileMenuOpen" | "onCloseMobileMenu">) {
   const { t } = useTranslation();
-  const { user, loading } = useAuth();
   const pathname = usePathname() ?? "/";
 
   if (!mobileMenuOpen) {
@@ -512,22 +485,6 @@ export function MobileDrawer({
             ))}
           </nav>
 
-          {!loading && user ? (
-            <Link
-              href="/mon-compte"
-              onClick={onCloseMobileMenu}
-              className="btn btn--outline w-full !border-[var(--header-border)] !text-[var(--header-fg)]"
-            >
-              <User size={16} aria-hidden="true" />
-              {t("nav.mon_compte")}
-            </Link>
-          ) : (
-            <Link href="/login" onClick={onCloseMobileMenu} className="btn btn--primary w-full">
-              <User size={16} aria-hidden="true" />
-              {t("nav.connexion")}
-            </Link>
-          )}
-
           <div className="mt-auto space-y-3">
             <div className="rounded-xl border border-[var(--header-border)] bg-[var(--header-soft)] p-3">
               <p className="mb-2.5 text-[10px] uppercase tracking-[0.14em] text-[#9a9aa0]">
@@ -572,7 +529,7 @@ export function HeroSection() {
         <div className="relative overflow-hidden bg-black">
           <div className="relative aspect-[16/5] min-h-[140px] w-full sm:min-h-[210px] lg:min-h-[300px]">
             <Image
-              src="/hero.webp"
+              src="/hero.png"
               alt="Hero Coin Original"
               fill
               priority
@@ -641,7 +598,7 @@ export function HomeCategoriesSection() {
         </Link>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-6">
-        {homeCategories.map((category) => (
+        {homeCategories.map((category, index) => (
           <Link
             key={category.title}
             href={category.href}
@@ -652,6 +609,7 @@ export function HomeCategoriesSection() {
                 src={category.image}
                 alt={category.title}
                 fill
+                priority={index === 0}
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
@@ -733,16 +691,38 @@ function discountPercent(product: CatalogProduct): string | null {
 export function StorefrontProductCard({
   product,
   showRating = false,
+  showWishlist = true,
 }: {
   product: CatalogProduct;
   showRating?: boolean;
+  showWishlist?: boolean;
 }) {
   const { t } = useTranslation();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const discount = discountPercent(product);
   const rating = popularRatings[product.slug];
+  const favoriteActive = isFavorite(product.slug);
 
   return (
-    <article className="product-card">
+    <article className="product-card relative">
+      {showWishlist ? (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            toggleFavorite(product.slug, product);
+          }}
+          className="wishlist-btn absolute right-2.5 top-2.5 z-10"
+          aria-label={favoriteActive ? t("product.favoris_retirer") : t("product.favoris_ajouter")}
+          title={favoriteActive ? t("product.favoris_retirer") : t("product.favoris_ajouter")}
+        >
+          <Heart
+            size={15}
+            className={favoriteActive ? "fill-[#ff571a] text-[#ff571a]" : ""}
+          />
+        </button>
+      ) : null}
       <Link href={getProductHref(product.slug)} className="group flex h-full flex-col">
         <div className="product-card__media">
           <Image
@@ -761,9 +741,6 @@ export function StorefrontProductCard({
               <span className="badge-pill badge-pill--new">{product.badge.label}</span>
             ) : null}
           </div>
-          <span className="wishlist-btn absolute right-2.5 top-2.5" aria-hidden="true">
-            <Heart size={15} />
-          </span>
         </div>
         <div className="product-card__body">
           <h3 className="product-card__name text-[var(--foreground)]">{product.name}</h3>

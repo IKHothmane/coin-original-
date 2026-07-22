@@ -34,6 +34,8 @@ import {
 import { type CatalogProduct, catalogProducts } from "@/components/catalog-data";
 import { fetchCatalogProductBySlugWithFallback, fetchCatalogProductsWithFallback } from "@/lib/products/storefront";
 import { useCart } from "@/components/cart-context";
+import { useFavorites } from "@/components/favorites-context";
+import { useTranslation } from "@/lib/i18n/use-translation";
 import { getProductHref } from "@/lib/products/links";
 
 function cn(...classes: Array<string | false | null | undefined>) {
@@ -181,6 +183,7 @@ function ProductCardSmall({ product }: { product: CatalogProduct }) {
 
 export function ProductPage({ product, slug }: ProductPageProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const { addToCart } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [fetchedProduct, setFetchedProduct] = useState<CatalogProduct | null>(product ?? null);
@@ -199,7 +202,7 @@ export function ProductPage({ product, slug }: ProductPageProps) {
     value: false,
   });
   const [addedToCart, setAddedToCart] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   useEffect(() => {
     let isMounted = true;
@@ -740,11 +743,21 @@ export function ProductPage({ product, slug }: ProductPageProps) {
                 {/* Wishlist toggle */}
                 <button
                   type="button"
-                  onClick={() => setIsFavorite((value) => !value)}
-                  className="flex w-full items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--muted)] hover:text-[#ff571a] transition-colors py-1.5"
+                  disabled={!activeProduct}
+                  onClick={() => activeProduct && toggleFavorite(activeProduct.slug, activeProduct)}
+                  className="flex w-full items-center justify-center gap-2 py-1.5 text-xs font-bold uppercase tracking-wider text-[var(--muted)] transition-colors hover:text-[#ff571a] disabled:opacity-50"
                 >
-                  <Heart size={14} className={isFavorite ? "fill-[#ff571a] text-[#ff571a]" : ""} />
-                  {isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+                  <Heart
+                    size={14}
+                    className={
+                      activeProduct && isFavorite(activeProduct.slug)
+                        ? "fill-[#ff571a] text-[#ff571a]"
+                        : ""
+                    }
+                  />
+                  {activeProduct && isFavorite(activeProduct.slug)
+                    ? t("product.favoris_retirer")
+                    : t("product.favoris_ajouter")}
                 </button>
               </div>
             </div>

@@ -72,6 +72,16 @@ export const translations: Record<Lang, Record<string, string>> = {
     "cart.diminuer_quantite": "Diminuer la quantite de",
     "cart.augmenter_quantite": "Augmenter la quantite de",
 
+    // Favoris
+    "favoris.title": "Vos favoris",
+    "favoris.subtitle": "Retrouve tes articles preferes en un clin d'oeil.",
+    "favoris.empty": "Aucun favori",
+    "favoris.description": "Ajoute des articles a tes favoris depuis la boutique pour les retrouver ici.",
+    "favoris.boutique": "Decouvrir la boutique",
+    "favoris.retirer": "Retirer des favoris",
+    "favoris.vider": "Vider les favoris",
+    "favoris.chargement": "Chargement des favoris...",
+
     // Header / Nav
     "nav.boutique": "Boutique",
     "nav.contact": "Contact",
@@ -257,6 +267,16 @@ export const translations: Record<Lang, Record<string, string>> = {
     "cart.unite": "وحدة",
     "cart.diminuer_quantite": "تقليل كمية",
     "cart.augmenter_quantite": "زيادة كمية",
+
+    // Favoris
+    "favoris.title": "المفضلة",
+    "favoris.subtitle": "اعثر على منتجاتك المفضلة بسهولة.",
+    "favoris.empty": "لا توجد مفضلات",
+    "favoris.description": "أضف منتجات إلى مفضلتك من المتجر لتجدها هنا.",
+    "favoris.boutique": "اكتشف المتجر",
+    "favoris.retirer": "إزالة من المفضلة",
+    "favoris.vider": "إفراغ المفضلة",
+    "favoris.chargement": "جاري تحميل المفضلة...",
 
     // Header / Nav
     "nav.boutique": "متجر",

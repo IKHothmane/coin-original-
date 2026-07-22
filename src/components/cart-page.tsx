@@ -9,13 +9,19 @@ import {
   DesktopTopBar,
   MobileDrawer,
   MobileTopBar,
-  ThemeLogo,
 } from "@/components/homepage-sections";
 import { useCart } from "@/components/cart-context";
 
 function formatPrice(value: number) {
   return `${value.toLocaleString("fr-FR")} DH`;
 }
+
+const reassurances = [
+  { icon: ShieldCheck, title: "Produits authentiques", sub: "100% originaux et garantis" },
+  { icon: Truck, title: "Livraison rapide", sub: "Partout au Maroc 24h - 72h" },
+  { icon: RefreshCw, title: "Retours faciles", sub: "14 jours pour changer d'avis" },
+  { icon: Headphones, title: "Support 24/7", sub: "Notre equipe est a votre ecoute" },
+] as const;
 
 function CartLine({
   item,
@@ -37,78 +43,65 @@ function CartLine({
   onRemove: () => void;
 }) {
   return (
-    <article className="relative flex flex-col gap-4 border border-[var(--border-soft)] bg-[var(--surface)] p-4 rounded-xl md:flex-row items-center md:justify-between">
-      {/* Product Image Frame */}
-      <div className="flex items-center gap-4 w-full md:w-auto">
-        <div className="relative h-28 w-28 sm:h-32 sm:w-32 overflow-hidden border border-[var(--border-soft)] bg-white rounded-lg shrink-0">
+    <article className="flex flex-col gap-4 rounded-xl border border-[var(--border-soft)] bg-[var(--surface)] p-4 shadow-[var(--card-shadow)] sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-4">
+        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-[var(--border-soft)] bg-[var(--surface-soft)] sm:h-28 sm:w-28">
           <Image
             src={item.image}
             alt={item.name}
             fill
-            sizes="(max-width: 768px) 112px, 128px"
-            className="object-contain"
+            sizes="(max-width: 640px) 96px, 112px"
+            className="object-cover"
           />
         </div>
 
-        {/* Product details */}
-        <div className="space-y-1">
-          <p className="font-mono text-[9px] uppercase tracking-wider text-[var(--muted)]">
-            COIN ORIGINAL
+        <div className="min-w-0 space-y-1">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
+            {item.brand}
           </p>
-          <h3 className="font-[var(--font-display)] text-base font-bold uppercase leading-tight text-[var(--foreground)]">
+          <h3 className="text-sm font-bold uppercase leading-snug text-[var(--foreground)]">
             {item.name}
           </h3>
-          <p className="text-xs text-[var(--muted)]">
-            Taille : {item.size}
-          </p>
-          <div className="pt-0.5">
-            <span className="bg-[#ff571a]/10 text-[#ff571a] px-2 py-0.5 text-[9px] rounded font-bold uppercase">
-              {formatPrice(item.price)} / unité
-            </span>
-          </div>
+          <p className="text-xs text-[var(--muted)]">Taille : {item.size}</p>
+          <p className="text-xs text-[var(--muted)]">{formatPrice(item.price)} / unite</p>
         </div>
       </div>
 
-      {/* Right operations section */}
-      <div className="flex items-center justify-between w-full md:w-auto md:gap-8">
-        {/* Quantity Stepper */}
-        <div className="inline-flex items-center border border-[var(--border-soft)] bg-[var(--surface-soft)] rounded overflow-hidden">
+      <div className="flex items-center justify-between gap-4 sm:gap-6">
+        <div className="inline-flex items-center overflow-hidden rounded-lg border border-[var(--border-soft)] bg-[var(--surface-soft)]">
           <button
             type="button"
             onClick={onDecrease}
-            className="inline-flex h-8 w-8 items-center justify-center transition-colors hover:bg-[var(--border-soft)]"
-            aria-label={`Diminuer la quantité de ${item.name}`}
+            className="inline-flex h-9 w-9 items-center justify-center transition-colors hover:text-[var(--primary)]"
+            aria-label={`Diminuer la quantite de ${item.name}`}
           >
-            <Minus size={12} />
+            <Minus size={14} aria-hidden="true" />
           </button>
-          <span className="inline-flex h-8 min-w-8 items-center justify-center text-xs font-mono">
+          <span className="inline-flex h-9 min-w-9 items-center justify-center text-sm font-bold">
             {item.quantity}
           </span>
           <button
             type="button"
             onClick={onIncrease}
-            className="inline-flex h-8 w-8 items-center justify-center transition-colors hover:bg-[var(--border-soft)]"
-            aria-label={`Augmenter la quantité de ${item.name}`}
+            className="inline-flex h-9 w-9 items-center justify-center transition-colors hover:text-[var(--primary)]"
+            aria-label={`Augmenter la quantite de ${item.name}`}
           >
-            <Plus size={12} />
+            <Plus size={14} aria-hidden="true" />
           </button>
         </div>
 
-        {/* Price & Remove */}
-        <div className="flex items-center gap-4">
-          <span className="font-mono text-lg font-bold text-[#ff571a]">
-            {formatPrice(item.price * item.quantity)}
-          </span>
+        <span className="price whitespace-nowrap text-base">
+          {formatPrice(item.price * item.quantity)}
+        </span>
 
-          <button
-            type="button"
-            onClick={onRemove}
-            className="inline-flex h-8 w-8 items-center justify-center border border-[var(--border-soft)] rounded-md text-[var(--muted)] hover:text-red-500 hover:border-red-500 transition-colors"
-            aria-label={`Supprimer ${item.name}`}
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border-soft)] text-[var(--muted)] transition-colors hover:border-red-500 hover:text-red-500"
+          aria-label={`Supprimer ${item.name}`}
+        >
+          <Trash2 size={15} aria-hidden="true" />
+        </button>
       </div>
     </article>
   );
@@ -132,12 +125,14 @@ export function CartPage() {
   );
 
   return (
-    <div className="brand-shell brand-grid min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="brand-shell min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <DesktopTopBar
         mobileMenuOpen={mobileMenuOpen}
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
-      <MobileTopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+      <div className="md:hidden">
+        <MobileTopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+      </div>
       <MobileDrawer
         mobileMenuOpen={mobileMenuOpen}
         onCloseMobileMenu={() => setMobileMenuOpen(false)}
@@ -147,196 +142,175 @@ export function CartPage() {
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main className="page-with-header min-h-screen w-full px-4 pb-24 md:px-8 xl:px-12 space-y-6">
-        {/* Breadcrumb */}
-        <nav className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
-          <Link href="/" className="hover:text-[var(--primary)]">
-            Accueil
-          </Link>
-          <span>&gt;</span>
-          <span className="text-[var(--foreground)] font-bold">
-            Panier
-          </span>
-        </nav>
+      <main className="page-with-header">
+        <section className="container-site py-8 md:py-12">
+          {/* Breadcrumb */}
+          <nav className="mb-4 flex items-center gap-2 text-xs text-[var(--muted)]">
+            <Link href="/" className="transition-colors hover:text-[var(--primary)]">
+              Accueil
+            </Link>
+            <span>/</span>
+            <span className="font-semibold text-[var(--foreground)]">Panier</span>
+          </nav>
 
-        {/* Title row */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 border-b border-[var(--border-soft)] pb-4">
-          <div>
-            <h1 className="font-[var(--font-display)] text-2xl md:text-3xl font-black uppercase tracking-tight text-[var(--foreground)]">
-              Votre Panier
-            </h1>
-            <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
-              {!isReady
-                ? "Chargement..."
-                : itemCount === 0
-                  ? "Aucun article pour le moment"
-                  : `${itemCount} article${itemCount > 1 ? "s" : ""} dans ton panier`}
-            </p>
+          {/* Title row */}
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between md:mb-8">
+            <div>
+              <span className="eyebrow--orange">Coin Original</span>
+              <h1 className="section-title mt-2.5 text-[var(--foreground)]">Votre panier</h1>
+              <p className="mt-2 text-sm text-[var(--muted)]">
+                {!isReady
+                  ? "Chargement..."
+                  : itemCount === 0
+                    ? "Aucun article pour le moment"
+                    : `${itemCount} article${itemCount > 1 ? "s" : ""} dans ton panier`}
+              </p>
+            </div>
+            {isReady && items.length > 0 ? (
+              <button
+                type="button"
+                onClick={clearCart}
+                className="inline-flex w-fit items-center gap-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[var(--muted)] transition-colors hover:text-red-500"
+              >
+                <Trash2 size={13} aria-hidden="true" />
+                Vider le panier
+              </button>
+            ) : null}
           </div>
-          {isReady && items.length > 0 ? (
-            <button
-              type="button"
-              onClick={clearCart}
-              className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)] hover:text-red-500 transition-colors"
-            >
-              <Trash2 size={12} className="text-[#ff571a]" />
-              Vider le panier
-            </button>
-          ) : null}
-        </div>
 
-        {/* Grid layout */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8 items-start">
-          {/* Cart Lines */}
-          <section className="space-y-4 lg:col-span-8">
-            {!isReady ? (
-              <div className="border border-[var(--border-soft)] bg-[var(--surface)] px-5 py-12 text-center rounded-xl">
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
-                  Chargement du panier...
-                </p>
-              </div>
-            ) : items.length === 0 ? (
-              <div className="border border-[var(--border-soft)] bg-[var(--surface)] px-5 py-16 text-center rounded-xl space-y-4">
-                <p className="font-[var(--font-display)] text-2xl uppercase text-[var(--foreground)] font-bold">
-                  Panier vide
-                </p>
-                <p className="text-xs text-[var(--muted)] max-w-sm mx-auto">
-                  Ajoute des produits depuis la boutique pour commencer ta commande.
-                </p>
-                <Link
-                  href="/boutique"
-                  className="inline-flex items-center gap-2 rounded bg-[#ff571a] px-5 py-3 text-xs font-bold uppercase tracking-wider text-white hover:bg-[#e0450a] transition-all"
-                >
-                  Retour à la boutique
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {items.map((item) => (
-                  <CartLine
-                    key={item.id}
-                    item={item}
-                    onDecrease={() => updateQuantity(item.id, -1)}
-                    onIncrease={() => updateQuantity(item.id, 1)}
-                    onRemove={() => removeFromCart(item.id)}
-                  />
-                ))}
-
-                {/* Back to Shopping link */}
-                <div className="pt-2">
-                  <Link
-                    href="/boutique"
-                    className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--muted)] hover:text-[#ff571a] transition-colors"
-                  >
-                    <ArrowLeft size={13} />
-                    Continuer mes achats
+          {/* Grid layout */}
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-8">
+            {/* Cart Lines */}
+            <section className="space-y-3 lg:col-span-8">
+              {!isReady ? (
+                <div className="surface-panel px-5 py-12 text-center">
+                  <p className="text-sm text-[var(--muted)]">Chargement du panier...</p>
+                </div>
+              ) : items.length === 0 ? (
+                <div className="surface-panel px-6 py-14 text-center">
+                  <p className="section-title text-[var(--foreground)]">Panier vide</p>
+                  <p className="mx-auto mt-3 max-w-sm text-sm text-[var(--muted)]">
+                    Ajoute des produits depuis la boutique pour commencer ta commande.
+                  </p>
+                  <Link href="/boutique" className="btn btn--primary mt-6">
+                    Retour a la boutique
                   </Link>
                 </div>
-              </div>
-            )}
-          </section>
+              ) : (
+                <div className="space-y-3">
+                  {items.map((item) => (
+                    <CartLine
+                      key={item.id}
+                      item={item}
+                      onDecrease={() => updateQuantity(item.id, -1)}
+                      onIncrease={() => updateQuantity(item.id, 1)}
+                      onRemove={() => removeFromCart(item.id)}
+                    />
+                  ))}
 
-          {/* Checkout sidebar */}
-          <aside className="lg:col-span-4">
-            <div className="sticky top-24 border border-[var(--border-soft)] bg-[var(--surface)] p-5 md:p-6 rounded-xl space-y-6 shadow-md">
-              <div className="mb-4 flex items-center gap-2 border-b border-[var(--border-soft)] pb-3">
-                <ShieldCheck size={18} className="text-[#ff571a]" />
-                <h2 className="font-[var(--font-display)] text-sm font-bold uppercase tracking-wider text-[var(--foreground)]">
-                  Résumé de commande
-                </h2>
-              </div>
-
-              <div className="space-y-4 border-b border-[var(--border-soft)] pb-4 text-xs font-mono">
-                <div className="flex items-center justify-between">
-                  <span className="text-[var(--muted)]">SOUS-TOTAL</span>
-                  <span className="text-[var(--foreground)] font-bold">
-                    {!isReady ? "—" : formatPrice(cartTotal)}
-                  </span>
+                  {/* Back to Shopping link */}
+                  <div className="pt-2">
+                    <Link href="/boutique" className="section-link">
+                      <ArrowLeft size={14} aria-hidden="true" />
+                      Continuer mes achats
+                    </Link>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-[var(--muted)]">LIVRAISON</span>
-                  <span className="border border-[#ff571a] px-2 py-0.5 text-[9px] uppercase tracking-wider text-[#ff571a] font-bold rounded">
-                    À confirmer par téléphone
-                  </span>
-                </div>
-              </div>
+              )}
+            </section>
 
-              <div className="flex items-end justify-between gap-4 py-2">
-                <span className="font-[var(--font-display)] text-sm font-bold uppercase text-[var(--foreground)]">TOTAL</span>
-                <div className="text-right">
-                  <span className="block font-mono text-2xl text-[#ff571a] font-extrabold">
-                    {!isReady ? "—" : formatPrice(cartTotal)}
+            {/* Checkout sidebar */}
+            <aside className="lg:col-span-4">
+              <div className="surface-panel sticky top-24 space-y-5 p-5 md:p-6">
+                <div className="flex items-center gap-3 border-b border-[var(--border-soft)] pb-4">
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary-soft)] text-[var(--primary)]">
+                    <ShieldCheck size={18} aria-hidden="true" />
                   </span>
-                  <span className="text-[9px] uppercase tracking-wider text-[var(--muted)]">
-                    TVA incluse
-                  </span>
+                  <h2 className="text-sm font-extrabold uppercase tracking-[0.06em] text-[var(--foreground)]">
+                    Resume de commande
+                  </h2>
                 </div>
-              </div>
 
-              <div className="space-y-4">
+                <div className="space-y-3 border-b border-[var(--border-soft)] pb-4 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[var(--muted)]">Sous-total</span>
+                    <span className="font-semibold text-[var(--foreground)]">
+                      {!isReady ? "—" : formatPrice(cartTotal)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-[var(--muted)]">Livraison</span>
+                    <span className="rounded-md bg-[var(--primary-soft)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--primary)]">
+                      A confirmer par telephone
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-end justify-between gap-4">
+                  <span className="text-sm font-extrabold uppercase tracking-[0.06em] text-[var(--foreground)]">
+                    Total
+                  </span>
+                  <div className="text-right">
+                    <span className="price block text-2xl">
+                      {!isReady ? "—" : formatPrice(cartTotal)}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-[0.08em] text-[var(--muted)]">
+                      TVA incluse
+                    </span>
+                  </div>
+                </div>
+
                 <Link
                   href={items.length === 0 ? "/boutique" : "/checkout"}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded bg-[#ff571a] px-5 py-3.5 font-[var(--font-display)] text-xs font-bold uppercase tracking-wider text-white hover:bg-[#e0450a] transition-all active:scale-98"
+                  className="btn btn--primary w-full"
                 >
                   {items.length === 0 ? "Continuer mes achats" : "Valider ma commande"}
-                  <ArrowRight size={14} />
+                  <ArrowRight size={16} aria-hidden="true" />
                 </Link>
 
-                <div className="border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 rounded-lg">
+                <div className="rounded-lg border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4">
                   <div className="flex items-start gap-3">
-                    <Truck size={18} className="mt-0.5 text-[#ff571a] shrink-0" />
+                    <Truck size={18} className="mt-0.5 shrink-0 text-[var(--primary)]" aria-hidden="true" />
                     <div>
-                      <p className="text-xs font-bold uppercase text-[var(--foreground)] tracking-wide">
-                        Paiement à la livraison
+                      <p className="text-xs font-bold uppercase tracking-[0.05em] text-[var(--foreground)]">
+                        Paiement a la livraison
                       </p>
-                      <p className="mt-1 text-[10px] leading-4 text-[var(--muted)]">
-                        Tu ne payes rien maintenant. Le paiement se fait à la livraison après
+                      <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+                        Tu ne payes rien maintenant. Le paiement se fait a la livraison apres
                         inspection de ton colis.
                       </p>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-center gap-2 text-center text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] pt-1">
-                <Headphones size={13} className="text-[#ff571a]" />
-                <span>Assistance 24/7 disponible</span>
+                <div className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--muted)]">
+                  <Headphones size={13} className="text-[var(--primary)]" aria-hidden="true" />
+                  <span>Assistance 24/7 disponible</span>
+                </div>
               </div>
-            </div>
-          </aside>
-        </div>
+            </aside>
+          </div>
 
-        {/* Propositions row at the bottom */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 border-t border-[var(--border-soft)] pt-8">
-          <div className="flex items-center gap-3 border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 rounded-xl">
-            <ShieldCheck size={20} className="text-[#ff571a] shrink-0" />
-            <div>
-              <p className="text-xs font-bold uppercase text-[var(--foreground)]">PRODUITS AUTHENTIQUES</p>
-              <p className="text-[10px] text-[var(--muted)]">100% originaux et garantis</p>
-            </div>
+          {/* Reassurances (style bandeau de garanties de l'accueil) */}
+          <div className="surface-panel mt-10 grid grid-cols-1 gap-x-6 gap-y-4 p-5 sm:grid-cols-2 lg:grid-cols-4 lg:p-6 md:mt-12">
+            {reassurances.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.title} className="flex items-center gap-3.5">
+                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--primary-soft)] text-[var(--primary)]">
+                    <Icon size={20} aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-extrabold uppercase tracking-[0.05em] text-[var(--foreground)]">
+                      {item.title}
+                    </p>
+                    <p className="mt-0.5 text-xs text-[var(--muted)]">{item.sub}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <div className="flex items-center gap-3 border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 rounded-xl">
-            <Truck size={20} className="text-[#ff571a] shrink-0" />
-            <div>
-              <p className="text-xs font-bold uppercase text-[var(--foreground)]">LIVRAISON RAPIDE</p>
-              <p className="text-[10px] text-[var(--muted)]">Partout au Maroc 24h - 72h</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 rounded-xl">
-            <RefreshCw size={18} className="text-[#ff571a] shrink-0" />
-            <div>
-              <p className="text-xs font-bold uppercase text-[var(--foreground)]">RETOURS FACILES</p>
-              <p className="text-[10px] text-[var(--muted)]">14 jours pour changer d'avis</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 rounded-xl">
-            <Headphones size={20} className="text-[#ff571a] shrink-0" />
-            <div>
-              <p className="text-xs font-bold uppercase text-[var(--foreground)]">SUPPORT 24/7</p>
-              <p className="text-[10px] text-[var(--muted)]">Notre équipe est à votre écoute</p>
-            </div>
-          </div>
-        </div>
+        </section>
       </main>
     </div>
   );

@@ -2,21 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Heart,
-  Search,
-  ShoppingCart,
-} from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   BottomDock,
   DesktopTopBar,
   MobileDrawer,
   MobileTopBar,
-  ThemeLogo,
+  StorefrontProductCard,
 } from "@/components/homepage-sections";
 import {
   PRODUCTS_PER_PAGE,
@@ -25,19 +18,7 @@ import {
   type BoutiqueSortValue,
 } from "@/components/boutique-page-data";
 import { fetchCatalogProductsWithFallback } from "@/lib/products/storefront";
-import { getProductHref } from "@/lib/products/links";
-
-function badgeToneClasses(tone: NonNullable<BoutiqueProduct["badge"]>["tone"]) {
-  if (tone === "tertiary") {
-    return "bg-red-600 text-white";
-  }
-
-  if (tone === "error") {
-    return "bg-[#7b7b7b] text-white";
-  }
-
-  return "bg-[#1f8f4d] text-white";
-}
+import { useTranslation } from "@/lib/i18n/use-translation";
 
 function parsePrice(price: string) {
   return Number(price.replace(/[^\d]/g, ""));
@@ -57,86 +38,43 @@ function sortProducts(products: BoutiqueProduct[], sortBy: BoutiqueSortValue) {
   return sortedProducts;
 }
 
-import { useTranslation } from "@/lib/i18n/use-translation";
+const categoryFilters = [
+  { value: "Chaussures", labelKey: "nav.chaussures" },
+  { value: "Vetements", labelKey: "nav.vetements" },
+  { value: "Accessoires", labelKey: "nav.accessoires" },
+] as const;
 
-function BoutiqueCard({ product }: { product: BoutiqueProduct }) {
+function CategoryChips({ activeCategory }: { activeCategory: string | null }) {
   const { t } = useTranslation();
+  const chips = [
+    {
+      href: "/boutique",
+      label: t("sections.voir_tout"),
+      active: !activeCategory,
+    },
+    ...categoryFilters.map((category) => ({
+      href: `/boutique?category=${encodeURIComponent(category.value)}`,
+      label: t(category.labelKey),
+      active: activeCategory?.toLowerCase() === category.value.toLowerCase(),
+    })),
+  ];
+
   return (
-    <Link href={getProductHref(product.slug)} className="group block border border-[var(--border-soft)] bg-[var(--surface)] transition-all hover:border-[var(--primary-strong)]">
-      <div className="product-image-frame aspect-[3/4]">
-        <Image
-          alt={product.name}
-          src={product.image}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-        <div className="absolute left-2 top-2 z-20 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[var(--border-soft)] bg-black/30 sm:left-3 sm:top-3 sm:h-12 sm:w-12">
-          <ThemeLogo width={48} height={48} className="h-full w-full object-cover" />
-        </div>
-        {product.badge ? (
-          <div
-            className={`absolute right-2 top-2 px-2 py-1 font-mono text-[9px] uppercase sm:right-4 sm:top-4 sm:text-[10px] ${badgeToneClasses(product.badge.tone)}`}
-          >
-            {product.badge.label}
-          </div>
-        ) : null}
-        <div className="absolute bottom-2 right-2 translate-y-12 transition-transform duration-300 group-hover:translate-y-0 sm:bottom-4 sm:right-4">
-          <span
-            className="inline-flex border-2 border-[var(--primary)] bg-[var(--surface)] p-2 text-[var(--primary)] transition-all hover:bg-[var(--primary-strong)] hover:text-[var(--background)] sm:p-3"
-            aria-label={`${t("product.voir")} ${product.name}`}
-          >
-            <ShoppingCart size={16} className="sm:h-5 sm:w-5" />
-          </span>
-        </div>
-      </div>
-      <div className={`space-y-1.5 p-2.5 sm:space-y-2 sm:p-4 ${product.soldOut ? "opacity-60" : ""}`}>
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h4 className="font-mono text-[8px] uppercase tracking-[0.2em] text-[var(--muted)] sm:text-[10px]">
-              {product.brand}
-            </h4>
-            <h3 className="font-[var(--font-display)] text-base uppercase leading-tight transition-colors group-hover:text-[var(--primary)] sm:text-2xl">
-              {product.name}
-            </h3>
-          </div>
-          <button
-            type="button"
-            className="text-[var(--muted)] transition-colors hover:text-red-500"
-            aria-label={`Ajouter ${product.name} aux favoris`}
-            onClick={(e) => e.preventDefault()}
-          >
-            <Heart size={14} className="sm:h-[18px] sm:w-[18px]" />
-          </button>
-        </div>
-        <div className="flex items-end gap-2">
-          {product.compareAtPrice ? (
-            <span className="font-mono text-[10px] uppercase text-[var(--muted)] line-through sm:text-xs">
-              {product.compareAtPrice}
-            </span>
-          ) : null}
-          <span
-            className={`px-2 py-1 font-[var(--font-display)] text-sm tracking-tight sm:px-3 sm:text-xl ${
-              product.soldOut
-                ? "bg-[var(--surface-strong)] text-[var(--muted)]"
-                : "bg-[var(--primary-strong)] text-[var(--background)]"
-            }`}
-          >
-            {product.price}
-          </span>
-        </div>
-        <div className="flex gap-1.5 pt-1.5 sm:gap-2 sm:pt-2">
-          {product.sizes.map((size) => (
-            <span
-              key={size}
-              className="border border-[var(--border-soft)] px-1.5 py-0.5 font-mono text-[8px] sm:px-2 sm:text-[10px]"
-            >
-              {size}
-            </span>
-          ))}
-        </div>
-      </div>
-    </Link>
+    <div className="mb-6 flex flex-wrap items-center gap-2 md:mb-8">
+      {chips.map((chip) => (
+        <Link
+          key={chip.href}
+          href={chip.href}
+          className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.06em] transition-colors ${
+            chip.active
+              ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+              : "border-[var(--border-soft)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
+          }`}
+        >
+          {chip.label}
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -144,48 +82,45 @@ function BoutiqueHeader({
   searchQuery,
   onSearchChange,
   categoryFilter,
-  onClearCategory,
 }: {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   categoryFilter: string | null;
-  onClearCategory: () => void;
 }) {
   const { t } = useTranslation();
   return (
-    <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 className="font-[var(--font-display)] text-3xl uppercase text-[var(--primary)] sm:text-4xl md:text-5xl">
+    <div className="mb-6 flex flex-col gap-5 md:mb-8 lg:flex-row lg:items-end lg:justify-between">
+      <div className="max-w-xl">
+        <span className="eyebrow--orange">Coin Original</span>
+        <h1 className="section-title mt-2.5 text-[var(--foreground)]">
           {categoryFilter ? categoryFilter : t("boutique.title")}
         </h1>
-        <p className="mt-1.5 max-w-2xl text-xs text-[var(--muted)] sm:mt-2 sm:text-sm md:text-base">
+        <p className="mt-2 text-sm text-[var(--muted)]">
           {categoryFilter
-            ? `Découvrez notre sélection de ${categoryFilter.toLowerCase()}.`
-            : "La selection streetwear premium de Coin Original, inspiree de ton design boutique."}
+            ? `Decouvre notre selection de ${categoryFilter.toLowerCase()}.`
+            : "La selection streetwear premium de Coin Original : sneakers, vetements et accessoires."}
         </p>
         {categoryFilter && (
-          <button
-            onClick={onClearCategory}
-            className="mt-2 inline-flex items-center gap-1 text-xs text-[var(--primary)] hover:underline"
-          >
-            ← Voir tous les produits
-          </button>
+          <Link href="/boutique" className="section-link mt-3">
+            <ArrowLeft size={14} aria-hidden="true" />
+            {t("sections.voir_tout")}
+          </Link>
         )}
       </div>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <div className="relative">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder={t("boutique.search")}
-            className="w-full border border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 pr-10 text-xs outline-none transition-all focus:border-[var(--primary-strong)] sm:w-56 sm:px-4 sm:py-3 sm:pr-11 sm:text-sm"
-          />
-          <Search
-            size={16}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] sm:h-[18px] sm:w-[18px]"
-          />
-        </div>
+      <div className="flex w-full items-stretch overflow-hidden rounded-full border border-[var(--border-soft)] bg-[var(--surface)] transition-colors focus-within:border-[var(--primary)] lg:max-w-sm">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(event) => onSearchChange(event.target.value)}
+          placeholder={t("boutique.search")}
+          className="w-full min-w-0 bg-transparent px-5 py-2.5 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted)]"
+        />
+        <span
+          className="inline-flex w-12 shrink-0 items-center justify-center bg-[var(--primary)] text-white"
+          aria-hidden="true"
+        >
+          <Search size={18} strokeWidth={2.4} />
+        </span>
       </div>
     </div>
   );
@@ -204,18 +139,22 @@ function BoutiqueToolbar({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="mb-5 flex flex-col gap-2 border-b border-[var(--border-soft)] pb-5 sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:pb-6">
-      <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--muted)] sm:text-[10px]">
-        {t("boutique.affichage")} {shownCount} {t("boutique.sur")} {totalCount} {t("boutique.produits")}
+    <div className="surface-panel mb-6 flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between md:mb-8">
+      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">
+        {t("boutique.affichage")}{" "}
+        <span className="text-[var(--foreground)]">{shownCount}</span>{" "}
+        {t("boutique.sur")}{" "}
+        <span className="text-[var(--foreground)]">{totalCount}</span>{" "}
+        {t("boutique.produits")}
       </p>
-      <div className="flex items-center gap-2">
-        <span className="font-mono text-[9px] uppercase tracking-[0.16em] sm:text-[10px]">
+      <label className="flex items-center gap-2.5">
+        <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">
           {t("boutique.trier_par")}
         </span>
         <select
           value={sortBy}
           onChange={(event) => onSortChange(event.target.value as BoutiqueSortValue)}
-          className="cursor-pointer bg-transparent text-xs text-[var(--primary)] outline-none sm:text-sm"
+          className="cursor-pointer rounded-lg border border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2 text-xs font-bold uppercase tracking-[0.04em] text-[var(--foreground)] outline-none transition-colors focus:border-[var(--primary)]"
         >
           {sortOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -223,7 +162,7 @@ function BoutiqueToolbar({
             </option>
           ))}
         </select>
-      </div>
+      </label>
     </div>
   );
 }
@@ -231,14 +170,17 @@ function BoutiqueToolbar({
 function EmptyResults({ searchQuery }: { searchQuery: string }) {
   const { t } = useTranslation();
   return (
-    <div className="border border-[var(--border-soft)] bg-[var(--surface)] px-5 py-10 text-center">
-      <p className="font-[var(--font-display)] text-2xl uppercase text-[var(--primary)]">
+    <div className="surface-panel px-6 py-14 text-center">
+      <p className="section-title text-[var(--foreground)]">
         {t("boutique.aucun_produit")}
       </p>
-      <p className="mt-3 text-sm text-[var(--muted)]">
-        Aucun resultat pour &quot;{searchQuery}&quot;. Essaie un autre mot-cle ou
-        change le tri.
+      <p className="mx-auto mt-3 max-w-md text-sm text-[var(--muted)]">
+        Aucun resultat pour &quot;{searchQuery}&quot;. Essaie un autre mot-cle
+        ou reinitialise les filtres.
       </p>
+      <Link href="/boutique" className="btn btn--primary mt-6">
+        {t("sections.voir_tout")}
+      </Link>
     </div>
   );
 }
@@ -259,24 +201,28 @@ function Pagination({
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
 
   return (
-    <nav className="mt-10 flex items-center justify-center gap-3 border-t border-[var(--border-soft)] pt-5 sm:mt-12 sm:gap-4 sm:pt-6">
+    <nav
+      className="mt-10 flex items-center justify-center gap-2 md:mt-12"
+      aria-label="Pagination"
+    >
       <button
         type="button"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="inline-flex h-9 w-9 items-center justify-center border border-[var(--border-soft)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-40 sm:h-10 sm:w-10"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border-soft)] bg-[var(--surface)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-40"
+        aria-label="Page precedente"
       >
-        <ChevronLeft size={16} className="sm:h-[18px] sm:w-[18px]" />
+        <ChevronLeft size={18} aria-hidden="true" />
       </button>
       {pages.map((page) => (
         <button
           key={page}
           type="button"
           onClick={() => onPageChange(page)}
-          className={`h-9 w-9 border font-mono text-[9px] transition-colors sm:h-10 sm:w-10 sm:text-[10px] ${
+          className={`h-10 w-10 rounded-lg border text-sm font-bold transition-colors ${
             currentPage === page
-              ? "border-[var(--primary)] bg-[var(--primary-strong)] text-[var(--background)]"
-              : "border-[var(--border-soft)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
+              ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+              : "border-[var(--border-soft)] bg-[var(--surface)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
           }`}
         >
           {page}
@@ -286,9 +232,10 @@ function Pagination({
         type="button"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="inline-flex h-9 w-9 items-center justify-center border border-[var(--border-soft)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-40 sm:h-10 sm:w-10"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border-soft)] bg-[var(--surface)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-40"
+        aria-label="Page suivante"
       >
-        <ChevronRight size={16} className="sm:h-[18px] sm:w-[18px]" />
+        <ChevronRight size={18} aria-hidden="true" />
       </button>
     </nav>
   );
@@ -405,12 +352,14 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
   };
 
   return (
-    <div className="brand-shell brand-grid min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="brand-shell min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <DesktopTopBar
         mobileMenuOpen={mobileMenuOpen}
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
-      <MobileTopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+      <div className="md:hidden">
+        <MobileTopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+      </div>
       <MobileDrawer
         mobileMenuOpen={mobileMenuOpen}
         onCloseMobileMenu={() => setMobileMenuOpen(false)}
@@ -420,16 +369,15 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main className="page-with-header min-h-screen w-full px-3 pb-24 md:px-5" dir={lang === "ar" ? "rtl" : "ltr"}>
-        <div className="py-6 sm:py-10">
+      <main className="page-with-header" dir={lang === "ar" ? "rtl" : "ltr"}>
+        <section className="container-site py-8 md:py-12">
           <BoutiqueHeader
             searchQuery={searchQuery}
             onSearchChange={handleSearchChange}
             categoryFilter={categoryParam ?? badgeParam}
-            onClearCategory={() => {
-              window.location.href = "/boutique";
-            }}
           />
+
+          <CategoryChips activeCategory={categoryParam} />
 
           <BoutiqueToolbar
             shownCount={visibleProducts.length}
@@ -440,12 +388,12 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
 
           {loading ? (
             <div className="py-20 text-center">
-              <p className="text-[var(--muted)]">{t("boutique.chargement")}</p>
+              <p className="text-sm text-[var(--muted)]">{t("boutique.chargement")}</p>
             </div>
           ) : visibleProducts.length > 0 ? (
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
               {visibleProducts.map((product) => (
-                <BoutiqueCard key={product.name} product={product} />
+                <StorefrontProductCard key={product.slug} product={product} />
               ))}
             </div>
           ) : (
@@ -457,7 +405,7 @@ export function BoutiquePage({ initialProducts }: { initialProducts?: BoutiquePr
             totalPages={totalPages}
             onPageChange={handlePageChange}
           />
-        </div>
+        </section>
       </main>
     </div>
   );

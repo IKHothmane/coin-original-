@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "kill-port 3000 && next dev",
+    "dev": "kill-port 3000 && next dev -H 0.0.0.0",
     "dev:old": "next dev",
     "build": "next build",
     "start": "next start",

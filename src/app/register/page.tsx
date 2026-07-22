@@ -120,14 +120,7 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-[#a3a1a0]">
-          Déjà un compte ?{" "}
-          <Link href="/login" className="text-[#ffb59e] hover:underline">
-            Se connecter
-          </Link>
-        </p>
-
-        <p className="mt-4 text-center">
+        <p className="mt-6 text-center">
           <Link href="/" className="text-xs text-[#a3a1a0] hover:text-[#e5e2e1]">
             ← Retour à l'accueil
           </Link>

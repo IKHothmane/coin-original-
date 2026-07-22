@@ -17,7 +17,7 @@ export default function MonComptePage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push("/login");
+      router.push("/");
       return;
     }
 

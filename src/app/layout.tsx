@@ -2,9 +2,10 @@ import { FooterWrapper } from "@/components/footer-wrapper";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { I18nProvider } from "@/components/i18n-provider";
 import { InstagramFloatingButton } from "@/components/instagram-floating-button";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Anton, Archivo_Narrow, Hanken_Grotesk, JetBrains_Mono, Lilita_One } from "next/font/google";
 import { CartProvider } from "@/components/cart-context";
+import { FavoritesProvider } from "@/components/favorites-context";
 import { AuthProvider } from "@/components/auth-context";
 import { JsonLd } from "@/components/json-ld";
 import { SITE_URL } from "@/lib/site";
@@ -41,6 +42,11 @@ const siteUrl = SITE_URL;
 const siteName = "Coin Original";
 const siteDescription =
   "Coin Original — boutique streetwear premium au Maroc. Sneakers, vetements et accessoires urbains avec paiement a la livraison. Livraison gratuite au Maroc.";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: {
@@ -165,11 +171,13 @@ export default function RootLayout({
         <GoogleAnalytics />
         <AuthProvider>
           <CartProvider>
-            <I18nProvider>
-              {children}
-              <FooterWrapper />
-              <InstagramFloatingButton />
-            </I18nProvider>
+            <FavoritesProvider>
+              <I18nProvider>
+                {children}
+                <FooterWrapper />
+                <InstagramFloatingButton />
+              </I18nProvider>
+            </FavoritesProvider>
           </CartProvider>
         </AuthProvider>
         <JsonLd data={[organizationJsonLd, websiteJsonLd]} />

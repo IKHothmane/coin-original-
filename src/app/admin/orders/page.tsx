@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import {
+  BadgeCheck,
   Package,
   RefreshCw,
   Search,
@@ -16,6 +17,7 @@ import type { Order, OrderStatus } from "@/lib/orders/types";
 const statusOptions: { value: OrderStatus | "all"; label: string }[] = [
   { value: "all", label: "Tout" },
   { value: "pending", label: "En attente" },
+  { value: "processing", label: "Confirmee" },
   { value: "shipped", label: "Expediee" },
   { value: "delivered", label: "Livree" },
   { value: "cancelled", label: "Annulee" },
@@ -24,6 +26,10 @@ const statusOptions: { value: OrderStatus | "all"; label: string }[] = [
 function getStatusStyle(status: OrderStatus) {
   if (status === "pending") {
     return { label: "En attente", badgeClass: "bg-[#ffba20] text-[#412d00]", icon: ShoppingCart };
+  }
+
+  if (status === "processing") {
+    return { label: "Confirmee", badgeClass: "bg-[#ff8b63] text-[#5e1700]", icon: BadgeCheck };
   }
 
   if (status === "shipped") {
@@ -131,7 +137,7 @@ function OrderCard({
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {(["pending", "shipped", "delivered", "cancelled"] as OrderStatus[]).map((nextStatus) => (
+        {(["pending", "processing", "shipped", "delivered", "cancelled"] as OrderStatus[]).map((nextStatus) => (
           <button
             key={nextStatus}
             type="button"
@@ -176,6 +182,7 @@ export default function AdminOrdersPage() {
   };
 
   const pendingCount = orders.filter((order) => order.status === "pending").length;
+  const processingCount = orders.filter((order) => order.status === "processing").length;
   const shippedCount = orders.filter((order) => order.status === "shipped").length;
   const deliveredCount = orders.filter((order) => order.status === "delivered").length;
 
@@ -189,9 +196,10 @@ export default function AdminOrdersPage() {
           badge={`${orders.length} commandes`}
         />
 
-        <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 xl:grid-cols-5">
           <AdminMetricCard label="Total" value={String(orders.length)} detail="Flux global" icon={ShoppingCart} accent="sand" />
           <AdminMetricCard label="En attente" value={String(pendingCount)} detail="A preparer" icon={ShoppingCart} accent="gold" />
+          <AdminMetricCard label="Confirmees" value={String(processingCount)} detail="Validees" icon={BadgeCheck} accent="orange" />
           <AdminMetricCard label="Expediees" value={String(shippedCount)} detail="En livraison" icon={Truck} accent="orange" />
           <AdminMetricCard label="Livrees" value={String(deliveredCount)} detail="Encaissement valide" icon={Package} accent="sand" />
         </div>

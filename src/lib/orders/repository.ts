@@ -98,6 +98,87 @@ function getOrdersCollection() {
   return collection(getFirebaseDb(), "orders");
 }
 
+function normalizeDate(value: unknown) {
+  if (value instanceof Timestamp) return value.toDate().toISOString();
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string") return value;
+  if (typeof value === "number") return new Date(value).toISOString();
+  if (value && typeof value === "object") {
+    try {
+      const maybeDate = (value as { toDate?: () => Date }).toDate?.();
+      if (maybeDate) return maybeDate.toISOString();
+    } catch {}
+  }
+  return new Date().toISOString();
+}
+
+function normalizeCustomer(data: Record<string, unknown>): Order["customer"] {
+  const rawCustomer = data.customer;
+  if (rawCustomer && typeof rawCustomer === "object") {
+    const c = rawCustomer as Record<string, unknown>;
+    return {
+      fullName: String(c.fullName ?? ""),
+      email: c.email ? String(c.email) : undefined,
+      phone: String(c.phone ?? ""),
+      city: String(c.city ?? ""),
+      address: String(c.address ?? ""),
+      notes: c.notes ? String(c.notes) : undefined,
+    };
+  }
+
+  const rawAddress = data.address;
+  const address = rawAddress && typeof rawAddress === "object" ? (rawAddress as Record<string, unknown>) : {};
+
+  return {
+    fullName: String(data.userName ?? ""),
+    email: data.userEmail ? String(data.userEmail) : undefined,
+    phone: String(address.phone ?? ""),
+    city: String(address.city ?? ""),
+    address: String(address.street ?? address.address ?? ""),
+  };
+}
+
+function normalizeOrderItems(data: Record<string, unknown>): Order["items"] {
+  const rawItems = data.items;
+  if (!Array.isArray(rawItems)) return [];
+
+  return rawItems.map((rawItem, index) => {
+    const item = rawItem && typeof rawItem === "object" ? (rawItem as Record<string, unknown>) : {};
+    const rawProduct = item.product;
+    const product = rawProduct && typeof rawProduct === "object" ? (rawProduct as Record<string, unknown>) : {};
+    const productImages = Array.isArray(product.images) ? (product.images as unknown[]) : [];
+    const productFirstImage =
+      productImages.length > 0 && typeof productImages[0] === "string" ? (productImages[0] as string) : "";
+    const variants = Array.isArray(product.variants) ? (product.variants as unknown[]) : [];
+    const firstVariant = variants.length > 0 ? String(variants[0] ?? "") : "";
+
+    const quantityRaw = item.quantity ?? 1;
+    const quantity = typeof quantityRaw === "number" ? quantityRaw : Number(quantityRaw) || 1;
+
+    const priceRaw = product.priceValue ?? product.price ?? item.price ?? 0;
+    const price = typeof priceRaw === "number" ? priceRaw : Number(priceRaw) || 0;
+
+    const slug = String(product.slug ?? item.slug ?? item.productId ?? item.id ?? "");
+    const id = String(item.id ?? item.productId ?? (slug || `item-${index}`));
+
+    return {
+      id,
+      slug: slug || id,
+      name: String(product.name ?? item.name ?? ""),
+      brand: String(product.brand ?? item.brand ?? ""),
+      size: String(item.size ?? firstVariant ?? ""),
+      price,
+      quantity,
+      image: String(product.image ?? item.image ?? productFirstImage ?? ""),
+    };
+  });
+}
+
+function normalizeOrderTotal(data: Record<string, unknown>) {
+  const raw = data.total ?? data.totalAmount ?? 0;
+  return typeof raw === "number" ? raw : Number(raw) || 0;
+}
+
 function createFirebaseOrderRepository(): OrderRepository {
   return {
     create: async (input) => {
@@ -133,22 +214,16 @@ function createFirebaseOrderRepository(): OrderRepository {
       try {
         const snapshot = await getDocs(query(getOrdersCollection(), orderBy("createdAt", "desc")));
         return snapshot.docs.map((documentSnapshot) => {
-          const data = documentSnapshot.data();
+          const data = documentSnapshot.data() as Record<string, unknown>;
           return {
             id: documentSnapshot.id,
-            customer: data.customer as Order["customer"],
-            items: data.items as Order["items"],
-            total: data.total as number,
-            status: data.status as OrderStatus,
-            paymentMethod: data.paymentMethod as Order["paymentMethod"],
-            createdAt:
-              data.createdAt instanceof Timestamp
-                ? data.createdAt.toDate().toISOString()
-                : String(data.createdAt),
-            updatedAt:
-              data.updatedAt instanceof Timestamp
-                ? data.updatedAt.toDate().toISOString()
-                : String(data.updatedAt),
+            customer: normalizeCustomer(data),
+            items: normalizeOrderItems(data),
+            total: normalizeOrderTotal(data),
+            status: (data.status as OrderStatus) ?? "pending",
+            paymentMethod: "cash_on_delivery",
+            createdAt: normalizeDate(data.createdAt),
+            updatedAt: normalizeDate(data.updatedAt),
           };
         });
       } catch (error) {

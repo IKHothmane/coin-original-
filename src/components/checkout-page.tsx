@@ -6,9 +6,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
-  CreditCard,
   Info,
   ShoppingBag,
+  Truck,
 } from "lucide-react";
 import {
   BottomDock,
@@ -129,12 +129,14 @@ export function CheckoutPage() {
   };
 
   return (
-    <div className="brand-shell brand-grid min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="brand-shell min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <DesktopTopBar
         mobileMenuOpen={mobileMenuOpen}
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
-      <MobileTopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+      <div className="md:hidden">
+        <MobileTopBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+      </div>
       <MobileDrawer
         mobileMenuOpen={mobileMenuOpen}
         onCloseMobileMenu={() => setMobileMenuOpen(false)}
@@ -144,189 +146,201 @@ export function CheckoutPage() {
         onOpenMobileMenu={() => setMobileMenuOpen(true)}
       />
 
-      <main className="page-with-header w-full px-3 pb-24 md:px-5">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-10">
-          <aside className="order-2 lg:order-1 lg:col-span-5">
-            <div className="border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4 lg:sticky lg:top-24 md:p-6">
-              <h2 className="mb-4 font-[var(--font-display)] text-2xl uppercase text-[var(--primary)] md:mb-6 md:text-3xl">
-                Votre Panier
-              </h2>
+      <main className="page-with-header">
+        <section className="container-site py-8 md:py-12">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+            {/* Resume du panier */}
+            <aside className="order-2 lg:order-1 lg:col-span-5">
+              <div className="surface-panel p-5 md:p-6 lg:sticky lg:top-24">
+                <div className="mb-5 flex items-center gap-3 border-b border-[var(--border-soft)] pb-4">
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary-soft)] text-[var(--primary)]">
+                    <ShoppingBag size={18} aria-hidden="true" />
+                  </span>
+                  <h2 className="text-sm font-extrabold uppercase tracking-[0.06em] text-[var(--foreground)]">
+                    Votre panier
+                  </h2>
+                </div>
 
-              {!isReady ? (
-                <div className="py-6 text-center">
-                  <p className="text-sm text-[var(--muted)]">Chargement du panier...</p>
-                </div>
-              ) : items.length === 0 ? (
-                <div className="py-6 text-center">
-                  <p className="text-sm text-[var(--muted)]">
-                    Ton panier est vide. Ajoute des articles avant de commander.
-                  </p>
-                  <Link
-                    href="/boutique"
-                    className="impact-button impact-button--primary mt-4 inline-flex px-5 py-2.5 text-sm"
-                  >
-                    Voir la boutique
-                  </Link>
-                </div>
-              ) : (
-                <>
-                  <div className="mb-6 max-h-[360px] space-y-4 overflow-y-auto pr-1">
-                    {items.map((item) => (
-                      <article
-                        key={item.id}
-                        className="flex items-start gap-3 border-b border-[var(--border-soft)] pb-4"
-                      >
-                        <div className="relative h-20 w-20 flex-none overflow-hidden bg-[var(--surface)] md:h-24 md:w-24">
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fill
-                            sizes="80px"
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-[var(--font-display)] text-lg uppercase leading-tight md:text-xl">
-                            {item.name}
-                          </p>
-                          <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
-                            {item.brand} — Taille {item.size} — Qté {item.quantity}
-                          </p>
-                          <div className="mt-2 inline-flex bg-[var(--primary-strong)] px-2 py-1 text-xs uppercase text-[var(--background)]">
-                            {formatPrice(item.price * item.quantity)}
+                {!isReady ? (
+                  <div className="py-6 text-center">
+                    <p className="text-sm text-[var(--muted)]">Chargement du panier...</p>
+                  </div>
+                ) : items.length === 0 ? (
+                  <div className="py-6 text-center">
+                    <p className="text-sm text-[var(--muted)]">
+                      Ton panier est vide. Ajoute des articles avant de commander.
+                    </p>
+                    <Link href="/boutique" className="btn btn--primary mt-5">
+                      Voir la boutique
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-5 max-h-[360px] space-y-3 overflow-y-auto pr-1">
+                      {items.map((item) => (
+                        <article
+                          key={item.id}
+                          className="flex items-center gap-3 rounded-lg border border-[var(--border-soft)] bg-[var(--surface-soft)] p-3"
+                        >
+                          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-[var(--border-soft)] bg-[var(--surface)]">
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              sizes="64px"
+                              className="object-cover"
+                            />
                           </div>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[var(--muted)]">Sous-total</span>
-                      <span>{formatPrice(total)}</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs font-bold uppercase text-[var(--foreground)]">
+                              {item.name}
+                            </p>
+                            <p className="mt-0.5 text-[11px] text-[var(--muted)]">
+                              {item.brand} · Taille {item.size} · Qte {item.quantity}
+                            </p>
+                          </div>
+                          <span className="price whitespace-nowrap text-xs">
+                            {formatPrice(item.price * item.quantity)}
+                          </span>
+                        </article>
+                      ))}
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[var(--muted)]">Livraison</span>
-                      <span className="text-[var(--accent)]">GRATUITE</span>
+
+                    <div className="space-y-2.5 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[var(--muted)]">Sous-total</span>
+                        <span className="font-semibold text-[var(--foreground)]">
+                          {formatPrice(total)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[var(--muted)]">Livraison</span>
+                        <span className="rounded-md bg-[var(--primary-soft)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--primary)]">
+                          Gratuite
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-[var(--border-soft)] pt-3">
+                        <span className="text-sm font-extrabold uppercase tracking-[0.06em] text-[var(--foreground)]">
+                          Total
+                        </span>
+                        <span className="price text-xl">{formatPrice(total)}</span>
+                      </div>
                     </div>
-                    <div className="mt-3 flex items-center justify-between border-t-2 border-[var(--primary-strong)] pt-3">
-                      <span className="font-[var(--font-display)] text-xl uppercase md:text-2xl">
-                        Total
-                      </span>
-                      <span className="font-[var(--font-display)] text-xl text-[var(--primary)] md:text-2xl">
-                        {formatPrice(total)}
-                      </span>
-                    </div>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
 
-              <div className="mt-5 flex items-center gap-3 border border-[var(--accent)]/30 bg-[var(--surface)] px-3 py-2">
-                <CreditCard size={16} className="text-[var(--accent)]" />
-                <p className="text-[10px] uppercase tracking-[0.16em] text-[var(--foreground)]">
-                  Paiement Cash à la Livraison
-                </p>
-              </div>
-            </div>
-          </aside>
-
-          <section className="order-1 lg:order-2 lg:col-span-7">
-            <div className="relative overflow-hidden border-2 border-[var(--border-soft)] bg-[var(--surface)] p-4 shadow-[6px_6px_0_0_var(--primary-strong)] md:p-8 md:shadow-[10px_10px_0_0_var(--primary-strong)]">
-              <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[var(--primary)]/10 blur-[100px]" />
-
-              <div className="relative z-10">
-                <h1 className="mb-1 font-[var(--font-display)] text-2xl uppercase text-[var(--primary)] md:text-4xl">
-                  Finaliser La Commande
-                </h1>
-                <p className="mb-6 text-xs text-[var(--muted)] md:mb-8 md:text-sm">
-                  Veuillez remplir vos informations réelles pour la livraison.
-                </p>
-
-                <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
+                <div className="mt-5 rounded-lg border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4">
+                  <div className="flex items-start gap-3">
+                    <Truck size={18} className="mt-0.5 shrink-0 text-[var(--primary)]" aria-hidden="true" />
                     <div>
-                      <label className="mb-1.5 block text-[10px] uppercase tracking-[0.16em] text-[var(--primary)]">
-                        Nom et Prénom Complet
+                      <p className="text-xs font-bold uppercase tracking-[0.05em] text-[var(--foreground)]">
+                        Paiement cash a la livraison
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+                        Tu ne payes rien maintenant. Le paiement se fait a la livraison.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            {/* Formulaire de commande */}
+            <section className="order-1 lg:order-2 lg:col-span-7">
+              <div className="surface-panel p-5 md:p-8">
+                <span className="eyebrow--orange">Commande</span>
+                <h1 className="section-title mt-2.5 text-[var(--foreground)]">
+                  Finaliser la commande
+                </h1>
+                <p className="mt-2 text-sm text-[var(--muted)]">
+                  Veuillez remplir vos informations reelles pour la livraison.
+                </p>
+
+                <form className="mt-6 space-y-5 md:mt-8" onSubmit={handleSubmit}>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">
+                      Nom et prenom complet
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.fullName}
+                      onChange={(event) => updateField("fullName", event.target.value)}
+                      placeholder="Ex : Mohammed Alami"
+                      className="w-full rounded-lg border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary)]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">
+                        Ville
                       </label>
                       <input
                         type="text"
                         required
-                        value={formData.fullName}
-                        onChange={(event) => updateField("fullName", event.target.value)}
-                        placeholder="EX: MOHAMMED ALAMI"
-                        className="w-full border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
+                        name="city"
+                        autoComplete="address-level2"
+                        value={formData.city}
+                        onChange={(event) => updateField("city", event.target.value)}
+                        placeholder="Ex : Casablanca"
+                        className="w-full rounded-lg border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary)]"
                       />
                     </div>
-
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <div>
-                        <label className="mb-1.5 block text-[10px] uppercase tracking-[0.16em] text-[var(--primary)]">
-                          Ville
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          name="city"
-                          autoComplete="address-level2"
-                          value={formData.city}
-                          onChange={(event) => updateField("city", event.target.value)}
-                          placeholder="EX: CASABLANCA"
-                          className="w-full border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1.5 block text-[10px] uppercase tracking-[0.16em] text-[var(--primary)]">
-                          Telephone
-                        </label>
-                        <input
-                          type="tel"
-                          required
-                          name="phone"
-                          autoComplete="tel"
-                          value={formData.phone}
-                          onChange={(event) => updateField("phone", event.target.value)}
-                          placeholder="EX: 06 12 34 56 78"
-                          className="w-full border-b-2 border-[var(--border-soft)] bg-[var(--surface-soft)] px-3 py-2.5 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary-strong)] md:px-4 md:py-3 md:text-base"
-                        />
-                      </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-[var(--muted)]">
+                        Telephone
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        name="phone"
+                        autoComplete="tel"
+                        value={formData.phone}
+                        onChange={(event) => updateField("phone", event.target.value)}
+                        placeholder="Ex : 06 12 34 56 78"
+                        className="w-full rounded-lg border border-[var(--border-soft)] bg-[var(--surface-soft)] px-4 py-3 text-sm text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--primary)]"
+                      />
                     </div>
+                  </div>
 
-                    <div className="flex items-start gap-2 text-[var(--muted)]">
-                      <Info size={16} className="mt-0.5 flex-none text-[var(--primary)]" />
-                      <p className="text-xs italic md:text-sm">
-                        En cliquant sur confirmer, votre commande est enregistree et passe
-                        directement a la confirmation.
-                      </p>
+                  <div className="flex items-start gap-3 rounded-lg border border-[var(--border-soft)] bg-[var(--surface-soft)] p-4">
+                    <Info size={16} className="mt-0.5 shrink-0 text-[var(--primary)]" aria-hidden="true" />
+                    <p className="text-xs leading-5 text-[var(--muted)]">
+                      En cliquant sur confirmer, votre commande est enregistree et passe
+                      directement a la confirmation.
+                    </p>
+                  </div>
+
+                  {submitError ? (
+                    <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-500">
+                      {submitError}
                     </div>
+                  ) : null}
 
-                    {submitError ? (
-                      <div className="border border-red-300 bg-red-50 px-3 py-3 text-sm text-red-700">
-                        {submitError}
-                      </div>
-                    ) : null}
-
-                    <button
-                      type="submit"
-                      disabled={!isReady || isSubmitting || items.length === 0}
-                      className="inline-flex w-full items-center justify-center gap-2 bg-[var(--primary-strong)] px-4 py-3.5 font-[var(--font-display)] text-sm uppercase tracking-[0.04em] text-[var(--background)] transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70 active:scale-95 md:gap-3 md:px-5 md:py-4 md:text-lg"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <ShoppingBag size={18} className="animate-pulse" />
-                          Traitement...
-                        </>
-                      ) : (
-                        <>
-                          <ShoppingBag size={18} />
-                          Confirmer - Je paye à la livraison
-                          <ArrowRight size={18} />
-                        </>
-                      )}
-                    </button>
-                  </form>
+                  <button
+                    type="submit"
+                    disabled={!isReady || isSubmitting || items.length === 0}
+                    className="btn btn--primary w-full !min-h-12 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <ShoppingBag size={18} className="animate-pulse" aria-hidden="true" />
+                        Traitement...
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingBag size={18} aria-hidden="true" />
+                        Confirmer - Je paye a la livraison
+                        <ArrowRight size={18} aria-hidden="true" />
+                      </>
+                    )}
+                  </button>
+                </form>
               </div>
-            </div>
-          </section>
-        </div>
+            </section>
+          </div>
+        </section>
       </main>
     </div>
   );
