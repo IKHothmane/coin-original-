@@ -6,12 +6,24 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    match /categories/{categoryId} {
+      allow read, write: if true;
+    }
+
     match /orders/{orderId} {
       allow read, write: if true;
     }
 
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
     match /users/{userId}/favorites/{favoriteId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /carts/{cartId} {
+      allow read, write: if request.auth != null && cartId == "cart_" + request.auth.uid;
     }
   }
 }
