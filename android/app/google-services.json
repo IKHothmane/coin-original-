@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "161781855982",
+    "project_id": "chrono-e0636",
+    "storage_bucket": "chrono-e0636.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:161781855982:android:0f8ad570a039bf802765ff",
+        "android_client_info": {
+          "package_name": "com.coinoriginal.coin_original_mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "161781855982-46iohhavub357kc9auckdkak81q54qds.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.coinoriginal.coin_original_mobile",
+            "certificate_hash": "3ead13ae96a50b62c4f1dc7b583a05b520579e34"
+          }
+        },
+        {
+          "client_id": "161781855982-d9jtula3k9bmisfk1i05sikin3l6embp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmcrcFtWQr72eFXhXYwuRvFXSYWjTosTM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "161781855982-d9jtula3k9bmisfk1i05sikin3l6embp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "161781855982-f1hdv1cq454cq00ojno0nj4q1gi421ds.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.coinoriginal.coinOriginalMobile"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:161781855982:android:d5f4e6e46c9a6bfc2765ff",
+        "android_client_info": {
+          "package_name": "com.maisonchrono.maison_chrono_admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "161781855982-d9jtula3k9bmisfk1i05sikin3l6embp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmcrcFtWQr72eFXhXYwuRvFXSYWjTosTM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "161781855982-d9jtula3k9bmisfk1i05sikin3l6embp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "161781855982-f1hdv1cq454cq00ojno0nj4q1gi421ds.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.coinoriginal.coinOriginalMobile"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

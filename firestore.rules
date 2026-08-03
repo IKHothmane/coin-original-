@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Fonction helper pour vérifier si l'utilisateur est authentifie
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Fonction helper pour verifier si l'utilisateur lit/modifie son propre document
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Fonction helper pour vérifier si l'utilisateur est admin
+    function isAdmin() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Règles pour les utilisateurs
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) || isAdmin();
+      allow update, delete: if isOwner(userId) || isAdmin();
+    }
+
+    // Règles pour les paniers (carts)
+    match /carts/{cartId} {
+      allow read, write: if isSignedIn() && cartId == 'cart_' + request.auth.uid;
+    }
+
+    // Règles pour les commandes (orders)
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if (isSignedIn() && request.resource.data.userId == request.auth.uid)
+        || (!isSignedIn() && request.resource.data.status == 'pending');
+      allow update, delete: if isAdmin();
+    }
+
+    // Règles pour les produits
+    match /products/{productId} {
+      allow read: if true; // Lecture publique pour les clients
+      allow write: if isAdmin(); // Écriture réservée aux admins
+    }
+
+    // Règles pour les catégories
+    match /categories/{categoryId} {
+      allow read: if true; // Lecture publique pour les clients
+      allow write: if isAdmin(); // Écriture réservée aux admins
+    }
+  }
+}
