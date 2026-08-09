@@ -68,6 +68,16 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       return;
     }
+
+    final message = authProvider.error ?? 'Connexion Google impossible';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 6),
+      ),
+    );
   }
 
   @override

@@ -18,9 +18,13 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseConfig.initialize();
-  await LocalNotificationService.instance.initialize();
-  await PushNotificationService.instance.initialize();
   runApp(const CoinOriginalApp());
+
+  // Notifications apres le premier frame pour accelerer l'ouverture.
+  Future.microtask(() async {
+    await LocalNotificationService.instance.initialize();
+    await PushNotificationService.instance.initialize();
+  });
 }
 
 class CoinOriginalApp extends StatelessWidget {

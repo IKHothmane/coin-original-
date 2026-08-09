@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "161781855982-l90spt1d1vl2fkpfl7tvvf5e6f1dm6bb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.coinoriginal.coin_original_mobile",
+            "certificate_hash": "c0aed55bbe0fa0cf2f9553eac42ca653d8b1ec28"
+          }
+        },
+        {
           "client_id": "161781855982-d9jtula3k9bmisfk1i05sikin3l6embp.apps.googleusercontent.com",
           "client_type": 3
         }

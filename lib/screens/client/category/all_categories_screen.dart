@@ -65,18 +65,6 @@ class AllCategoriesScreen extends StatefulWidget {
 
 class _AllCategoriesScreenState extends State<AllCategoriesScreen> {
   @override
-  void initState() {
-    super.initState();
-    Future.microtask(() {
-      if (!mounted) return;
-      final provider = context.read<ProductProvider>();
-      if (provider.products.isEmpty) {
-        provider.loadCatalogProducts();
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final provider = context.watch<ProductProvider>();
     final catalogProducts = _catalogProducts(provider.products);

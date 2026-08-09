@@ -1,23 +1,34 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:coin_original_mobile/config/firebase_config.dart';
 import 'package:coin_original_mobile/models/order_model.dart';
 import 'package:coin_original_mobile/models/user_model.dart';
 import 'package:coin_original_mobile/services/firebase_service.dart';
 import 'package:coin_original_mobile/utils/enums.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
+/// SHA-1 debug de cette machine — doit etre ajoutee dans Firebase Console.
+const String _requiredDebugSha1 =
+    'C0:AE:D5:5B:BE:0F:A0:CF:2F:95:53:EA:C4:2C:A6:53:D8:B1:EC:28';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseService.auth;
   final _usersCollection = FirebaseService.firestore.collection('users');
   final _ordersCollection = FirebaseService.firestore.collection('orders');
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    serverClientId: FirebaseConfig.googleWebClientId,
+  );
 
   Future<void> _debugReportGoogleAuth(
     String hypothesisId,
     String location,
     String msg,
     Map<String, Object?> data,
-  ) async {}
+  ) async {
+    debugPrint('[$hypothesisId] $location | $msg | $data');
+  }
 
   Future<UserModel?> signUp({
     required String name,
@@ -93,7 +104,7 @@ class AuthService {
         },
       );
       if (googleUser == null) {
-        throw 'Connexion Google annulee';
+        throw 'Connexion Google annulee par l\'utilisateur';
       }
 
       final googleAuth = await googleUser.authentication;
@@ -189,6 +200,18 @@ class AuthService {
         },
       );
       throw _handleAuthError(e);
+    } on PlatformException catch (e) {
+      await _debugReportGoogleAuth(
+        'E',
+        'lib/services/auth_service.dart:signInWithGoogle:platformException',
+        'platform exception during google sign-in',
+        {
+          'code': e.code,
+          'message': e.message,
+          'details': e.details?.toString(),
+        },
+      );
+      throw _mapGoogleSignInError(e);
     } catch (e, st) {
       await _debugReportGoogleAuth(
         'E',
@@ -200,8 +223,38 @@ class AuthService {
           'stack': st.toString().split('\n').take(12).join('\n'),
         },
       );
-      throw e is String ? e : 'Connexion Google impossible';
+      throw _mapGoogleSignInError(e, st);
     }
+  }
+
+  String _mapGoogleSignInError(Object error, [StackTrace? stackTrace]) {
+    final text = error.toString();
+    final isConfigError = text.contains('[16]') ||
+        text.contains('reauth failed') ||
+        text.contains('DEVELOPER_ERROR') ||
+        text.contains('ApiException: 10') ||
+        text.contains(': 10:') ||
+        text.contains('sign_in_failed');
+
+    if (isConfigError) {
+      return 'Erreur config Google (SHA-1).\n'
+          'Ajoutez dans Firebase la SHA-1 debug :\n'
+          '$_requiredDebugSha1\n'
+          'Puis re-telechargez google-services.json et faites flutter clean.';
+    }
+
+    if (error is PlatformException) {
+      if (error.code == 'sign_in_canceled') {
+        return 'Connexion Google annulee par l\'utilisateur';
+      }
+      return 'Connexion Google echouee (${error.code}) : ${error.message ?? text}';
+    }
+
+    if (error is String) {
+      return error;
+    }
+
+    return 'Connexion Google impossible : $text';
   }
 
   Future<void> signOut() async {

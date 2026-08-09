@@ -15,6 +15,7 @@ class ProductProvider extends ChangeNotifier {
   bool _hasMore = true;
   String? _error;
   String _searchQuery = '';
+  Future<void>? _homeLoadFuture;
 
   List<ProductModel> get products => _products;
   List<ProductModel> get popularProducts => _popularProducts;
@@ -54,18 +55,45 @@ class ProductProvider extends ChangeNotifier {
     _productsStream = null;
   }
 
-  Future<void> loadCatalogProducts({bool activeOnly = true}) async {
+  Future<void> loadHomeProducts({bool activeOnly = true, bool force = false}) {
+    if (!force && _products.isNotEmpty) {
+      if (_popularProducts.isEmpty) {
+        _popularProducts =
+            _productService.derivePopularProducts(_products);
+        notifyListeners();
+      }
+      return Future.value();
+    }
+
+    return _homeLoadFuture ??=
+        _loadHomeProductsInternal(activeOnly: activeOnly, force: force)
+            .whenComplete(() => _homeLoadFuture = null);
+  }
+
+  Future<void> _loadHomeProductsInternal({
+    required bool activeOnly,
+    required bool force,
+  }) async {
     _setLoading(true);
     _error = null;
 
     try {
-      _products = await _productService.getAllProducts(activeOnly: activeOnly);
-      _hasMore = false;
+      final products = await _productService.getHomeProducts(
+        activeOnly: activeOnly,
+      );
+      _products = products;
+      _popularProducts = _productService.derivePopularProducts(products);
+      _hasMore = products.length >= 36;
       _setLoading(false);
     } catch (e) {
       _error = e.toString();
       _setLoading(false);
     }
+  }
+
+  Future<void> loadCatalogProducts({bool activeOnly = true}) async {
+    if (_products.isNotEmpty) return;
+    await loadHomeProducts(activeOnly: activeOnly);
   }
 
   Future<void> loadProducts(
@@ -115,14 +143,13 @@ class ProductProvider extends ChangeNotifier {
   }
 
   Future<void> loadPopularProducts() async {
-    _setLoading(true);
-    try {
-      _popularProducts = await _productService.getPopularProducts();
-      _setLoading(false);
-    } catch (e) {
-      _error = e.toString();
-      _setLoading(false);
+    if (_products.isNotEmpty) {
+      _popularProducts = _productService.derivePopularProducts(_products);
+      notifyListeners();
+      return;
     }
+
+    await loadHomeProducts();
   }
 
   Future<void> getProductById(String id) async {

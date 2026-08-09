@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:coin_original_mobile/providers/category_provider.dart';
 import 'package:coin_original_mobile/providers/product_provider.dart';
 import 'package:coin_original_mobile/utils/routes.dart';
@@ -17,28 +15,30 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _bootstrap();
+  }
 
-    Future.microtask(() {
-      if (!mounted) return;
-      final categoryProvider = context.read<CategoryProvider>();
-      final productProvider = context.read<ProductProvider>();
+  Future<void> _bootstrap() async {
+    final categoryProvider = context.read<CategoryProvider>();
+    final productProvider = context.read<ProductProvider>();
 
-      if (categoryProvider.categories.isEmpty) {
-        categoryProvider.loadCategories();
-      }
-      if (productProvider.products.isEmpty) {
-        productProvider.loadCatalogProducts();
-      }
-      if (productProvider.popularProducts.isEmpty) {
-        productProvider.loadPopularProducts();
-      }
-    });
+    final dataFuture = Future.wait([
+      if (categoryProvider.categories.isEmpty) categoryProvider.loadCategories(),
+      if (productProvider.products.isEmpty) productProvider.loadHomeProducts(),
+    ]);
 
-    Timer(const Duration(milliseconds: 1500), () {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
-      }
-    });
+    final splashFuture = Future.delayed(const Duration(milliseconds: 800));
+
+    try {
+      await Future.wait([dataFuture, splashFuture]).timeout(
+        const Duration(seconds: 5),
+      );
+    } catch (_) {
+      // Timeout: on ouvre quand meme l'accueil.
+    }
+
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, AppRoutes.home);
   }
 
   @override

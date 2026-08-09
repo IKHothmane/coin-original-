@@ -74,25 +74,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
+  List<ProductModel>? _cachedCatalogProducts;
+  List<ProductModel>? _cachedSourceProducts;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      if (!mounted) return;
-      final categoryProvider = context.read<CategoryProvider>();
-      final productProvider = context.read<ProductProvider>();
-
-      if (categoryProvider.categories.isEmpty) {
-        categoryProvider.loadCategories();
-      }
-      if (productProvider.products.isEmpty) {
-        productProvider.loadCatalogProducts();
-      }
-      if (productProvider.popularProducts.isEmpty) {
-        productProvider.loadPopularProducts();
-      }
-    });
   }
 
   @override
@@ -106,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final scale = _HomeScale.of(context);
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     final productProvider = context.watch<ProductProvider>();
-    final catalogProducts = _catalogProducts(productProvider.products);
+    final catalogProducts = _catalogProductsFor(productProvider.products);
     final latestProducts = _latestProducts(catalogProducts);
     final popularProducts = _popularProducts(productProvider, catalogProducts);
     final flashProducts = _flashProducts(catalogProducts);
@@ -721,9 +708,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _refresh() async {
     final categoryProvider = context.read<CategoryProvider>();
     final productProvider = context.read<ProductProvider>();
-    await categoryProvider.loadCategories();
-    await productProvider.loadCatalogProducts();
-    await productProvider.loadPopularProducts();
+    await Future.wait([
+      categoryProvider.loadCategories(),
+      productProvider.loadHomeProducts(force: true),
+    ]);
+    if (mounted) {
+      setState(() {
+        _cachedCatalogProducts = null;
+        _cachedSourceProducts = null;
+      });
+    }
   }
 
   void _openProductDetail(ProductModel product) {
@@ -782,6 +776,18 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  List<ProductModel> _catalogProductsFor(List<ProductModel> products) {
+    if (identical(products, _cachedSourceProducts) &&
+        _cachedCatalogProducts != null) {
+      return _cachedCatalogProducts!;
+    }
+
+    final filtered = _catalogProducts(products);
+    _cachedSourceProducts = products;
+    _cachedCatalogProducts = filtered;
+    return filtered;
   }
 
   List<ProductModel> _catalogProducts(List<ProductModel> products) {

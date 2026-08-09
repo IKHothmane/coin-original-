@@ -3,6 +3,7 @@ import 'dart:developer' as dev;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coin_original_mobile/models/product_model.dart';
 import 'package:coin_original_mobile/services/firebase_service.dart';
+import 'package:flutter/foundation.dart';
 
 /// === ProductService — Firestore pour `products` ===
 ///
@@ -20,6 +21,12 @@ class ProductService {
   final _productsCollection = FirebaseService.firestore.collection('products');
 
   static const bool _useOptimizedServerFilters = false;
+  static const int _clientOverfetchMultiplier = 2;
+
+  void _log(String message, {int level = 0, Object? error}) {
+    if (!kDebugMode) return;
+    dev.log(message, name: 'ProductService', level: level, error: error);
+  }
 
   /// Version limitée (max 100 produits visibles par défaut).
   /// Évite de télécharger inutilement toute la collection.
@@ -27,7 +34,7 @@ class ProductService {
     bool activeOnly = true,
     int limit = 100,
   }) async {
-    dev.log('[GET_ALL] activeOnly=$activeOnly  limit=$limit  optimized=$_useOptimizedServerFilters', name: 'ProductService');
+    _log('[GET_ALL] activeOnly=$activeOnly limit=$limit optimized=$_useOptimizedServerFilters');
 
     Query query = _productsCollection;
 
@@ -37,29 +44,29 @@ class ProductService {
 
     final fallbackLimit = _useOptimizedServerFilters
         ? limit
-        : (limit > 0 ? limit * 5 : 200);
+        : (limit > 0 ? limit * _clientOverfetchMultiplier : 80);
     query = query.orderBy('createdAt', descending: true).limit(fallbackLimit);
 
     List<QueryDocumentSnapshot> docs;
     try {
       final snapshot = await query.get();
       docs = snapshot.docs;
-      dev.log('[GET_ALL] Firestore OK: ${docs.length} doc(s) bruts (fallbackLimit=$fallbackLimit)', name: 'ProductService');
+      _log('[GET_ALL] Firestore OK: ${docs.length} doc(s) (fallbackLimit=$fallbackLimit)');
     } on FirebaseException catch (e) {
       final code = e.code.toLowerCase();
       final isIndexErr = code == 'failed-precondition' ||
           code == 'invalid-argument' ||
           (e.message ?? '').toLowerCase().contains('requires an index');
       if (_useOptimizedServerFilters && activeOnly && isIndexErr) {
-        dev.log('[GET_ALL] ⚠️ INDEX composite manquant → fallback simple', name: 'ProductService', level: 900, error: e.message);
-        final fbLimit = limit > 0 ? limit * 5 : 200;
+        _log('[GET_ALL] INDEX composite manquant -> fallback simple', level: 900, error: e.message);
+        final fbLimit = limit > 0 ? limit * _clientOverfetchMultiplier : 80;
         final fb = await _productsCollection
             .orderBy('createdAt', descending: true)
             .limit(fbLimit)
             .get();
         docs = fb.docs;
       } else {
-        dev.log('[GET_ALL] ERREUR Firestore code=$code msg=${e.message}', name: 'ProductService', level: 1000);
+        _log('[GET_ALL] ERREUR Firestore code=$code msg=${e.message}', level: 1000);
         rethrow;
       }
     }
@@ -88,27 +95,7 @@ class ProductService {
     if (filterHidden) it = it.where((p) => !p.hidden);
     if (onlyActive) it = it.where((p) => p.isActive);
     final out = it.toList();
-    dev.log(
-      '[MAP_DOCS] bruts=${all.length} → filterHidden=$filterHidden onlyActive=$onlyActive → finaux=${out.length}',
-      name: 'ProductService',
-    );
-    if (out.isNotEmpty) {
-      dev.log('  - 1er: id="${out.first.id}" slug="${out.first.slug}" name="${out.first.name}"', name: 'ProductService');
-      dev.log('       image="${out.first.image ?? ''}"  gallery items=${out.first.gallery.length}', name: 'ProductService');
-      if (out.first.gallery.isNotEmpty) {
-        dev.log('       gallery[0] src="${out.first.gallery.first['src']}" alt="${out.first.gallery.first['alt']}"', name: 'ProductService');
-      }
-      dev.log('  - dernier: id="${out.last.id}" slug="${out.last.slug}"', name: 'ProductService');
-    } else {
-      dev.log('[MAP_DOCS] ⚠️ 0 produits finaux. Tous les docs bruts étaient soit hidden=true soit invalid.', name: 'ProductService', level: 900);
-      if (all.isNotEmpty) {
-        for (final p in all) {
-          dev.log('  ▸ brut: id="${p.id}" slug="${p.slug}" hidden=${p.hidden} isActive=${p.isActive} name="${p.name}" image="${p.image ?? ''}" gallery=${p.gallery.length}', name: 'ProductService');
-        }
-      } else {
-        dev.log('  ▸ docs bruts VIDE. Firestore a retourné 0 documents.', name: 'ProductService');
-      }
-    }
+    _log('[MAP_DOCS] bruts=${all.length} -> finaux=${out.length}');
     return out;
   }
 
@@ -213,22 +200,18 @@ class ProductService {
     return products;
   }
 
-  /// RAPIDE: Produits populaires. Plus de `getAllProducts` -> plus de
-  /// téléchargement de TOUTE la collection. On prend les N derniers
-  /// produits visibles, puis on trie client-side par rating. Beaucoup + rapide.
-  Future<List<ProductModel>> getPopularProducts({int limit = 10}) async {
-    dev.log('[GET_POPULAR] limit=$limit', name: 'ProductService');
-    final sample = await getProducts(
-      activeOnly: true,
-      limit: 30,
-    );
-    sample.sort((a, b) => b.rating.compareTo(a.rating));
-    final out = sample.length <= limit ? sample : sample.sublist(0, limit);
-    dev.log('[GET_POPULAR] échantillon=${sample.length} → top=${out.length}', name: 'ProductService');
-    if (out.isNotEmpty) {
-      dev.log('[GET_POPULAR] top 1: "${out.first.name}" rating=${out.first.rating}', name: 'ProductService');
-    }
-    return out;
+  /// Charge rapide pour l'accueil : une seule requete Firestore.
+  Future<List<ProductModel>> getHomeProducts({bool activeOnly = true}) {
+    return getAllProducts(activeOnly: activeOnly, limit: 36);
+  }
+
+  /// Derive les produits populaires depuis une liste deja chargee.
+  List<ProductModel> derivePopularProducts(
+    List<ProductModel> products, {
+    int limit = 10,
+  }) {
+    final sorted = [...products]..sort((a, b) => b.rating.compareTo(a.rating));
+    return sorted.length <= limit ? sorted : sorted.sublist(0, limit);
   }
 
   Future<ProductModel?> getProductById(String id) async {
