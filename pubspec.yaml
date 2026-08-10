@@ -1,0 +1,67 @@
+name: coin_original_mobile
+description: "Coin Original - Application mobile e-commerce avec panel admin"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.2
+  dio: ^5.8.1
+  flutter_svg: ^2.0.10+1
+  cached_network_image: ^3.3.1
+  shimmer: ^3.0.0
+  flutter_rating_bar: ^4.0.1
+  firebase_core: ^4.12.1
+  firebase_auth: ^6.5.6
+  cloud_firestore: ^6.7.1
+  google_sign_in: 6.3.0
+  image_picker: ^1.1.2
+  firebase_messaging: ^16.4.3
+  flutter_local_notifications: ^20.1.0
+  fl_chart: ^0.68.0
+  intl: ^0.20.2
+  url_launcher: ^6.3.0
+  share_plus: ^12.0.2
+  sign_in_with_apple: ^7.0.1
+  crypto: ^3.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/images/logo ligh.jpg"
+  remove_alpha_ios: true
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/logo ligh.jpg"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/splashscreen.png
+    - assets/images/llogo.png
+    - assets/images/logo ligh.jpg
+    - assets/images/offer.jpg
+    - assets/images/offer1.jpg
+    - assets/images/foot_measurement_diagram.webp
+    - assets/icons/
+    - assets/icons/all_categories/
+    - assets/fonts/
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700

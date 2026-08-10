@@ -1,0 +1,167 @@
+# Uncomment this line to define a global platform for your project
+platform :ios, '14.0'
+
+# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+def flutter_root
+  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
+  unless File.exist?(generated_xcode_build_settings_path)
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+  end
+
+  File.foreach(generated_xcode_build_settings_path) do |line|
+    matches = line.match(/FLUTTER_ROOT\=(.*)/)
+    return matches[1].strip if matches
+  end
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+end
+
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+flutter_ios_podfile_setup
+
+target 'Runner' do
+  # Firebase pods compile more reliably with static linkage in Flutter iOS apps.
+  use_frameworks! :linkage => :static
+  use_modular_headers!
+
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
+end
+
+post_install do |installer|
+  # Xcode 16+ can reject the umbrella Firebase header when firebase_messaging
+  # is compiled as a modular framework. Patch the plugin header to use direct
+  # modular imports so the fix survives pod reinstalls.
+  umbrella_import = '#import <Firebase/Firebase.h>'
+  auth_guard = "#if __has_include(<FirebaseAuth/FirebaseAuth.h>)\n#import <FirebaseAuth/FirebaseAuth.h>\n#if __has_include(\"FirebaseAuth-umbrella.h\")\n#if __has_include(<UIKit/UIKit.h>)\n#import <UIKit/UIKit.h>\n#endif\n#import <FirebaseAuthInterop/FIRAuthInterop.h>\n#import <FirebaseAuth/FirebaseAuth-Swift.h>\n#endif\n#endif"
+  auth_anchor = "#import <objc/message.h>"
+  firebase_messaging_header = File.join(
+    __dir__,
+    '.symlinks',
+    'plugins',
+    'firebase_messaging',
+    'ios',
+    'Classes',
+    'FLTFirebaseMessagingPlugin.h'
+  )
+  firebase_messaging_implementation = File.join(
+    __dir__,
+    '.symlinks',
+    'plugins',
+    'firebase_messaging',
+    'ios',
+    'Classes',
+    'FLTFirebaseMessagingPlugin.m'
+  )
+
+  candidate_plugin_files = [firebase_messaging_header, firebase_messaging_implementation]
+  [firebase_messaging_header, firebase_messaging_implementation].each do |plugin_file|
+    next unless File.exist?(plugin_file)
+
+    begin
+      candidate_plugin_files << File.realpath(plugin_file)
+    rescue StandardError
+      # Ignore symlink resolution failures and fall back to the project path.
+    end
+  end
+
+  candidate_plugin_files.uniq.each do |plugin_file|
+    next unless File.exist?(plugin_file)
+
+    file_contents = File.read(plugin_file)
+    modular_imports = "#import <FirebaseCore/FirebaseCore.h>\n#import <FirebaseMessaging/FirebaseMessaging.h>"
+
+    updated_contents = file_contents
+
+    if updated_contents.include?(umbrella_import) && !updated_contents.include?('#import <FirebaseMessaging/FirebaseMessaging.h>')
+      updated_contents = updated_contents.sub(umbrella_import, modular_imports)
+    end
+
+    if plugin_file.end_with?('.m') && updated_contents.include?(auth_anchor) && !updated_contents.include?('#import <FirebaseAuth/FirebaseAuth.h>')
+      updated_contents = updated_contents.sub(auth_anchor, "#{auth_anchor}\n\n#{auth_guard}")
+    end
+
+    if updated_contents != file_contents
+      File.write(plugin_file, updated_contents)
+      Pod::UI.puts "Patched #{plugin_file} for Xcode modular Firebase compatibility"
+    end
+  end
+
+  firebase_auth_base_imports = "#import <FirebaseCore/FirebaseCore.h>\n#import <FirebaseAuth/FirebaseAuth.h>"
+  firebase_auth_imports = "#{firebase_auth_base_imports}\n#if __has_include(\"FirebaseAuth-umbrella.h\")\n#if __has_include(<UIKit/UIKit.h>)\n#import <UIKit/UIKit.h>\n#endif\n#import <FirebaseAuthInterop/FIRAuthInterop.h>\n#import <FirebaseAuth/FirebaseAuth-Swift.h>\n#endif"
+  firebase_auth_files = Dir.glob(
+    File.join(__dir__, '.symlinks', 'plugins', 'firebase_auth', 'ios', 'Classes', '**', '*.{h,m}')
+  )
+
+  firebase_auth_files
+    .flat_map { |path| [path, (File.realpath(path) rescue nil)] }
+    .compact
+    .uniq
+    .each do |plugin_file|
+      file_contents = File.read(plugin_file)
+      updated_contents = file_contents
+
+      if updated_contents.include?(umbrella_import)
+        updated_contents = updated_contents.sub(umbrella_import, firebase_auth_imports)
+      end
+
+      if updated_contents.include?(firebase_auth_base_imports) &&
+         !updated_contents.include?('#import <FirebaseAuth/FirebaseAuth-Swift.h>')
+        updated_contents = updated_contents.sub(firebase_auth_base_imports, firebase_auth_imports)
+      end
+
+      if updated_contents != file_contents
+        File.write(plugin_file, updated_contents)
+        Pod::UI.puts "Patched #{plugin_file} for firebase_auth modular imports"
+      end
+    end
+
+  cloud_firestore_imports = "#import <FirebaseCore/FirebaseCore.h>\n#import <FirebaseFirestore/FirebaseFirestore.h>"
+  cloud_firestore_files = Dir.glob(
+    File.join(__dir__, '.symlinks', 'plugins', 'cloud_firestore', 'ios', 'Classes', '**', '*.{h,m}')
+  )
+
+  cloud_firestore_files
+    .flat_map { |path| [path, (File.realpath(path) rescue nil)] }
+    .compact
+    .uniq
+    .each do |plugin_file|
+      file_contents = File.read(plugin_file)
+      next unless file_contents.include?(umbrella_import)
+
+      updated_contents = file_contents.sub(umbrella_import, cloud_firestore_imports)
+      if updated_contents != file_contents
+        File.write(plugin_file, updated_contents)
+        Pod::UI.puts "Patched #{plugin_file} for cloud_firestore modular imports"
+      end
+    end
+
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    # Set deployment target to 12.0 for all pods
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+      # Fix non-modular header include error
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+    end
+    # Fix for gRPC-Core and abseil header issues
+    if target.name == 'gRPC-Core' || target.name == 'abseil'
+      target.build_configurations.each do |config|
+        config.build_settings['USER_HEADER_SEARCH_PATHS'] ||= ['$(inherited)']
+        config.build_settings['USER_HEADER_SEARCH_PATHS'] << '$(PODS_ROOT)/abseil'
+        config.build_settings['HEADER_SEARCH_PATHS'] ||= ['$(inherited)']
+        config.build_settings['HEADER_SEARCH_PATHS'] << '$(PODS_ROOT)/abseil'
+      end
+    end
+  end
+end
