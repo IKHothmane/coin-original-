@@ -1,4 +1,14 @@
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, type User } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged,
+  updateProfile,
+  type User,
+} from "firebase/auth";
 import { getFirebaseApp } from "./client";
 
 let _auth: ReturnType<typeof getAuth> | null = null;
@@ -20,6 +30,14 @@ export async function registerUser(email: string, password: string, displayName:
 export async function loginUser(email: string, password: string) {
   const auth = getFirebaseAuth();
   const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  return userCredential.user;
+}
+
+export async function loginWithGoogle() {
+  const auth = getFirebaseAuth();
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  const userCredential = await signInWithPopup(auth, provider);
   return userCredential.user;
 }
 

@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/homepage-sections";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { loginUser } from "@/lib/firebase/auth";
+import { loginUser, loginWithGoogle } from "@/lib/firebase/auth";
 import {
   DesktopTopBar,
   MobileTopBar,
@@ -20,6 +20,20 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleGoogleLogin = async () => {
+    setError("");
+    setLoading(true);
+
+    try {
+      await loginWithGoogle();
+      router.push("/admin");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur de connexion Google");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,7 +183,9 @@ export default function LoginPage() {
             {/* Google Button */}
             <button
               type="button"
-              className="w-full py-3 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-mono text-xs uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-3 border-2 border-outline-variant"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              className="w-full py-3 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-mono text-xs uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-3 border-2 border-outline-variant disabled:opacity-50"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
