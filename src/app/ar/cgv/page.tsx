@@ -1,5 +1,6 @@
 import { SITE_URL } from "@/lib/site";
 import { JsonLd } from "@/components/json-ld";
+import { getSupportPhoneE164 } from "@/lib/contact";
 
 export const metadata = {
   title: "شروط البيع | كوين أوريجينال",
@@ -15,6 +16,7 @@ export const metadata = {
 };
 
 export default function ArabicCGVPage() {
+  const supportPhone = getSupportPhoneE164();
   const siteUrl = SITE_URL;
 
   const webPageJsonLd = {
@@ -103,7 +105,7 @@ export default function ArabicCGVPage() {
           <p className="text-gray-700 leading-relaxed">
             لأي سؤال، شكوى أو طلب إرجاع:<br />
             البريد الإلكتروني: contact@coinoriginal.shop<br />
-            واتساب: +212 6XX XX XX XX<br />
+            واتساب: {supportPhone}<br />
             ساعات العمل: من الاثنين إلى السبت، 9ص إلى 6م
           </p>
         </section>

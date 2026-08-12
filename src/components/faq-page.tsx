@@ -8,6 +8,7 @@ import {
   MobileTopBar,
   SiteFooter,
 } from "@/components/homepage-sections";
+import { getWhatsAppHref } from "@/lib/contact";
 
 const faqs = [
   {
@@ -100,7 +101,7 @@ export function FAQPageClient() {
             <p className="text-sm text-[var(--muted)]">
               Vous ne trouvez pas votre reponse ? Contactez-nous sur{" "}
               <a
-                href="https://wa.me/212750463018"
+                href={getWhatsAppHref()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[var(--primary)] hover:underline"

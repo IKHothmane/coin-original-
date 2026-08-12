@@ -18,6 +18,7 @@ import {
   MobileDrawer,
   MobileTopBar,
 } from "@/components/homepage-sections";
+import { getSupportPhoneE164, getTelHref, getWhatsAppHref } from "@/lib/contact";
 
 type ContactCard = {
   title: string;
@@ -66,9 +67,8 @@ function ContactInfoCard({ item }: { item: ContactCard }) {
 
 export function ContactPageClient() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const whatsappNumber = process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? "+212600000000";
-  const whatsappCleanNumber = whatsappNumber.replace(/\+/g, "");
-  const whatsappLink = `https://wa.me/${whatsappCleanNumber}`;
+  const whatsappNumber = getSupportPhoneE164();
+  const whatsappLink = getWhatsAppHref();
   const instagramUrl =
     process.env.NEXT_PUBLIC_INSTAGRAM_URL ??
     "https://instagram.com/coinoriginal";
@@ -92,7 +92,7 @@ export function ContactPageClient() {
       title: "Telephone",
       value: whatsappNumber,
       description: "Disponible du lundi au samedi pour le suivi, les confirmations et les questions urgentes.",
-      href: `tel:${whatsappNumber}`,
+      href: getTelHref(),
       icon: Phone,
       accent: "border-[var(--border-soft)] bg-[var(--surface-soft)]",
     },

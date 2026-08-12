@@ -1,4 +1,5 @@
 import { SITE_URL } from "@/lib/site";
+import { getSupportPhoneE164, getWhatsAppHref } from "@/lib/contact";
 import { JsonLd } from "@/components/json-ld";
 import { ContactPageClient } from "@/components/contact-page-client";
 
@@ -8,8 +9,8 @@ export const metadata = {
 };
 
 export default function ContactPage() {
-  const whatsappNumber = process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? "+212600000000";
-  const whatsappLink = `https://wa.me/${whatsappNumber.replace(/\+/g, "")}`;
+  const whatsappNumber = getSupportPhoneE164();
+  const whatsappLink = getWhatsAppHref();
   const instagramUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "https://instagram.com/coinoriginal";
   const facebookUrl = process.env.NEXT_PUBLIC_FACEBOOK_URL ?? "https://facebook.com/coinoriginal";
   const tiktokUrl = process.env.NEXT_PUBLIC_TIKTOK_URL ?? "https://tiktok.com/@coinoriginal";

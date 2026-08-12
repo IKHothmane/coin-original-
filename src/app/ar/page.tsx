@@ -1,5 +1,6 @@
 import { SITE_URL } from "@/lib/site";
 import { JsonLd } from "@/components/json-ld";
+import { getSupportPhoneE164 } from "@/lib/contact";
 
 export const metadata = {
   title: "كوين أوريجينال | ملابس الشارع المتميزة في المغرب",
@@ -30,7 +31,7 @@ export default function ArabicHomePage() {
     ].filter(Boolean),
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? "+212600000000",
+      telephone: getSupportPhoneE164(),
       contactType: "customer service",
       areaServed: "MA",
       availableLanguage: ["Arabic", "French"],

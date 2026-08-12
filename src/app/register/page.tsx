@@ -44,7 +44,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-[#131313] text-[#e5e2e1] flex flex-col items-center justify-center px-4">
       <Link href="/" className="mb-8">
-        <ThemeLogo width={56} height={56} className="border border-[var(--border-soft)] object-cover" />
+        <ThemeLogo width={56} height={56} className="rounded-full border border-[var(--border-soft)]" />
       </Link>
 
       <div className="w-full max-w-sm">

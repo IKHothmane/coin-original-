@@ -9,6 +9,7 @@ import { FavoritesProvider } from "@/components/favorites-context";
 import { AuthProvider } from "@/components/auth-context";
 import { JsonLd } from "@/components/json-ld";
 import { SITE_URL } from "@/lib/site";
+import { getSupportPhoneE164, getWhatsAppHref } from "@/lib/contact";
 import "./globals.css";
 
 const anton = Anton({
@@ -133,7 +134,7 @@ const organizationJsonLd = {
   ].filter(Boolean),
   contactPoint: {
     "@type": "ContactPoint",
-    telephone: process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? "+212600000000",
+    telephone: getSupportPhoneE164(),
     contactType: "customer service",
     areaServed: "MA",
     availableLanguage: ["French", "Arabic"],

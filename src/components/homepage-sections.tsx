@@ -48,37 +48,41 @@ type MenuActionProps = {
 export function ThemeLogo({
   width,
   height,
-  className,
+  className = "",
   priority = false,
 }: {
-  width: number;
-  height: number;
-  className: string;
+  width?: number;
+  height?: number;
+  className?: string;
   priority?: boolean;
 }) {
+  const hasFixedSize = width != null && height != null;
+  const sizeLabel = hasFixedSize ? `${Math.max(width, height)}px` : "100vw";
+
   return (
-    <>
+    <span
+      className={`relative overflow-hidden ${hasFixedSize ? "inline-block shrink-0" : "block size-full"} ${className}`}
+      style={hasFixedSize ? { width, height } : undefined}
+    >
       <Image
         src="/logo.jpg"
         alt=""
         aria-hidden="true"
-        width={width}
-        height={height}
-        className={`theme-logo theme-logo--dark ${className}`}
-        style={{ width: "auto", height: `${height}px` }}
+        fill
+        sizes={sizeLabel}
+        className="theme-logo theme-logo--dark object-cover"
         priority={priority}
       />
       <Image
         src="/logo%20ligh.jpg"
         alt=""
         aria-hidden="true"
-        width={width}
-        height={height}
-        className={`theme-logo theme-logo--light ${className}`}
-        style={{ width: "auto", height: `${height}px` }}
+        fill
+        sizes={sizeLabel}
+        className="theme-logo theme-logo--light object-cover"
         priority={priority}
       />
-    </>
+    </span>
   );
 }
 
@@ -88,7 +92,7 @@ function BrandLogo({ imageSize = 44 }: { imageSize?: number }) {
       <ThemeLogo
         width={imageSize}
         height={imageSize}
-        className="rounded-full object-cover"
+        className="rounded-full"
         priority
       />
       <span className="roca-display text-xl leading-none text-white sm:text-2xl">
@@ -124,6 +128,7 @@ export const siteNavLinks: NavLink[] = [
   { href: "/boutique?badge=Nouveaute", labelKey: "nav.nouveautes" },
   { href: "/boutique?promo=1", labelKey: "nav.promotions" },
   { href: "/favoris", labelKey: "nav.favoris" },
+  { href: "/suivi", labelKey: "nav.suivi" },
   { href: "/contact", labelKey: "nav.contact" },
 ];
 
@@ -291,7 +296,7 @@ export function DesktopTopBar({
             <Link href="/contact" className="whitespace-nowrap">
               {t("nav.aide")}
             </Link>
-            <Link href="/suivi" className="hidden whitespace-nowrap lg:inline">
+            <Link href="/suivi" className="whitespace-nowrap">
               {t("nav.suivi")}
             </Link>
             <LanguageSwitcher />
@@ -396,13 +401,20 @@ export function MobileTopBar({
             <Menu size={20} aria-hidden="true" />
           </button>
           <Link href="/" className="flex items-center gap-1.5 sm:gap-2" aria-label="Coin Original">
-            <ThemeLogo width={32} height={32} className="rounded-full object-cover" priority />
+            <ThemeLogo width={32} height={32} className="rounded-full" priority />
             <span className="roca-display text-sm whitespace-nowrap text-white sm:text-base">
               Coin <span className="text-[var(--primary)]">Original</span>
             </span>
           </Link>
         </div>
         <div className="flex items-center gap-1.5">
+          <Link
+            href="/suivi"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-[var(--header-fg)]"
+            aria-label={t("nav.suivi")}
+          >
+            <Truck size={20} aria-hidden="true" />
+          </Link>
           <Link
             href="/panier"
             className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-[var(--header-fg)]"
@@ -559,11 +571,12 @@ export function FeaturesStrip() {
 
   return (
     <section className="container-site relative z-10 -mt-6 sm:-mt-8">
-      <div className="surface-panel grid grid-cols-1 gap-x-6 gap-y-4 p-5 sm:grid-cols-2 lg:grid-cols-4 lg:p-6">
+      <div className="surface-panel p-4 sm:p-5 lg:p-6">
+        <div className="flex gap-4 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-4 lg:overflow-visible lg:gap-6">
         {featureItems.map((item) => {
           const Icon = featureIcons[item.icon];
           return (
-            <div key={item.icon} className="flex items-center gap-3.5">
+            <div key={item.icon} className="flex min-w-[220px] shrink-0 items-center gap-3.5 sm:min-w-[240px] lg:min-w-0">
               <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--primary-soft)] text-[var(--primary)]">
                 <Icon size={20} aria-hidden="true" />
               </span>
@@ -576,6 +589,7 @@ export function FeaturesStrip() {
             </div>
           );
         })}
+        </div>
       </div>
     </section>
   );
@@ -597,12 +611,12 @@ export function HomeCategoriesSection() {
           <ArrowRight size={14} aria-hidden="true" />
         </Link>
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-6">
+      <div className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-6 lg:overflow-visible lg:gap-4 lg:pb-0">
         {homeCategories.map((category, index) => (
           <Link
             key={category.title}
             href={category.href}
-            className="group flex flex-col items-center rounded-xl border border-[var(--border-soft)] bg-[var(--surface)] p-3 shadow-[var(--card-shadow)] transition-all hover:-translate-y-1 hover:border-[var(--primary)] hover:shadow-[0_12px_32px_rgba(255,87,26,0.12)] md:p-4"
+            className="group flex w-[118px] shrink-0 flex-col items-center rounded-xl border border-[var(--border-soft)] bg-[var(--surface)] p-3 shadow-[var(--card-shadow)] transition-all hover:-translate-y-1 hover:border-[var(--primary)] hover:shadow-[0_12px_32px_rgba(255,87,26,0.12)] sm:w-[132px] md:p-4 lg:w-auto"
           >
             <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-[var(--surface-soft)]">
               <Image

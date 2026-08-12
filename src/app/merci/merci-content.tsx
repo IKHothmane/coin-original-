@@ -84,15 +84,18 @@ export function MerciContent() {
               </div>
             </div>
 
-            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link href="/boutique" className="btn btn--primary">
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
+              <Link href="/boutique" className="btn btn--primary w-full sm:w-auto">
                 Continuer vos achats
               </Link>
-              <Link href="/mon-compte" className="btn btn--outline">
+              <Link href="/mon-compte" className="btn btn--outline w-full sm:w-auto">
                 Voir mon compte
               </Link>
               {orderReferenceParam ? (
-                <Link href={`/suivi?id=${encodeURIComponent(orderReferenceParam)}`} className="btn btn--outline">
+                <Link
+                  href={`/suivi?id=${encodeURIComponent(orderReferenceParam)}`}
+                  className="btn btn--outline w-full sm:w-auto"
+                >
                   Suivre ma commande
                 </Link>
               ) : null}

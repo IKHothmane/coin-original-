@@ -1,6 +1,7 @@
 import { SITE_URL } from "@/lib/site";
 import { JsonLd } from "@/components/json-ld";
 import { LegalContentPage } from "@/components/legal-content-page";
+import { getSupportPhoneE164 } from "@/lib/contact";
 
 export const metadata = {
   title: "Conditions générales de vente | Coin Original",
@@ -9,6 +10,7 @@ export const metadata = {
 
 export default function CGVPage() {
   const siteUrl = SITE_URL;
+  const supportPhone = getSupportPhoneE164();
 
   const webPageJsonLd = {
     "@context": "https://schema.org",
@@ -123,7 +125,7 @@ export default function CGVPage() {
             icon: "bell",
             highlights: [
               "Email : contact@coinoriginal.shop",
-              "WhatsApp : +212 6XX XX XX XX",
+              `WhatsApp : ${supportPhone}`,
               "Horaires : lundi au samedi, 9h a 18h",
             ],
           },

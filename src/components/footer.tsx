@@ -5,6 +5,7 @@ import { Instagram, MapPin, Phone } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeLogo } from "@/components/homepage-sections";
 import { useTranslation } from "@/lib/i18n/use-translation";
+import { getSupportPhoneE164, getWhatsAppHref } from "@/lib/contact";
 
 export function Footer() {
   const { t, lang } = useTranslation();
@@ -19,7 +20,7 @@ export function Footer() {
             <ThemeLogo
               width={48}
               height={48}
-              className="h-12 w-12 rounded-full border border-[#2a2a2e] object-cover"
+              className="rounded-full border border-[#2a2a2e]"
             />
             <span className="roca-display text-2xl text-white">
               Coin <span className="text-[var(--primary)]">Original</span>
@@ -39,7 +40,7 @@ export function Footer() {
               <Instagram size={18} />
             </a>
             <a
-              href="https://wa.me/212600000000"
+              href={getWhatsAppHref()}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#2a2a2e] text-[#c9c9cf] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
@@ -103,7 +104,7 @@ export function Footer() {
                 className="inline-flex items-center gap-2"
               >
                 <Phone size={15} className="text-[var(--primary)]" />
-                <span>{t("footer.whatsapp")}</span>
+                <span>{t("footer.whatsapp")} · {getSupportPhoneE164()}</span>
               </a>
             </li>
             <li className="inline-flex items-center gap-2 text-[#9a9aa0]">

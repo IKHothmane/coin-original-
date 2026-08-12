@@ -162,7 +162,7 @@ function ProductCardSmall({ product }: { product: CatalogProduct }) {
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
           <div className="absolute left-2 top-2 z-20 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[var(--border-soft)] bg-black/30 sm:h-12 sm:w-12">
-            <ThemeLogo width={48} height={48} className="h-full w-full object-cover" />
+            <ThemeLogo className="size-full rounded-full" />
           </div>
         </div>
         <div className="space-y-1 p-2.5 sm:space-y-2 sm:p-4">

@@ -1,5 +1,6 @@
 import { SITE_URL } from "@/lib/site";
 import { JsonLd } from "@/components/json-ld";
+import { getSupportPhoneE164 } from "@/lib/contact";
 
 export const metadata = {
   title: "إشعارات قانونية | كوين أوريجينال",
@@ -15,6 +16,7 @@ export const metadata = {
 };
 
 export default function ArabicMentionsLegalesPage() {
+  const supportPhone = getSupportPhoneE164();
   const siteUrl = SITE_URL;
 
   const webPageJsonLd = {
@@ -42,7 +44,7 @@ export default function ArabicMentionsLegalesPage() {
             الاسم: كوين أوريجينال<br />
             العنوان: الدار البيضاء، المغرب<br />
             البريد الإلكتروني: contact@coinoriginal.shop<br />
-            الهاتف: +212 6XX XX XX XX
+            الهاتف: {supportPhone}
           </p>
         </section>
 

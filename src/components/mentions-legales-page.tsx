@@ -22,6 +22,7 @@ import {
   MobileDrawer,
   MobileTopBar,
 } from "@/components/homepage-sections";
+import { getSupportPhoneE164 } from "@/lib/contact";
 
 type LegalCard = {
   id: string;
@@ -47,7 +48,7 @@ const legalCards: LegalCard[] = [
       { label: "Nom", value: "Coin Original" },
       { label: "Adresse", value: "Casablanca, Maroc" },
       { label: "Email", value: "contact@coinoriginal.shop", href: "mailto:contact@coinoriginal.shop" },
-      { label: "Telephone", value: "+212 6XX XX XX XX" },
+      { label: "Telephone", value: getSupportPhoneE164(), href: `tel:${getSupportPhoneE164()}` },
     ],
   },
   {
@@ -251,7 +252,7 @@ export function MentionsLegalesPageClient() {
                         Telephone
                       </p>
                       <p className="mt-1 text-sm text-[var(--foreground)] sm:text-base">
-                        +212 6XX XX XX XX
+                        {getSupportPhoneE164()}
                       </p>
                     </div>
                   </div>
